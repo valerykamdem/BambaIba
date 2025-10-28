@@ -1,0 +1,162 @@
+﻿
+services:
+  bambaiba_api:
+    image: ${DOCKER_REGISTRY-}bambaibaapi
+    container_name: bambaiba_api
+    build:
+      context: .
+      dockerfile: src/BambaIba.Api/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=8080
+      - ASPNETCORE_HTTPS_PORTS=8081
+      - TZ=Etc/UTC
+      - ConnectionStrings__DefaultConnection=Host=bambaiba_db;Port=5432;Database=bambaiba_db;Username=admin;Password=admin123;
+    ports:
+      - "7000:8080"
+      - "7001:8081"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    depends_on:
+      - bambaiba_db
+      - minio
+    restart: unless-stopped
+    networks:
+      - bambaiba_network
+
+  bambaiba_db:
+    image: postgres:16
+    container_name: bambaiba_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: bambaiba_db
+    ports:
+      - "5435:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - bambaiba_network
+
+  bambaiba_idp_db:
+    image: postgres:16
+    container_name: bambaiba_idp_db
+    environment:
+      POSTGRES_USER: keycloakuser
+      POSTGRES_PASSWORD: keycloak123
+      POSTGRES_DB: bambaiba_idp_db
+    volumes:
+      # Gardez les volumes pour la persistance des données DB
+      - keycloak_postgres_data:/var/lib/postgresql/data 
+    ports:
+      # L'hôte écoute sur 5436, mais le conteneur interne écoute sur 5432
+      - "5436:5432" 
+    restart: unless-stopped
+    networks:
+      - bambaiba_network
+    healthcheck: # Ajout d'un healthcheck pour une dépendance plus fiable (voir note)
+      test: ["CMD-SHELL", "pg_isready -U keycloakuser -d bambaiba_idp_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bambaiba_idp:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: bambaiba_idp
+    # Simplification de la commande, en utilisant les variables KC_*
+    command: start-dev 
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      
+      # Configuration de la DB : 
+      KC_DB: postgres
+      KC_DB_URL_HOST: bambaiba_idp_db
+      KC_DB_URL_DATABASE: bambaiba_idp_db
+      # 💥 CORRECTION : Keycloak doit se connecter au port INTERNE du conteneur DB (5432)
+      KC_DB_URL_PORT: 5432 
+      KC_DB_USERNAME: keycloakuser
+      KC_DB_PASSWORD: keycloak123
+      
+      # Configuration du Hostname Keycloak (Simplification)
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HTTP_ENABLED: true
+      KC_FRONTEND_URL: http://localhost:18081 # Utiliser l'hôte et le port externes
+      
+      # Paramètres avancés
+      KC_FEATURES: token-exchange,admin-fine-grained-authz
+      
+    volumes:
+      # Le volume pour les exports/imports doit être dans le dossier 'data/import'
+      - ./.containers/identity:/opt/keycloak/data
+      - ./.files/bambaiba-realm-export.json:/opt/keycloak/data/import/realm.json
+      
+    ports:
+      - "18081:8080"
+      
+    depends_on:
+      bambaiba_idp_db:
+        condition: service_healthy # Utiliser le healthcheck pour une dépendance fiable
+        
+    restart: unless-stopped
+    networks:
+      - bambaiba_network
+
+  minio:
+    image: minio/minio:latest
+    container_name: bambaiba_minio
+    command: server /data --console-address ":9001"
+    environment:
+        MINIO_ROOT_USER: minioadmin
+        MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+        - "9000:9000"
+        - "9001:9001"
+    volumes:
+        - minio_data:/data
+    networks:
+       bambaiba_network:
+         aliases:
+            - minio
+
+  redis:
+    image: redis:latest
+    container_name: bambaiba_redis
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - bambaiba_network
+
+  # worker:
+  #   build:
+  #     context: ./src/BambaIba.Worker
+  #     dockerfile: Dockerfile
+  #   environment:
+  #     ConnectionStrings__Default: Host=bambaiba_db;Port=5432;Database=bambaiba_db;Username=admin;Password=admin123
+  #     Minio__Endpoint: minio:9000
+  #     Minio__AccessKey: minioadmin
+  #     Minio__SecretKey: minioadmin
+  #     Minio__BucketRaw: raw
+  #     Minio__BucketHls: hls
+  #     Minio__BucketThumbs: thumbs
+  #     FFmpeg__Path: /usr/bin/ffmpeg
+  #   depends_on:
+  #     - bambaiba_db
+  #     - minio
+  #   networks: [bambaiba_network]
+
+volumes:
+  keycloak_postgres_data:
+  pg_data:
+  redis_data:  
+  minio_data:
+
+networks:
+  bambaiba_network:
+    name: bambaiba_network
