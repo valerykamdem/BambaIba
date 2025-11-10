@@ -1,5 +1,8 @@
 ﻿using System.Reflection;
+using BambaIba.Application.Abstractions.Services;
+using BambaIba.Application.Settings;
 using Cortex.Mediator.DependencyInjection;
+using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,10 +15,22 @@ public static class ServiceCollectionExtensions
     {
         Assembly assembly = typeof(ServiceCollectionExtensions).Assembly;
 
+        services.AddValidatorsFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
+
+        //TypeAdapterConfig config = TypeAdapterConfig.GlobalSettings;
+        //config.Scan(assembly);
+        //services.AddSingleton(config);
+
         //AddPersistence(services, configuration);
         //AddAuthentication(services, configuration);
         //AddAuthorization(services);
         //AddRedis(services, configuration);
+
+        //services.Configure<RabbitMqOptions>(
+        //    configuration.GetSection(RabbitMqOptions.SectionName));
+
+        services.AddSingleton<VideoPublisher>();
+
 
         services.AddCortexMediator(configuration,
             [typeof(ServiceCollectionExtensions)], // Scanne l'assembly pour trouver les handlers

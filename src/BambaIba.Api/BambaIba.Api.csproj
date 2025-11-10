@@ -4,6 +4,7 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	<ContainerDevelopmentMode>Fast</ContainerDevelopmentMode>
     <UserSecretsId>379f47d2-738b-40d5-bc65-b904aa04560a</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
@@ -11,13 +12,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="Properties\appsettings.Development..json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
 	  <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 	  <PackageReference Include="Carter" Version="9.0.0" />
 	  <PackageReference Include="Cortex.Mediator" Version="2.1.0" />
-	  <PackageReference Include="FluentValidation" Version="12.0.0" />
-	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.0.0" />
+	  <PackageReference Include="FluentValidation" Version="12.1.0" />
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
 	  <PackageReference Include="Mapster" Version="7.4.0" />
 	  <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
@@ -39,7 +45,7 @@
 	  <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 	  <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-	  <PackageReference Include="Scalar.AspNetCore" Version="2.9.0" />
+	  <PackageReference Include="Scalar.AspNetCore" Version="2.10.1" />
 	  <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
 	  <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
 	  <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.6" />

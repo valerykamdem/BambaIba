@@ -1,14 +1,51 @@
+# docker-compose.override.yml
+name: bambaiba_dev
+
 services:
   bambaiba_api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
-      - ASPNETCORE_HTTPS_PORTS=8081
+      - DOTNET_USE_POLLING_FILE_WATCHER=true
+      - ASPNETCORE_HTTP_PORTS=7000
+      # - ASPNETCORE_HTTPS_PORTS=7001
     ports:
-      - "8080"
-      - "8081"
+      - "7000:7000"
+      # - "7001:7001"
     volumes:
+      # Secrets et certificats
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+
+
+
+# services:
+#   bambaiba_api:
+#     build:
+#       context: .
+#       dockerfile: src/BambaIba.Api/Dockerfile
+#       target: dev
+#     image: bambaiba_api
+#     container_name: bambaiba_api
+#     environment:
+#       ASPNETCORE_ENVIRONMENT: Development
+#       ASPNETCORE_HTTP_PORTS: 7000
+#       # ASPNETCORE_HTTPS_PORTS: 7001
+#       ConnectionStrings__DefaultConnection: "Host=bambaiba_db;Port=5432;Database=bambaiba_db;Username=admin;Password=admin123;"
+#     ports:
+#       - "7000:7000"
+#       # - "7001:7001"
+#     volumes:
+#       - ./src:/src
+#       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+#       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+#       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+#       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+#     command: ["dotnet", "watch", "run", "--project", "src/BambaIba.Api/BambaIba.Api.csproj"]
+#     depends_on:
+#       - bambaiba_db
+#       - minio
+#     restart: unless-stopped
+#     networks:
+#       - bambaiba_network

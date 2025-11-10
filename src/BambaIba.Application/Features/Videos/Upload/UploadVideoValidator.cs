@@ -1,10 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FluentValidation;
 
 namespace BambaIba.Application.Features.Videos.Upload;
-internal class UploadVideoValidator
+internal sealed class UploadVideoValidator : AbstractValidator<UploadVideoRequest>
 {
+    public UploadVideoValidator()
+    {
+        RuleFor(c => c.Title).NotEmpty();
+        RuleFor(c => c.File).NotNull().WithMessage("Le fichier est obligatoire.");
+        RuleFor(c => c.Description).NotEmpty();
+    }
 }

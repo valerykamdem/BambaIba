@@ -1,8 +1,7 @@
-﻿
-using BambaIba.Domain.Shared;
+﻿using BambaIba.SharedKernel;
 
 namespace BambaIba.Domain.Entities;
-public class Subscription : Entity<Guid>, ISoftDeletable
+public sealed class Subscription : Entity<Guid>, ISoftDeletable
 {
     public string SubscriberId { get; set; } = string.Empty;
     public string ChannelId { get; set; } = string.Empty;

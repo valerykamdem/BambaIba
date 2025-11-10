@@ -8,6 +8,7 @@
 
   <ItemGroup>
 	  <Folder Include="Configurations\" />
+	  <Folder Include="Authentication\" />
 	  <PackageReference Include="Dapper" Version="2.1.66" />
 	  <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
 	  <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
@@ -26,8 +27,10 @@
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.10" />
 	  <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-	  <PackageReference Include="Minio" Version="6.0.5" />
+	  <PackageReference Include="Minio" Version="7.0.0" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+	  <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
+	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <!-- Authorization core (typically part of ASP.NET Core shared framework, added explicitly if needed) -->
     <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="9.0.10" />
     <!-- JWT bearer authentication support -->

@@ -1,0 +1,50 @@
+﻿# docker-compose.prod.yml
+name: bambaiba_prod
+
+services:
+  bambaiba_api:
+    # 1. Annule la commande de developpement (dotnet watch run)
+    # L'API utilisera l'ENTRYPOINT ["dotnet", "BambaIba.Api.dll"] défini dans le Dockerfile.
+    command: []
+
+    # 2. Annule les volumes de code source pour la production
+    volumes: []
+
+    # 3. Définit l'environnement de production
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+     # - KC_FRONTEND_URL=https://auth.votredomaine.com
+
+    # 4. Mappage des ports publics (80 et 443) vers les ports de l application (7000 et 7001)
+    ports:
+      - "80:7000"
+      - "443:7001"
+    restart: unless-stopped
+
+  bambaiba_db:
+    # En production, pas de port exposé
+    ports: []
+    restart: unless-stopped
+
+  bambaiba_idp_db:
+    ports: []
+    restart: unless-stopped
+
+  bambaiba_idp:
+    # Keycloak exposé sur 8080 ( mettre derrière un reverse proxy en prod)
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    # En production, utilisez plutôt
+    # command: start
+
+  minio:
+    # Console (9001) désactivée en prod, seul l’API (9000) est exposée
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+
+  redis:
+    # Redis uniquement accessible par l API (pas de port exposé)
+    ports: []
+    restart: unless-stopped

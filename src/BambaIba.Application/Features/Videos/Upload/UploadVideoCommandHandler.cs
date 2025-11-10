@@ -1,56 +1,75 @@
-﻿using BambaIba.Application.Common.Interfaces;
-using BambaIba.Domain.Entities;
+﻿using BambaIba.Application.Abstractions.Data;
+using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Application.Abstractions.Services;
+using BambaIba.Application.Settings;
+using BambaIba.Domain.VideoQualities;
+using BambaIba.Domain.Videos;
+using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Enums;
 using Cortex.Mediator.Commands;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 
 namespace BambaIba.Application.Features.Videos.Upload;
-public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, UploadVideoResult>
+public sealed class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Result<UploadVideoResult>>
 {
     private readonly IVideoRepository _videoRepository;
-    private readonly IVideoQualityRepository _videoQlRepository;
     private readonly IVideoStorageService _storageService;
     private readonly IVideoProcessingService _processingService;
     private readonly ILogger<UploadVideoCommandHandler> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly IUserContextService _userContextService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly VideoPublisher _videoPublisher;
 
     public UploadVideoCommandHandler(
         IVideoRepository videoRepository,
-        IVideoQualityRepository videoQlRepository,
         IVideoStorageService storageService,
         IVideoProcessingService processingService,
         ILogger<UploadVideoCommandHandler> logger,
-        IServiceScopeFactory scopeFactory)
+        IServiceScopeFactory scopeFactory,
+        IUserContextService userContextService,
+        IHttpContextAccessor httpContextAccessor,
+        IUnitOfWork unitOfWork,
+        VideoPublisher videoPublisher
+        )
     {
         _videoRepository = videoRepository;
-        _videoQlRepository = videoQlRepository;
         _storageService = storageService;
         _processingService = processingService;
         _logger = logger;
         _scopeFactory = scopeFactory;
+        _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        _unitOfWork = unitOfWork;
+        _videoPublisher = videoPublisher;
+
     }
-    public async Task<UploadVideoResult> Handle(UploadVideoCommand command, CancellationToken cancellationToken)
+
+    public async Task<Result<UploadVideoResult>> Handle(UploadVideoCommand command, CancellationToken cancellationToken)
     {
+        //using System.Data.IDbTransaction transaction = await _unitOfWork.BeginTransactionAsync(cancellationToken);
+
         try
         {
-            _logger.LogInformation(
-                "Starting video upload for user {UserId}: {FileName}",
-                command.UserId,
-                command.FileName);
+            UserContext userContext = await _userContextService.GetCurrentContext(_httpContextAccessor.HttpContext);
 
-            // 1. Validation initiale
-            if (command.FileSize > 5_368_709_120) // 5GB
-            {
-                return UploadVideoResult.Failure("File size exceeds maximum limit of 5GB");
-            }
+            _logger.LogInformation("Starting video upload for user {UserId}: {FileName}",
+                command.UserId, command.FileName);
+
+            // 1. Validation
+            if (command.FileSize > 5_368_709_120)
+                return Result.Failure<UploadVideoResult>(
+                    Error.Problem("400", "File size exceeds maximum limit of 5GB"));
 
             string[] allowedTypes = ["video/mp4", "video/mpeg", "video/quicktime", "video/webm"];
             if (!allowedTypes.Contains(command.ContentType.ToLower()))
-            {
-                return UploadVideoResult.Failure("Invalid video format. Allowed: MP4, MPEG, MOV, WEBM");
-            }
+                return Result.Failure<UploadVideoResult>(
+                    Error.Problem("404", "Invalid video format. Allowed: MP4, MPEG, MOV, WEBM"));
 
             // 2. Créer l'entité Video
             var video = new Video
@@ -58,7 +77,7 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
                 Id = Guid.CreateVersion7(),
                 Title = command.Title,
                 Description = command.Description,
-                UserId = command.UserId,
+                UserId = userContext.LocalUserId,
                 OriginalFileName = command.FileName,
                 FileSize = command.FileSize,
                 Status = VideoStatus.Uploading,
@@ -66,49 +85,70 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
                 IsPublic = true,
             };
 
-            await _videoRepository.AddVideo(video, cancellationToken);
-            //await _context.SaveChangesAsync(cancellationToken);
+            _videoRepository.AddVideo(video);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation("Video entity created with ID: {VideoId}", video.Id);
 
-            // 3. Upload vers MinIO
+            string storagePath = string.Empty;
+
             try
             {
-                string storagePath = await _storageService.UploadVideoAsync(
-                    video.Id,
-                    command.File,
-                    cancellationToken);
+                // 3. Upload vers MinIO
+                storagePath = await _storageService.UploadVideoAsync(video.Id, command.File, cancellationToken);
 
                 video.StoragePath = storagePath;
                 video.Status = VideoStatus.Processing;
-                //await _context.SaveChangesAsync(cancellationToken);
 
-                await _videoRepository.UpdateVideoStatus(video);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation(
-                    "Video uploaded to storage: {StoragePath}",
-                    storagePath);
+                _logger.LogInformation("Video uploaded to storage: {StoragePath}", storagePath);
+
+                // 4. Commit transaction
+                //transaction.Commit();
+
+                //// 5. Traitement asynchrone
+                _ = Task.Run(async () => await ProcessVideoAsync(video.Id), cancellationToken);
+                //await ProcessVideoAsync(video.Id);
+                //await _videoPublisher.PublishVideoForProcessingAsync(video.Id, cancellationToken);
+
+                return Result.Success(UploadVideoResult.Success(video.Id, video.Status));
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to upload video to storage");
-                video.Status = VideoStatus.Failed;
-                //await _context.SaveChangesAsync(cancellationToken);
-                await _videoRepository.UpdateVideoStatus(video);
 
-                return UploadVideoResult.Failure(ex.Message);// "Failed to upload video to storage");
+                // Compensation : supprimer la vidéo en base
+                _videoRepository.Delete(video);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                // Rollback transaction
+                //transaction.Rollback();
+
+                // Supprimer le fichier MinIO si upload partiel
+                if (!string.IsNullOrEmpty(storagePath))
+                {
+                    try
+                    {
+                        await _storageService.DeleteVideoAsync(storagePath);
+                    }
+                    catch (Exception cleanupEx)
+                    {
+                        _logger.LogWarning(cleanupEx, "Failed to cleanup MinIO file after rollback");
+                    }
+                }
+
+                return Result.Failure<UploadVideoResult>(
+                    Error.Failure("500", "Failed to upload video to storage, rollback applied"));
             }
-
-            // 4. Traitement asynchrone en arrière-plan
-            _ = Task.Run(async () => await ProcessVideoAsync(video.Id), cancellationToken);
-
-            // 5. Retourner le résultat
-            return UploadVideoResult.Success(video.Id, video.Status);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error during video upload");
-            return UploadVideoResult.Failure("An unexpected error occurred during upload");
+            //transaction.Rollback();
+
+            _logger.LogError(ex, "Unexpected error during video upload, rollback applied");
+            return Result.Failure<UploadVideoResult>(
+                Error.Failure("500", "Unexpected error during upload"));
         }
     }
 
@@ -117,12 +157,15 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
         // 🚨 ATTENTION: Les variables 'video', 'duration', 'thumbnailPath' doivent 
         // être modifiables pour être mises à jour après les opérations.
         Video video;
+        //IUnitOfWork unitOfWork;
 
         // --- SCOPE 1: Lecture initiale (pour obtenir l'objet Video) ---
         using (IServiceScope scope = _scopeFactory.CreateScope())
         {
             IVideoRepository videoRepository = scope.ServiceProvider.GetRequiredService<IVideoRepository>();
             video = await videoRepository.GetVideoById(videoId);
+
+            //unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
         } // Scope 1 est détruit
 
         if (video == null || string.IsNullOrEmpty(video.StoragePath))
@@ -147,13 +190,15 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
             string thumbnailPath = await _processingService.GenerateThumbnailAsync(
                 videoId,
                 video.StoragePath);
+
             video.ThumbnailPath = thumbnailPath;
             _logger.LogInformation("Thumbnail generated: {ThumbnailPath}", thumbnailPath);
 
-            // 3. Transcoder en différentes qualités
-            string[] qualities = ["240p", "360p", "480p", "720p", "1080p"];
+            //// 3. Transcoder en différentes qualités
+            //string[] qualities = ["240p", "360p", "480p", "720p", "1080p"];
+            //await unitOfWork.SaveChangesAsync();
 
-            foreach (string quality in qualities)
+            foreach (string quality in VideoQualitySetting.All)
             {
                 try
                 {
@@ -173,11 +218,14 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
                     // --- SCOPE 2: Sauvegarde d'une qualité (après une longue attente) ---
                     using (IServiceScope innerScope = _scopeFactory.CreateScope())
                     {
-                        IVideoQualityRepository videoQlRepository = innerScope.ServiceProvider.GetRequiredService<IVideoQualityRepository>();
+                        IVideoQualityRepository videoQlRepository = 
+                            innerScope.ServiceProvider.GetRequiredService<IVideoQualityRepository>();
+
+                        IUnitOfWork unitOfWork = innerScope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
                         var videoQuality = new VideoQuality
                         {
-                            Id = Guid.NewGuid(),
+                            Id = Guid.CreateVersion7(),
                             VideoId = videoId,
                             Quality = quality,
                             StoragePath = qualityPath,
@@ -186,6 +234,7 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
                         };
 
                         await videoQlRepository.AddVideoQuality(videoQuality);
+                        await unitOfWork.SaveChangesAsync();
                         // Assurez-vous que AddVideoQuality() appelle SaveChangesAsync()
                     } // Scope 2 est détruit. Un nouveau DbContext a été créé et utilisé.
                     // -------------------------------------------------------------------
@@ -212,18 +261,17 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
                 IVideoRepository finalVideoRepository = 
                     finalScope.ServiceProvider.GetRequiredService<IVideoRepository>();
 
-                // Ré-attacher la vidéo ou la recharger si nécessaire pour la mise à jour :
-                // La variable 'video' est un objet de l'ancien scope, il faut le recharger 
-                // ou le mettre à jour dans le nouveau contexte avant de le sauvegarder.
+                Video videoToUpdate = await finalVideoRepository.GetVideoById(videoId);
+                if (videoToUpdate != null)
+                {
+                    videoToUpdate.Duration = video.Duration;
+                    videoToUpdate.Status = VideoStatus.Ready;
+                    videoToUpdate.PublishedAt = DateTime.UtcNow;
+                    videoToUpdate.UpdatedAt = DateTime.UtcNow;
+                    videoToUpdate.ThumbnailPath = thumbnailPath;
 
-                // Mettre à jour l'état de l'objet récupéré précédemment
-                video.Status = VideoStatus.Ready;
-                video.PublishedAt = DateTime.UtcNow;
-                video.UpdatedAt = DateTime.UtcNow;
-
-                // Si votre repository gère le contexte, il doit attacher/mettre à jour cet objet.
-                await finalVideoRepository.UpdateVideoStatus(video);
-                // Assurez-vous que UpdateVideoStatus() gère la sauvegarde
+                    await finalVideoRepository.UpdateVideoStatus(videoToUpdate);
+                }
             } // Scope 3 est détruit.
             // -------------------------------------------------------------
 
@@ -248,103 +296,4 @@ public class UploadVideoCommandHandler : ICommandHandler<UploadVideoCommand, Upl
             // -----------------------------------------------------
         }
     }
-
-    //private async Task ProcessVideoAsync(Guid videoId)
-    //{
-    //    try
-    //    {
-    //        Video video = await _videoRepository.GetVideoById(videoId);
-    //        if (video == null || string.IsNullOrEmpty(video.StoragePath))
-    //        {
-    //            _logger.LogWarning("Video not found or has no storage path: {VideoId}", videoId);
-    //            return;
-    //        }
-
-    //        _logger.LogInformation("Starting video processing for {VideoId}", videoId);
-
-    //        // 1. Extraire la durée
-    //        TimeSpan duration = await _processingService.GetVideoDurationAsync(video.StoragePath);
-    //        video.Duration = duration;
-    //        //await _context.SaveChangesAsync();
-
-    //        _logger.LogInformation("Video duration extracted: {Duration}", duration);
-
-    //        // 2. Générer la miniature
-    //        string thumbnailPath = await _processingService.GenerateThumbnailAsync(
-    //            videoId,
-    //            video.StoragePath);
-    //        video.ThumbnailPath = thumbnailPath;
-    //        //await _context.SaveChangesAsync();
-
-    //        _logger.LogInformation("Thumbnail generated: {ThumbnailPath}", thumbnailPath);
-
-    //        // 3. Transcoder en différentes qualités
-    //        string[] qualities = ["240p","360p", "480p", "720p", "1080p"];
-
-    //        foreach (string quality in qualities)
-    //        {
-    //            try
-    //            {
-    //                _logger.LogInformation(
-    //                    "Starting transcoding to {Quality} for video {VideoId}",
-    //                    quality,
-    //                    videoId);
-
-    //                string qualityPath = await _processingService.TranscodeVideoAsync(
-    //                    videoId,
-    //                    video.StoragePath,
-    //                    quality);
-
-    //                long qualitySize = await _storageService.GetFileSizeAsync(qualityPath);
-
-    //                var videoQuality = new VideoQuality
-    //                {
-    //                    Id = Guid.NewGuid(),
-    //                    VideoId = videoId,
-    //                    Quality = quality,
-    //                    StoragePath = qualityPath,
-    //                    FileSize = qualitySize,
-    //                    CreatedAt = DateTime.UtcNow
-    //                };
-
-    //                await _videoQlRepository.AddVideoQuality(videoQuality);
-    //                //await _context.SaveChangesAsync();
-
-    //                _logger.LogInformation(
-    //                    "Transcoding completed for {Quality}: {QualityPath}",
-    //                    quality,
-    //                    qualityPath);
-    //            }
-    //            catch (Exception ex)
-    //            {
-    //                _logger.LogError(
-    //                    ex,
-    //                    "Failed to transcode video {VideoId} to {Quality}",
-    //                    videoId,
-    //                    quality);
-    //                // Continue avec les autres qualités même si une échoue
-    //            }
-    //        }
-
-    //        // 4. Marquer comme Ready
-    //        video.Status = VideoStatus.Ready;
-    //        video.PublishedAt = DateTime.UtcNow;
-    //        video.UpdatedAt = DateTime.UtcNow;
-    //        //await _context.SaveChangesAsync();
-
-    //        _logger.LogInformation("Video processing completed successfully for {VideoId}", videoId);
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError(ex, "Failed to process video {VideoId}", videoId);
-
-    //        Video video = await _videoRepository.GetVideoById(videoId);
-    //        if (video != null)
-    //        {
-    //            video.Status = VideoStatus.Failed;
-    //            video.UpdatedAt = DateTime.UtcNow;
-    //            //await _context.SaveChangesAsync();
-    //        }
-    //    }
-    //}
 }

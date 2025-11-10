@@ -1,7 +1,8 @@
 ﻿using BambaIba.SharedKernel.Enums;
 
 namespace BambaIba.Application.Features.Videos.Upload;
-public class UploadVideoResult
+
+public sealed record UploadVideoResult
 {
     public bool IsSuccess { get; init; }
     public Guid VideoId { get; init; }

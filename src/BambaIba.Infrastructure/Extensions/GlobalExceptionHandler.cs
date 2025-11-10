@@ -1,11 +1,12 @@
 ﻿using System.Text.Json;
-using BambaIba.Application.Common.Dtos;
+using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Exceptions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 
-namespace BambaIba.SharedKernel.Extensions;
+namespace BambaIba.Infrastructure.Extensions;
 
 public static class GlobalExceptionHandler
 {

@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BambaIba.Domain", "src\Bamb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BambaIba.Application", "src\BambaIba.Application\BambaIba.Application.csproj", "{99CCF2CA-5296-4A3D-9E95-A4BEAF0A1035}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BambaIba.Worker", "src\BambaIba.Worker\BambaIba.Worker.csproj", "{39CDD2BC-2AB9-FE51-26B6-391157D44BBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{99CCF2CA-5296-4A3D-9E95-A4BEAF0A1035}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99CCF2CA-5296-4A3D-9E95-A4BEAF0A1035}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99CCF2CA-5296-4A3D-9E95-A4BEAF0A1035}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39CDD2BC-2AB9-FE51-26B6-391157D44BBC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39CDD2BC-2AB9-FE51-26B6-391157D44BBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39CDD2BC-2AB9-FE51-26B6-391157D44BBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39CDD2BC-2AB9-FE51-26B6-391157D44BBC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -57,6 +63,7 @@ Global
 		{7EA375FC-0243-4B31-8A4C-FCD1950C589E} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{C0A786F8-6566-4075-94A3-90C1CD0A6CD6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{99CCF2CA-5296-4A3D-9E95-A4BEAF0A1035} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{39CDD2BC-2AB9-FE51-26B6-391157D44BBC} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {715A0DE6-DD9E-42CC-A9EF-D4741E5E1B75}

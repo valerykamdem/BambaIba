@@ -1,0 +1,20 @@
+﻿name: bambaiba_build
+
+services:
+  bambaiba_api:
+    image: bambaiba_api:latest
+    build:
+      context: .
+      dockerfile: src/BambaIba.Api/Dockerfile
+      target: final           # 🏁 Étape finale du Dockerfile (prod)
+      args:
+        BUILD_CONFIGURATION: Release
+        APP_UID: 1000
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - bambaiba_network
+
+networks:
+  bambaiba_network:
+    driver: bridge

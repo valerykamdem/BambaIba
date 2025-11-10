@@ -7,18 +7,18 @@ public class VideoProcessingSettings
 
     public long MaxFileSizeBytes { get; set; } = 5_368_709_120; // 5GB
     public int MaxDurationSeconds { get; set; } = 3600; // 1 heure
-    public List<string> AllowedMimeTypes { get; set; } = new()
-    {
+    public List<string> AllowedMimeTypes { get; set; } =
+    [
         "video/mp4",
         "video/mpeg",
         "video/quicktime",
         "video/x-msvideo",
         "video/webm"
-    };
-    public List<string> AllowedExtensions { get; set; } = new()
-    {
+    ];
+    public List<string> AllowedExtensions { get; set; } =
+    [
         ".mp4", ".mpeg", ".mov", ".avi", ".webm"
-    };
+    ];
     public bool AutoGenerateThumbnail { get; set; } = true;
     public bool AutoTranscode { get; set; } = true;
 }

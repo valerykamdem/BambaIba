@@ -1,15 +1,23 @@
 ﻿using System.Security.Claims;
-using BambaIba.Application.Common.Dtos;
+using BambaIba.Api.Extensions;
+using BambaIba.Api.Infrastructure;
+using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Features.Videos.DeleteVideo;
+using BambaIba.Application.Features.Videos.GetVideoById;
+using BambaIba.Application.Features.Videos.GetVideos;
 using BambaIba.Application.Features.Videos.Upload;
+using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Videos;
 using Carter;
 using Cortex.Mediator;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+
 
 namespace BambaIba.Api.Endpoints;
 
 // BambaIba.Api/Endpoints/VideoEndpoints.cs
-public class VideoEndpoints : ICarterModule 
+public class VideoEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
@@ -22,31 +30,33 @@ public class VideoEndpoints : ICarterModule
             //.RequireAuthorization()
             .DisableAntiforgery()  // Pour multipart
             .Accepts<UploadVideoRequest>("multipart/form-data")
-            .Produces<UploadVideoResponse>(200)
-            .Produces<ProblemDetails>(400)
-            .WithName("UploadVideo")
+            .Produces<UploadVideoResult>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .WithValidation<UploadVideoRequest>()
+            .RequireAuthorization()
+            .WithName("UploadVideo");
+
+        // Liste des vidéos (query parameters)
+        group.MapGet("/", GetVideos)
+            .Produces<GetVideosResult>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .WithName("GetVideos")
+            .WithDescription("Get paginated list of videos");
+
+        // Détail d'une vidéo (route parameter)
+        group.MapGet("/{id:guid}", GetVideoById)
+            .Produces<GetVideosResult>(StatusCodes.Status200OK)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .WithName("GetVideoById")
             .WithTags("Videos");
 
-        //// Liste des vidéos (query parameters)
-        //app.MapGet("/", GetVideos)
-        //    .Produces<List<VideoDto>>(200)
-        //    .WithName("GetVideos")
-        //    .WithTags("Videos");
-
-        //// Détail d'une vidéo (route parameter)
-        //app.MapGet("/{id:guid}", GetVideoById)
-        //    .Produces<VideoDetailDto>(200)
-        //    .Produces(404)
-        //    .WithName("GetVideoById")
-        //    .WithTags("Videos");
-
-        //// Supprimer une vidéo
-        //app.MapDelete("/{id:guid}", DeleteVideo)
-        //    .RequireAuthorization()
-        //    .Produces(204)
-        //    .Produces(404)
-        //    .WithName("DeleteVideo")
-        //    .WithTags("Videos");
+        // Supprimer une vidéo
+        group.MapDelete("/{id:guid}", DeleteVideo)
+            .RequireAuthorization()
+            .Produces(204)
+            .Produces(404)
+            .WithName("DeleteVideo")
+            .WithTags("Videos");
 
         //return group;
     }
@@ -54,19 +64,22 @@ public class VideoEndpoints : ICarterModule
     // Handler pour Upload (avec Request object)
     private static async Task<IResult> UploadVideo(
         [FromForm] UploadVideoRequest request,  // ← Request binding
-        IMediator mediator,
-        ClaimsPrincipal user, CancellationToken cancellationToken)
+        IMediator mediator, ClaimsPrincipal user,
+        CancellationToken cancellationToken)
     {
-        //var userId = user.GetUserId();
-        //if (string.IsNullOrEmpty(userId))
-        //    return Results.Unauthorized();
+
+        string userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? user.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userId))
+            return Results.Unauthorized();
 
         // Mapper Request → Command
         var command = new UploadVideoCommand
         {
             Title = request.Title,
             Description = request.Description,
-            UserId = "325AE7A1-1346-4146-902C-537B84A4A2EE",
+            UserId = userId,
             //FileStream = request.File.OpenReadStream(),
             File = request.File,
             FileName = request.File.FileName,
@@ -75,69 +88,65 @@ public class VideoEndpoints : ICarterModule
             Tags = request.Tags ?? []
         };
 
-        UploadVideoResult result = await mediator.SendCommandAsync<UploadVideoCommand, UploadVideoResult>(command, cancellationToken);
+        Result<UploadVideoResult> result = await mediator
+            .SendCommandAsync<UploadVideoCommand, Result<UploadVideoResult>>(command, cancellationToken);
 
-        if (!result.IsSuccess)
-            return Results.BadRequest(new ProblemDetails
-            {
-                Detail = result.ErrorMessage
-            });
-
-        // Mapper Result → Response
-        var response = new UploadVideoResponse
-        {
-            VideoId = result.VideoId.ToString(),
-            Status = result.Status.ToString(),
-            Message = "Video uploaded successfully",
-            UploadedAt = DateTime.UtcNow
-        };
-
-        return Results.Ok(response);
+        return result.Match(Results.Ok, CustomResults.Problem);
     }
 
-    //// Handler pour GetVideos (avec Request object pour query params)
-    //private static async Task<IResult> GetVideos(
-    //    [AsParameters] GetVideosRequest request,  // ← Query binding
-    //    IMediator mediator, CancellationToken cancellationToken)
-    //{
-    //    var query = new GetVideosQuery
-    //    {
-    //        Page = request.Page,
-    //        PageSize = request.PageSize,
-    //        Search = request.Search
-    //    };
+    // Handler pour GetVideos (avec Request object pour query params)
+    private static async Task<IResult> GetVideos(
+        GetVideosRequest request,  // ← Query binding
+        IMediator mediator, CancellationToken cancellationToken)
+    {
+        var query = new GetVideosQuery
+        (
+            request.Page > 0 ? (int)request.Page : 1,
+            request.PageSize > 0 ? (int)request.PageSize : 20,
+            string.IsNullOrWhiteSpace(request.Search) ? null : request.Search
+        );
 
-    //    var videos = await mediator.SendQueryAsync<>(query, cancellationToken);
-    //    return Results.Ok(videos);
-    //}
+        Result<GetVideosResult> result = await mediator
+            .SendQueryAsync<GetVideosQuery, Result<GetVideosResult>>(query, cancellationToken);
 
-    //// Handler pour GetVideoById
-    //private static async Task<IResult> GetVideoById(
-    //    Guid id,  // ← Route parameter (simple, pas besoin de Request)
-    //    IMediator mediator, CancellationToken cancellationToken)
-    //{
-    //    var query = new GetVideoByIdQuery { VideoId = id };
-    //    var video = await mediator.SendQueryAsync<GetVideoByIdQuery, GetVideosResponse>(query, cancellationToken);
+        return result.Match(Results.Ok, CustomResults.Problem);
+    }
 
-    //    return video is not null
-    //        ? Results.Ok(video)
-    //        : Results.NotFound();
-    //}
+    // Handler pour GetVideoById
+    private static async Task<IResult> GetVideoById(
+        Guid id,  // ← Route parameter (simple, pas besoin de Request)
+        IMediator mediator, CancellationToken cancellationToken)
+    {
+        var query = new GetVideoByIdQuery { VideoId = id };
 
-    //// Handler pour Delete
-    //private static async Task<IResult> DeleteVideo(
-    //    Guid id,
-    //    IMediator mediator,
-    //    ClaimsPrincipal user, CancellationToken cancellationToken)
-    //{
-    //    var userId = user.GetUserId();
-    //    var command = new DeleteVideoCommand { VideoId = id, UserId = userId };
+        Result<VideoDetailResult>? result = await mediator
+            .SendQueryAsync<GetVideoByIdQuery, Result<VideoDetailResult>>(query, cancellationToken);
 
-    //    var result = await mediator.SendCommandAsync(command, cancellationToken);
+        //return video is not null
+        //    ? Results.Ok(video)
+        //    : Results.NotFound();
 
-    //    return result.IsSuccess
-    //        ? Results.NoContent()
-    //        : Results.NotFound();
-    //}
+        return result.Match(Results.Ok, CustomResults.Problem);
+    }
+
+    // Handler pour Delete
+    private static async Task<IResult> DeleteVideo(
+        Guid id, IMediator mediator,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+    {
+        string identityId = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? user.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(identityId))
+            return Results.Unauthorized();
+
+        var command = new DeleteVideoCommand(id);
+
+        Result<DeleteVideoResult> result = await mediator
+            .SendCommandAsync<DeleteVideoCommand, Result<DeleteVideoResult>>(command, cancellationToken);
+
+        return result.Match(Results.Ok, CustomResults.Problem);
+    }
 
 }

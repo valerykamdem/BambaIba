@@ -1,6 +1,0 @@
-@BambaIba.Worker_HostAddress = http://localhost:5097
-
-GET {{BambaIba.Worker_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

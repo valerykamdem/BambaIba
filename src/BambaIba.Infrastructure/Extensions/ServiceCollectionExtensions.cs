@@ -1,39 +1,53 @@
-﻿using System.Reflection;
-using BambaIba.Application.Common.Interfaces;
+﻿using BambaIba.Application.Abstractions.Data;
+using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Domain.Comments;
+using BambaIba.Domain.Likes;
+using BambaIba.Domain.VideoQualities;
+using BambaIba.Domain.Videos;
 using BambaIba.Infrastructure.Persistence;
-using BambaIba.Infrastructure.Services;
-using BambaIba.Infrastructure.Services.Authentications;
+using BambaIba.Infrastructure.Repositories;
+using BambaIba.Infrastructure.Repositories.Authentications;
 using BambaIba.Infrastructure.Settings;
+using BambaIba.Infrastructure.Time;
+using BambaIba.SharedKernel;
 using Dapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Minio;
+using Npgsql;
 using StackExchange.Redis;
 
 namespace BambaIba.Infrastructure.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services,
-        IConfiguration configuration)
-    {
-        Assembly assembly = typeof(ServiceCollectionExtensions).Assembly;
+    public static IServiceCollection AddInfrastructureServices(
+        this IServiceCollection services,
+        IConfiguration configuration) =>
+        services
+        .AddServices()
+        .AddRedis(configuration)
+        .AddPersistence(configuration)
+        .AddMinIo(configuration)
+        .Authentication(configuration)
+        .AddHealthChecks(configuration);
 
-        AddPersistence(services, configuration);
-        AddAuthentication(services, configuration);
-        AddAuthorization(services);
-        AddRedis(services, configuration);
+    //Assembly assembly = typeof(ServiceCollectionExtensions).Assembly;
+
+    private static IServiceCollection AddServices(this IServiceCollection services)
+    {
+        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return services;
     }
 
-    private static void AddRedis(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddRedis(this IServiceCollection services, IConfiguration configuration)
     {
         string connectionString = configuration.GetConnectionString("Redis") ??
                                   throw new ArgumentNullException(nameof(configuration));
@@ -42,24 +56,50 @@ public static class ServiceCollectionExtensions
 
         var redis = ConnectionMultiplexer.Connect(connectionString);
         services.AddSingleton<IConnectionMultiplexer>(redis);
+
+        return services;
     }
 
-    private static void AddPersistence(IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
 
         string connectionString = configuration.GetConnectionString("DefaultConnection") ??
                     throw new ArgumentNullException(nameof(configuration));
 
-        services.AddDbContext<BambaIbaDbContext>(options =>
-        options.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
-            .EnableSensitiveDataLogging()
-            .LogTo(Console.WriteLine, LogLevel.Information));
+        services.AddSingleton<IDbConnectionFactory>(_ =>
+        new DbConnectionFactory(new NpgsqlDataSourceBuilder(connectionString).Build()));
+
+        services.AddDbContext<BambaIbaDbContext>(
+            options => options
+                .UseNpgsql(connectionString, npgsqlOptions =>
+                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default)
+                    .EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorCodesToAdd: null
+        )).UseSnakeCaseNamingConvention());
+
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BambaIbaDbContext>());
 
         services.AddScoped<IVideoProcessingService, FFmpegVideoProcessingService>();
         services.AddScoped<IVideoStorageService, MinIOVideoStorageService>();
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IVideoQualityRepository, VideoQualityRepository>();
+        services.AddHttpClient<IKeycloakAuthService, KeycloakAuthService>();
+        services.AddScoped<IUserContextService, UserContextService>();
+        services.AddScoped<ICommentRepository, CommentRepository>();
+        services.AddScoped<ILikeRepository, LikeRepository>();
 
+        services.AddHttpContextAccessor();
+        services.AddHttpClient<IKeycloakAuthService, KeycloakAuthService>();
+
+        SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+
+        return services;
+    }
+
+    private static IServiceCollection AddMinIo(this IServiceCollection services, IConfiguration configuration)
+    {
         //// Add Minio using the default endpoint
         // 1. Enregistrer la configuration pour l'injection (IOptions)
         services.Configure<MinIOSettings>(
@@ -71,7 +111,7 @@ public static class ServiceCollectionExtensions
                 .GetSection(MinIOSettings.SectionName)
                 .Get<MinIOSettings>();
 
-            Console.WriteLine($"MinIO Config: {settings!.Endpoint}, Bucket: {settings.BucketName}");
+            //Console.WriteLine($"MinIO Config: {settings!.Endpoint}, Bucket: {settings.BucketName}");
 
             client.WithEndpoint(settings.Endpoint)
                 .WithCredentials(settings.AccessKey, settings.SecretKey)
@@ -81,34 +121,10 @@ public static class ServiceCollectionExtensions
 
         services.Configure<FFmpegSettings>(
             configuration.GetSection(FFmpegSettings.SectionName));
-
-        //services.AddScoped<ITransferIdGenerator, TransferIdGenerator>();
-
-        //services.AddScoped<IPendingTransactionRedisStore, PendingTransactionRedisStore>();
-        //services.AddScoped<IPendingUpdateUserRedisStore, PendingUpdateUserRedisStore>();
-
-        //services.AddScoped<IOperationRepository, OperationRepository>();
-
-        //services.AddScoped<IAccountRepository, AccountRepository>();
-
-        //services.AddScoped<IAccountLogRepository, AccountLogRepository>();
-
-        //services.AddScoped<IUserRepository, UserRepository>();
-
-        //services.AddScoped<IUserPinRepository, UserPinRepository>();
-
-        //services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
-        //services.AddScoped<IUnitOfWork, UnitOfWork>();
-
-
-        services.AddSingleton<ISqlConnectionFactory>(_ =>
-         new SqlConnectionFactory(connectionString));
-
-        SqlMapper.AddTypeHandler(new DateOnlyTypeHandler());
+        return services;
     }
 
-    private static void AddAuthentication(IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection Authentication(this IServiceCollection services, IConfiguration configuration)
     {
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -151,53 +167,36 @@ public static class ServiceCollectionExtensions
         };
     });
 
-        //services.Configure<KeycloakSettings>(
-        //    configuration.GetSection(KeycloakSettings.SectionName));
-
         services.Configure<KeycloakSettings>(
             configuration.GetSection(KeycloakSettings.SectionName));
 
-        //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+        services.AddAuthorization();
 
-        //services.Configure<AuthenticationOptions>(configuration.GetSection("Authentication"));
-
-        //services.ConfigureOptions<JwtBearerOptionsSetup>();
-
-        //services.Configure<KeycloakOptions>(configuration.GetSection("Keycloak"));
-
-        //services.AddTransient<AdminAuthorizationDelegatingHandler>();
-
-        //services.AddHttpClient<IAuthenticationService, AuthenticationService>((serviceProvider, httpClient) =>
-        //{
-        //    KeycloakOptions keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-
-        //    httpClient.BaseAddress = new Uri(keycloakOptions.AdminUrl);
-        //})
-        //.AddHttpMessageHandler<AdminAuthorizationDelegatingHandler>();
-
-        //services.AddHttpClient<IJwtService, JwtService>((serviceProvider, httpClient) =>
-        //{
-        //    KeycloakOptions keycloakOptions = serviceProvider.GetRequiredService<IOptions<KeycloakOptions>>().Value;
-
-        //    httpClient.BaseAddress = new Uri(keycloakOptions.TokenUrl);
-        //});
-
-        services.AddHttpContextAccessor();
-        services.AddHttpClient<IKeycloakAuthService, KeycloakAuthService>();
-        services.AddScoped<IUserContextService, UserContextService>();
+        return services;
 
     }
 
-    private static void AddAuthorization(IServiceCollection services)
+    //private static IServiceCollection AddAuthorization(this IServiceCollection services)
+    //{
+    //    services.AddAuthorization();
+
+    //    //services.AddScoped<AuthorizationService>();
+
+    //    //services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
+
+    //    //services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+    //    //services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+    //    return services;
+    //}
+
+    private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddAuthorization();
+        services
+            .AddHealthChecks()
+            .AddNpgSql(configuration.GetConnectionString("DefaultConnection")!) // Use the correct connection string name
+            .AddRedis(configuration.GetConnectionString("Redis")!);
 
-        //services.AddScoped<AuthorizationService>();
-
-        //services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
-
-        //services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
-        //services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+        return services;
     }
 }

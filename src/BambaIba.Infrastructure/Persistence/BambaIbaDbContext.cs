@@ -1,9 +1,17 @@
-﻿using BambaIba.Domain.Entities;
+﻿using System.Data;
+using BambaIba.Application.Abstractions.Data;
+using BambaIba.Domain.Comments;
+using BambaIba.Domain.Entities;
+using BambaIba.Domain.Likes;
+using BambaIba.Domain.Users;
+using BambaIba.Domain.VideoQualities;
+using BambaIba.Domain.Videos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BambaIba.Infrastructure.Persistence;
 
-public class BambaIbaDbContext : DbContext
+public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
 {
     public BambaIbaDbContext(DbContextOptions<BambaIbaDbContext> options) : base(options)
     {
@@ -19,6 +27,13 @@ public class BambaIbaDbContext : DbContext
     public DbSet<PlaylistVideo> PlaylistVideos { get; set; }
     public DbSet<VideoQuality> VideoQualities { get; set; }
     public DbSet<TranscodeJob> TranscodeJobs { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
+
+    public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        return (await Database.BeginTransactionAsync(cancellationToken)).GetDbTransaction();
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -124,5 +139,19 @@ public class BambaIbaDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
             //entity.HasIndex(e => new { e.VideoId, e.Quality }).IsUnique();
         });
+
+        // Configurer la relation User - Role
+        modelBuilder.Entity<UserRole>()
+            .HasKey(ur => new { ur.UserId, ur.RoleId });
+
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.User)
+            .WithMany(u => u.UserRoles)
+            .HasForeignKey(ur => ur.UserId);
+
+        modelBuilder.Entity<UserRole>()
+            .HasOne(ur => ur.Role)
+            .WithMany(r => r.UserRoles)
+            .HasForeignKey(ur => ur.RoleId);
     }
 }

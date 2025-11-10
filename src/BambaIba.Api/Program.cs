@@ -1,8 +1,12 @@
-﻿using BambaIba.Application.Extensions;
+﻿using BambaIba.Api.Extensions;
+using BambaIba.Application.Extensions;
+using BambaIba.Application.Settings;
 using BambaIba.Infrastructure.Extensions;
-using BambaIba.SharedKernel.Extensions;
+using BambaIba.Infrastructure.Persistence;
 using Carter;
-using FluentValidation;
+using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -13,14 +17,23 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Host.UseSerilog((context, loggerConfig) =>
     loggerConfig.ReadFrom.Configuration(context.Configuration));
 
-// Configurations
-builder.Services.AddControllers();
+//// Configurations
+//builder.Services.AddControllers();
 
-builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
+// 👉 Logger
+builder.Services.AddLogging(config =>
+{
+    config.AddConsole();
+});
+
+// Enregistre la section RabbitMQ dans RabbitMqOptions
+builder.Services.Configure<RabbitMqOptions>(
+    builder.Configuration.GetSection("RabbitMQ"));
 
 // Services
-builder.Services.AddApplicationServices(builder.Configuration);
-builder.Services.AddInfrastructureServices(builder.Configuration);
+builder.Services.AddPresentation(builder.Configuration)
+    .AddApplicationServices(builder.Configuration)
+    .AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -53,14 +66,17 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddCarter();
 
-WebApplication app = builder.Build();
+builder.Services.AddCors();
 
-//// Migration automatique de la base de données
-//using (IServiceScope scope = app.Services.CreateScope())
-//{
-//    BambaIbaDbContext dbContext = scope.ServiceProvider.GetRequiredService<BambaIbaDbContext>();
-//    await dbContext.Database.MigrateAsync();
-//}
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.ConfigureKestrel(options =>
+    {
+        options.ListenAnyIP(7000); // HTTP seulement
+    });
+}
+
+WebApplication app = builder.Build();
 
 //// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -69,14 +85,23 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.ApplyMigrations();
 }
 
 app.UseHttpsRedirection();
+
+app.MapHealthChecks("health", new HealthCheckOptions
+{
+    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+});
 
 //app.MapEndpoints();
 app.MapCarter();
 app.UseGlobalExceptionHandler();
 app.UseSerilogRequestLogging();
+app.UseRequestContextLogging();
+app.UseExceptionHandler();
+
 
 ////app.UseCors("AllowAngularOrigins");
 //app.UseCors(options =>
@@ -110,4 +135,4 @@ app.UseAuthorization();
 //    await next();
 //});
 
-app.Run();
+await app.RunAsync();
