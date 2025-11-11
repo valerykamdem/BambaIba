@@ -1,7 +1,7 @@
-﻿
+﻿using BambaIba.Domain.PlaylistVideos;
 using BambaIba.SharedKernel;
 
-namespace BambaIba.Domain.Entities;
+namespace BambaIba.Domain.Playlists;
 public sealed class Playlist : Entity<Guid>, ISoftDeletable
 {
     public Guid UserId { get; set; }

@@ -1,8 +1,11 @@
 ﻿using BambaIba.Application.Abstractions.Data;
+using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Comments;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Comments.CreateComment;
@@ -11,17 +14,23 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
     private readonly ICommentRepository _commentRepository; 
     private readonly IVideoRepository _videoRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IUserContextService _userContextService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<CreateCommentCommandHandler> _logger;
 
     public CreateCommentCommandHandler(
         ICommentRepository commentRepository,
         IVideoRepository videoRepository,
         IUnitOfWork unitOfWork,
+        IUserContextService userContextService,
+        IHttpContextAccessor httpContextAccessor,
         ILogger<CreateCommentCommandHandler> logger)
     {
         _commentRepository = commentRepository ?? throw new ArgumentNullException(nameof(commentRepository));
         _videoRepository = videoRepository ?? throw new ArgumentNullException(nameof(videoRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
@@ -29,6 +38,9 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
     {
         try
         {
+            UserContext userContext = await _userContextService
+                .GetCurrentContext(_httpContextAccessor.HttpContext);
+
             Video video = await _videoRepository.GetVideoById(command.VideoId);
 
             if (video == null)
@@ -48,7 +60,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
             {
                 Id = Guid.CreateVersion7(),
                 VideoId = command.VideoId,
-                UserId = command.UserId,
+                UserId = userContext.LocalUserId,
                 Content = command.Content,
                 ParentCommentId = command.ParentCommentId,
             };
@@ -62,7 +74,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
 
             _logger.LogInformation(
                 "Comment created: {CommentId} by {UserId} on video {VideoId}",
-                comment.Id, command.UserId, command.VideoId);
+                comment.Id, userContext.LocalUserId, command.VideoId);
 
             return Result.Success(CreateCommentResult.Success(comment.Id));
         }

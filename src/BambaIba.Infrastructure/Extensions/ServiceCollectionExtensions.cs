@@ -113,7 +113,7 @@ public static class ServiceCollectionExtensions
 
             //Console.WriteLine($"MinIO Config: {settings!.Endpoint}, Bucket: {settings.BucketName}");
 
-            client.WithEndpoint(settings.Endpoint)
+            client.WithEndpoint(settings!.Endpoint)
                 .WithCredentials(settings.AccessKey, settings.SecretKey)
                 .WithSSL(settings.UseSSL)
                 .Build();

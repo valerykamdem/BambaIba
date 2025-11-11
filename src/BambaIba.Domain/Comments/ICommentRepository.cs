@@ -11,4 +11,6 @@ public interface ICommentRepository
     Task UpdateComment(Comment comment, CancellationToken cancellationToken);
     Task<bool> GetParentComment(Guid ParentCommentId, 
         CancellationToken cancellationToken= default);
+    Task<GetRepliesResult> GetReplies(Guid videoId, 
+        Guid parentCommentId, CancellationToken cancellationToken);
 }

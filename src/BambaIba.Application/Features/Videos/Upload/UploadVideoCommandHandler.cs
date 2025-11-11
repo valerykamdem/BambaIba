@@ -112,7 +112,8 @@ public sealed class UploadVideoCommandHandler : ICommandHandler<UploadVideoComma
                 //await ProcessVideoAsync(video.Id);
                 //await _videoPublisher.PublishVideoForProcessingAsync(video.Id, cancellationToken);
 
-                return Result.Success(UploadVideoResult.Success(video.Id, video.Status));
+                return Result.Success(UploadVideoResult.
+                    Success(video.Id, video.Status, "Video uploaded successfully"));
             }
             catch (Exception ex)
             {

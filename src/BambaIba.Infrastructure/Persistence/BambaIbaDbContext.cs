@@ -3,6 +3,8 @@ using BambaIba.Application.Abstractions.Data;
 using BambaIba.Domain.Comments;
 using BambaIba.Domain.Entities;
 using BambaIba.Domain.Likes;
+using BambaIba.Domain.Playlists;
+using BambaIba.Domain.PlaylistVideos;
 using BambaIba.Domain.Users;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;

@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.SharedKernel;
+using BambaIba.SharedKernel.Comments;
+using Cortex.Mediator.Queries;
 
 namespace BambaIba.Application.Features.Comments.GetReplies;
-internal class GetRepliesQuery
+public sealed record GetRepliesQuery : IQuery<Result<GetRepliesResult>>
 {
+    public Guid VideoId { get; init; }
+    public Guid ParentCommentId { get; init; }
 }

@@ -4,6 +4,7 @@ using BambaIba.Api.Infrastructure;
 using BambaIba.Application.Features.Comments.CreateComment;
 using BambaIba.Application.Features.Comments.DeleteComment;
 using BambaIba.Application.Features.Comments.GetComments;
+using BambaIba.Application.Features.Comments.GetReplies;
 using BambaIba.Application.Features.Comments.UpdateComment;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Comments;
@@ -44,6 +45,10 @@ public class CommentEndpoints : ICarterModule
             .RequireAuthorization()
             .Produces(StatusCodes.Status204NoContent)
             .WithName("DeleteComment");
+
+        group.MapGet("/{commentId:guid}/replies", GetReplies)
+            .Produces<GetRepliesResult>(StatusCodes.Status200OK)
+            .WithName("GetReplies");
     }
 
     private static async Task<IResult> CreateComment(
@@ -67,12 +72,10 @@ public class CommentEndpoints : ICarterModule
             ParentCommentId = request.ParentCommentId
         };
 
-        Result<CreateCommentResult> result = 
+        Result<CreateCommentResult> result =
             await mediator.SendCommandAsync<CreateCommentCommand, Result<CreateCommentResult>>(
             command,
             cancellationToken);
-        
-        //return 
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }
@@ -90,7 +93,7 @@ public class CommentEndpoints : ICarterModule
             PageSize = request.PageSize
         };
 
-        Result<GetCommentsResult> result = 
+        Result<GetCommentsResult> result =
             await mediator.SendQueryAsync<GetCommentsQuery, Result<GetCommentsResult>>(
             query, cancellationToken);
 
@@ -98,7 +101,7 @@ public class CommentEndpoints : ICarterModule
     }
 
     private static async Task<IResult> UpdateComment(
-        [FromBody]UpdateCommentRequest request,
+        [FromBody] UpdateCommentRequest request,
         IMediator mediator,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
@@ -131,9 +134,27 @@ public class CommentEndpoints : ICarterModule
         var command = new DeleteCommentCommand(
             request.CommentId, request.VideoId);
 
-        Result<DeleteCommentResult> result = await mediator.SendCommandAsync<DeleteCommentCommand, Result<DeleteCommentResult>>(
-            command,
-            cancellationToken);
+        Result<DeleteCommentResult> result = await mediator
+            .SendCommandAsync<DeleteCommentCommand, Result<DeleteCommentResult>>(
+            command, cancellationToken);
+
+        return result.Match(Results.Ok, CustomResults.Problem);
+    }
+
+    private static async Task<IResult> GetReplies(
+        Guid videoId, Guid commentId,
+        IMediator mediator, 
+        CancellationToken cancellationToken)
+    {
+        var query = new GetRepliesQuery
+        {
+            VideoId = videoId,
+            ParentCommentId = commentId
+        };
+
+        Result<GetRepliesResult> result = await mediator.
+            SendQueryAsync<GetRepliesQuery, Result<GetRepliesResult>>(
+            query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }

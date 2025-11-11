@@ -1,5 +1,4 @@
-﻿
-namespace BambaIba.SharedKernel.Comments;
+﻿namespace BambaIba.SharedKernel.Comments;
 public sealed record GetCommentsResult
 {
     public List<CommentDto> Comments { get; init; } = [];
