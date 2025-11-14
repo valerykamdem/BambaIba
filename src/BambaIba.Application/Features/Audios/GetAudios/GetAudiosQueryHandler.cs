@@ -1,5 +1,7 @@
-﻿using BambaIba.Application.Extensions;
+﻿using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Application.Extensions;
 using BambaIba.Domain.Audios;
+using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -9,13 +11,16 @@ namespace BambaIba.Application.Features.Audios.GetAudios;
 public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<GetAudiosResult>>
 {
     private readonly IAudioRepository _audioRepository;
+    private readonly IMediaStorageService _mediaStorageService;
     private readonly ILogger<GetAudiosQueryHandler> _logger;
 
     public GetAudiosQueryHandler(
         IAudioRepository audioRepository,
+        IMediaStorageService mediaStorageService,
         ILogger<GetAudiosQueryHandler> logger)
     {
         _audioRepository = audioRepository;
+        _mediaStorageService = mediaStorageService;
         _logger = logger;
     }
 
@@ -50,7 +55,7 @@ public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<GetAud
                 Artist = a.Artist ?? string.Empty,
                 Album = a.Album ?? string.Empty,
                 Genre = a.Genre ?? string.Empty,
-                CoverImageUrl = a.CoverImagePath,
+                CoverImageUrl = _mediaStorageService.GetPublicUrl(BucketType.Image, a.CoverImagePath),
                 Duration = a.Duration,
                 PlayCount = a.PlayCount,
                 CreatedAt = a.CreatedAt,

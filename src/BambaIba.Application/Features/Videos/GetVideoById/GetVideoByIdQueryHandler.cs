@@ -51,7 +51,7 @@ public sealed class GetVideoByIdQueryHandler : IQueryHandler<GetVideoByIdQuery, 
             {               
                 Quality = q.Quality,
                 //StoragePath = q.StoragePath,
-                PublicUrl = _mediaStorageService.GetPublicUrl(BucketType.Video, q.StoragePath)
+                VideoUrl = _mediaStorageService.GetPublicUrl(BucketType.Video, q.StoragePath)
             }).ToList();
 
             return Result.Success(new VideoWithQualitiesResult

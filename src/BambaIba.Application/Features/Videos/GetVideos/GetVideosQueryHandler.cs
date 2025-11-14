@@ -1,5 +1,7 @@
-﻿using BambaIba.Application.Extensions;
+﻿using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Application.Extensions;
 using BambaIba.Domain.Audios;
+using BambaIba.Domain.Enums;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Videos;
@@ -11,13 +13,16 @@ namespace BambaIba.Application.Features.Videos.GetVideos;
 public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result<GetVideosResult>>
 {
     private readonly IVideoRepository _videoRepository;
+    private readonly IMediaStorageService _mediaStorageService;
     private readonly ILogger<GetVideosQueryHandler> _logger;
 
     public GetVideosQueryHandler(
         IVideoRepository videoRepository,
-        ILogger<GetVideosQueryHandler> logger)
+        IMediaStorageService mediaStorageService,
+    ILogger<GetVideosQueryHandler> logger)
     {
         _videoRepository = videoRepository;
+        _mediaStorageService = mediaStorageService;
         _logger = logger;
     }
 
@@ -43,7 +48,7 @@ public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result
                     Id = v.Id,
                     Title = v.Title,
                     Description = v.Description,
-                    ThumbnailUrl = v.ThumbnailPath,  // ← Juste le chemin, pas le fichier
+                    ThumbnailUrl = _mediaStorageService.GetPublicUrl(BucketType.Video, v.ThumbnailPath),  // ← Juste le chemin, pas le fichier
                     Duration = v.Duration,
                     ViewCount = v.ViewCount,
                     LikeCount = v.LikeCount,

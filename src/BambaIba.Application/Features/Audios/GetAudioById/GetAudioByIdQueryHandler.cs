@@ -1,5 +1,7 @@
-﻿using BambaIba.Application.Features.Videos.GetVideoById;
+﻿using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Application.Features.Videos.GetVideoById;
 using BambaIba.Domain.Audios;
+using BambaIba.Domain.Enums;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Videos;
@@ -7,16 +9,20 @@ using Cortex.Mediator.Queries;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Audios.GetAudioById;
+
 public sealed class GetAudioByIdQueryHandler : IQueryHandler<GetAudioByIdQuery, Result<AudioDetailResult>>
 {
     private readonly IAudioRepository _audioRepository;
+    private readonly IMediaStorageService _mediaStorageService;
     private readonly ILogger<GetAudioByIdQueryHandler> _logger;
 
     public GetAudioByIdQueryHandler(
         IAudioRepository audioRepository,
-        ILogger<GetAudioByIdQueryHandler> logger)
+        IMediaStorageService mediaStorageService,
+    ILogger<GetAudioByIdQueryHandler> logger)
     {
         _audioRepository = audioRepository;
+        _mediaStorageService = mediaStorageService;
         _logger = logger;
     }
 
@@ -25,7 +31,9 @@ public sealed class GetAudioByIdQueryHandler : IQueryHandler<GetAudioByIdQuery, 
         try
         {
             _logger.LogInformation("Retrieving audio with ID: {AudioId}", query.AudioId);
+
             Audio audio = await _audioRepository.GetByIdAsync(query.AudioId, cancellationToken);
+
             if (audio == null)
             {
                 _logger.LogWarning("Audio with ID: {AudioId} not found", query.AudioId);
@@ -39,8 +47,8 @@ public sealed class GetAudioByIdQueryHandler : IQueryHandler<GetAudioByIdQuery, 
                 Id = audio.Id,
                 Title = audio.Title,
                 Description = audio.Description,
-                AudioUrl = audio.StoragePath,
-                CoverUrl = audio.CoverImagePath,
+                AudioUrl = _mediaStorageService.GetPublicUrl(BucketType.Audio, audio.StoragePath),
+                CoverUrl = _mediaStorageService.GetPublicUrl(BucketType.Image, audio.CoverImagePath),
                 Duration = audio.Duration,
                 PlayCount = audio.PlayCount,
                 LikeCount = audio.LikeCount,
