@@ -65,7 +65,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
                 ParentCommentId = command.ParentCommentId,
             };
 
-            _commentRepository.AddComment(comment);
+            await _commentRepository.AddCommentAsync(comment);
 
             // Incrémenter le compteur de commentaires de la vidéo
             video.CommentCount++;

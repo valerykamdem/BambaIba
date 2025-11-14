@@ -108,7 +108,7 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                     CreatedAt = DateTime.UtcNow
                 };
 
-                _likeRepository.AddLike(like);
+                await _likeRepository.AddLikeAsync(like);
 
                 if (command.IsLike)
                     video.LikeCount++;

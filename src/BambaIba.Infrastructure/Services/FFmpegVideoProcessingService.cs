@@ -1,11 +1,12 @@
 ﻿using System.Diagnostics;
-using BambaIba.Application.Abstractions.Interfaces;
+using System.Text.RegularExpressions;
 using BambaIba.Application.Settings;
+using BambaIba.Domain.Videos;
 using BambaIba.Infrastructure.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace BambaIba.Infrastructure.Repositories;
+namespace BambaIba.Infrastructure.Services;
 public class FFmpegVideoProcessingService : IVideoProcessingService
 {
     private readonly FFmpegSettings _options;
@@ -86,7 +87,7 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
         await process.WaitForExitAsync();
 
         // Parse duration from FFmpeg output
-        System.Text.RegularExpressions.Match durationMatch = System.Text.RegularExpressions.Regex.Match(
+        Match durationMatch = System.Text.RegularExpressions.Regex.Match(
             output, @"Duration: (\d{2}):(\d{2}):(\d{2})\.(\d{2})");
 
         if (durationMatch.Success)
@@ -140,7 +141,7 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
         {
             using FileStream stream = File.OpenRead(thumbnailPath);
             string storagePath = $"thumbnails/{videoId}.jpg";
-            await _storageService.UploadFileAsync(storagePath, stream, "image/jpeg");
+            await _storageService.UploadFileAsync(videoId, stream, storagePath,  "image/jpeg");
 
             CleanupFile(localVideoPath);
             CleanupFile(thumbnailPath);
@@ -206,7 +207,7 @@ public class FFmpegVideoProcessingService : IVideoProcessingService
         {
             using FileStream stream = File.OpenRead(localOutputPath);
             string storagePath = $"videos/{videoId}/{quality}/{outputFileName}";
-            await _storageService.UploadFileAsync(storagePath, stream, "video/mp4");
+            await _storageService.UploadFileAsync(videoId, stream, storagePath, "video/mp4");
 
             CleanupFile(localInputPath);
             CleanupFile(localOutputPath);

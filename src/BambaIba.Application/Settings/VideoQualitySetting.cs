@@ -4,7 +4,7 @@ public static class VideoQualitySetting
     // Liste ordonnée des labels disponibles
     public static readonly string[] All =
     [
-        "240p", "360p", "480p", /*"720p", "1080p"*/
+        "240p", /*"360p", "480p", "720p", "1080p"*/
     ];
 
     // Dictionnaire centralisé des configs
@@ -12,8 +12,8 @@ public static class VideoQualitySetting
         new()
         {
             ["240p"] = new VideoQualityConfig { Width = 426, Height = 240, Bitrate = "400k" },
-            ["360p"] = new VideoQualityConfig { Width = 640, Height = 360, Bitrate = "800k" },
-            ["480p"] = new VideoQualityConfig { Width = 854, Height = 480, Bitrate = "1200k" },
+            //["360p"] = new VideoQualityConfig { Width = 640, Height = 360, Bitrate = "800k" },
+            //["480p"] = new VideoQualityConfig { Width = 854, Height = 480, Bitrate = "1200k" },
             //["720p"] = new VideoQualityConfig { Width = 1280, Height = 720, Bitrate = "2500k" },
             //["1080p"] = new VideoQualityConfig { Width = 1920, Height = 1080, Bitrate = "5000k" }
         };

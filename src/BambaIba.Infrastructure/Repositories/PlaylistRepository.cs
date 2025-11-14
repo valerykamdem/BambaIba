@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 namespace BambaIba.Infrastructure.Repositories;
 public class PlaylistRepository : IPlaylistRepository
 {
-    private readonly BambaIbaDbContext _context;
+    private readonly BambaIbaDbContext _dbContext;
     public PlaylistRepository(BambaIbaDbContext context)
     {
-        _context = context;
+        _dbContext = context;
     }
 
     public async Task AddAsync(Playlist playlist)
     {
-        _context.Playlists.Add(playlist);
-        await _context.SaveChangesAsync();
+        await _dbContext.Playlists.AddAsync(playlist);
+        await _dbContext.SaveChangesAsync();
     }
 
     public Task DeleteAsync(Playlist playlist)
@@ -25,7 +25,7 @@ public class PlaylistRepository : IPlaylistRepository
 
     public async Task<Playlist?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _context.Playlists
+        return await _dbContext.Playlists
                  .Include(p => p.Videos)
                  .ThenInclude(pv => pv.Video)
                  .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);

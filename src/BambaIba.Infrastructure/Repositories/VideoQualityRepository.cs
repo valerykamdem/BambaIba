@@ -13,7 +13,13 @@ public class VideoQualityRepository : IVideoQualityRepository
 
     public async Task AddVideoQuality(VideoQuality videoQuality)
     {
-        _dbContext.VideoQualities.Add(videoQuality);
+        await _dbContext.VideoQualities.AddAsync(videoQuality);
         await _dbContext.SaveChangesAsync();
+    }
+
+    public IQueryable<VideoQuality> GetAllByVideoId(Guid videoId)
+    {
+       return _dbContext.VideoQualities.AsQueryable()
+            .Where(q => q.VideoId == videoId);
     }
 }

@@ -6,7 +6,7 @@ internal sealed class UploadVideoValidator : AbstractValidator<UploadVideoReques
     public UploadVideoValidator()
     {
         RuleFor(c => c.Title).NotEmpty();
-        RuleFor(c => c.File).NotNull().WithMessage("Le fichier est obligatoire.");
+        RuleFor(c => c.VideoFile).NotNull().WithMessage("Le fichier est obligatoire.");
         RuleFor(c => c.Description).NotEmpty();
     }
 }

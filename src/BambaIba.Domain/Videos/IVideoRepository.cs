@@ -1,14 +1,12 @@
-﻿
-using BambaIba.SharedKernel.Videos;
-
-namespace BambaIba.Domain.Videos;
+﻿namespace BambaIba.Domain.Videos;
 
 public interface IVideoRepository
 {
-    void AddVideo(Video video);
+    Task AddVideoAsync(Video video);
     Task<Video> GetVideoById(Guid videoId);
-    Task<VideoDetailResult> GetVideoDetailResultById(Guid videoId, CancellationToken cancellationToken);
+    Task<Video> GetVideoWithQualitiesAsync(Guid videoId, CancellationToken cancellationToken);
+    //Task<VideoDetailResult> GetVideoDetailResultById(Guid videoId, CancellationToken cancellationToken);
     Task UpdateVideoStatus(Video video);
-    Task<GetVideosResult> GetVideos(int page, int pageSize, string search, CancellationToken cancellationToken);
+    IQueryable<Video> GetVideos();
     void Delete(Video video);
 }

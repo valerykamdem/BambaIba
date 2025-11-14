@@ -12,6 +12,7 @@ using Carter;
 using Cortex.Mediator;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 
 namespace BambaIba.Api.Endpoints;
@@ -27,13 +28,12 @@ public class VideoEndpoints : ICarterModule
 
         // Upload vidéo (multipart/form-data)
         group.MapPost("/upload", UploadVideo)
-            //.RequireAuthorization()
+            .RequireAuthorization()
             .DisableAntiforgery()  // Pour multipart
             .Accepts<UploadVideoRequest>("multipart/form-data")
             .Produces<UploadVideoResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .WithValidation<UploadVideoRequest>()
-            .RequireAuthorization()
             .WithName("UploadVideo");
 
         // Liste des vidéos (query parameters)
@@ -63,6 +63,7 @@ public class VideoEndpoints : ICarterModule
 
     // Handler pour Upload (avec Request object)
     private static async Task<IResult> UploadVideo(
+        //HttpRequest httpRequest,
         [FromForm] UploadVideoRequest request,  // ← Request binding
         IMediator mediator, ClaimsPrincipal user,
         CancellationToken cancellationToken)
@@ -74,18 +75,22 @@ public class VideoEndpoints : ICarterModule
         if (string.IsNullOrEmpty(userId))
             return Results.Unauthorized();
 
+        if (request.VideoFile == null || request.VideoFile.Length == 0)
+            return Results.BadRequest("Video file is required");
+
         // Mapper Request → Command
         var command = new UploadVideoCommand
         {
             Title = request.Title,
             Description = request.Description,
             UserId = userId,
-            //FileStream = request.File.OpenReadStream(),
-            File = request.File,
-            FileName = request.File.FileName,
-            FileSize = request.File.Length,
-            ContentType = request.File.ContentType,
-            Tags = request.Tags ?? []
+            VideoFile = request.VideoFile.OpenReadStream(),
+            FileName = request.VideoFile.FileName,
+            FileSize = request.VideoFile.Length,
+            ContentType = request.VideoFile.ContentType,
+            Tags = request.Tags.Any() ? request.Tags : null,
+            ThumbnailFileName = request.ThumbnailFile?.FileName,
+            ThumbnailStream = request.ThumbnailFile?.OpenReadStream(),
         };
 
         Result<UploadVideoResult> result = await mediator
@@ -96,14 +101,14 @@ public class VideoEndpoints : ICarterModule
 
     // Handler pour GetVideos (avec Request object pour query params)
     private static async Task<IResult> GetVideos(
-        GetVideosRequest request,  // ← Query binding
+        [AsParameters] GetVideosRequest request,  // ← Query binding
         IMediator mediator, CancellationToken cancellationToken)
     {
         var query = new GetVideosQuery
         (
-            request.Page > 0 ? (int)request.Page : 1,
-            request.PageSize > 0 ? (int)request.PageSize : 20,
-            string.IsNullOrWhiteSpace(request.Search) ? null : request.Search
+            request.Page,
+            request.PageSize,
+            request.Search
         );
 
         Result<GetVideosResult> result = await mediator
@@ -119,12 +124,8 @@ public class VideoEndpoints : ICarterModule
     {
         var query = new GetVideoByIdQuery { VideoId = id };
 
-        Result<VideoDetailResult>? result = await mediator
-            .SendQueryAsync<GetVideoByIdQuery, Result<VideoDetailResult>>(query, cancellationToken);
-
-        //return video is not null
-        //    ? Results.Ok(video)
-        //    : Results.NotFound();
+        Result<VideoWithQualitiesResult>? result = await mediator
+            .SendQueryAsync<GetVideoByIdQuery, Result<VideoWithQualitiesResult>>(query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }

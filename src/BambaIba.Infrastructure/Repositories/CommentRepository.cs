@@ -16,9 +16,9 @@ public class CommentRepository : ICommentRepository
         _logger = logger;
     }
 
-    public void AddComment(Comment comment)
+    public async Task AddCommentAsync(Comment comment)
     {
-        _dbContext.Comments.Add(comment);
+        await _dbContext.Comments.AddAsync(comment);
         //_dbContext.SaveChangesAsync();
     }
 
@@ -38,7 +38,7 @@ public class CommentRepository : ICommentRepository
         int pageSize, 
         CancellationToken cancellationToken)
     {
-        IQueryable<Comment> query = _dbContext.Comments
+        IQueryable<Comment> query = _dbContext.Comments.AsQueryable()
                 .Where(c => c.VideoId == videoId && c.ParentCommentId == null);
 
         int totalCount = await query.CountAsync(cancellationToken);

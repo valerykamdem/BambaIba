@@ -3,4 +3,5 @@
 public interface IVideoQualityRepository
 {
     Task AddVideoQuality(VideoQuality videoQuality);
+    IQueryable<VideoQuality> GetAllByVideoId(Guid videoId);
 }

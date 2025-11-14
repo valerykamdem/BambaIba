@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace BambaIba.Application.Abstractions.Interfaces;
+namespace BambaIba.Domain.Videos;
 
 public interface IVideoStorageService
 {
@@ -10,7 +10,8 @@ public interface IVideoStorageService
     // Méthode pour obtenir URL (publique ou présignée)
     Task<string> GetVideoUrlAsync(string storagePath, bool isPublic);
     string GetPublicUrl(string storagePath);
-    Task<string> UploadFileAsync(string fileName, Stream stream, string contentType);
+    Task<string> UploadFileAsync(Guid videoId,
+        Stream stream, string fileName, string contentType);
     Task DeleteVideoAsync(string storagePath);
     Task<long> GetFileSizeAsync(string storagePath);
     Task<string> GetPresignedUrlAsync(string storagePath, int expiryInSeconds = 3600);

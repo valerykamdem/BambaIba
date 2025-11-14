@@ -1,8 +1,11 @@
 ﻿using System.Data;
 using BambaIba.Application.Abstractions.Data;
+using BambaIba.Domain.Audios;
 using BambaIba.Domain.Comments;
 using BambaIba.Domain.Entities;
 using BambaIba.Domain.Likes;
+using BambaIba.Domain.LiveChatMessages;
+using BambaIba.Domain.LiveStream;
 using BambaIba.Domain.Playlists;
 using BambaIba.Domain.PlaylistVideos;
 using BambaIba.Domain.Users;
@@ -31,6 +34,9 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
     public DbSet<TranscodeJob> TranscodeJobs { get; set; }
     public DbSet<Role> Roles { get; set; }
     public DbSet<UserRole> UserRoles { get; set; }
+    public DbSet<LiveStream> LiveStreams { get; set; }
+    public DbSet<LiveChatMessage> LiveChatMessages { get; set; }
+    public DbSet<Audio> Audios { get; set; }
 
     public async Task<IDbTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
@@ -155,5 +161,35 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
             .HasOne(ur => ur.Role)
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
+
+        // LiveStream
+        modelBuilder.Entity<LiveStream>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.StreamKey).IsRequired().HasMaxLength(50);
+            entity.HasIndex(e => e.StreamKey).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.StreamerId);
+        });
+
+        // LiveChatMessage
+        modelBuilder.Entity<LiveChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Message).IsRequired().HasMaxLength(500);
+            entity.HasIndex(e => e.LiveStreamId);
+            entity.HasIndex(e => e.SentAt);
+        });
+
+        modelBuilder.Entity<Audio>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Genre);
+            entity.HasIndex(e => e.CreatedAt);
+        });
     }
 }

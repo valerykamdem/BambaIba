@@ -1,10 +1,9 @@
 ﻿namespace BambaIba.SharedKernel.Videos;
-public sealed record GetVideosResult(
-    List<VideoDto> Videos,
-    int TotalCount,
-    int Page,
-    int PageSize,
-    int TotalPages);
+public sealed record GetVideosResult
+{
+    public List<VideoDto> Videos { get; init; } = [];
+    public int TotalCount { get; init; }
+}
 
 public record VideoDto
 {

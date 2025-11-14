@@ -1,4 +1,5 @@
 ﻿using BambaIba.Api.Extensions;
+using BambaIba.Api.Hubs;
 using BambaIba.Application.Extensions;
 using BambaIba.Application.Settings;
 using BambaIba.Infrastructure.Extensions;
@@ -6,6 +7,7 @@ using BambaIba.Infrastructure.Persistence;
 using Carter;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
@@ -19,6 +21,8 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 
 //// Configurations
 //builder.Services.AddControllers();
+
+builder.Services.AddSignalR();
 
 // 👉 Logger
 builder.Services.AddLogging(config =>
@@ -34,6 +38,18 @@ builder.Services.Configure<RabbitMqOptions>(
 builder.Services.AddPresentation(builder.Configuration)
     .AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration);
+
+//// ✅ CORS pour SignalR
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("SignalRPolicy", policy =>
+//    {
+//        policy.WithOrigins("http://localhost:3000") // Frontend URL
+//              .AllowAnyMethod()
+//              .AllowAnyHeader()
+//              .AllowCredentials(); // Important pour SignalR
+//    });
+//});
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -112,9 +128,13 @@ app.UseExceptionHandler();
 //});
 
 app.UseCors("AllowAll");
+//app.UseCors("SignalRPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// ✅ Mapper le Hub
+app.MapHub<LiveChatHub>("/hubs/livechathub");
 
 //app.Use(async (context, next) =>
 //{
@@ -134,5 +154,16 @@ app.UseAuthorization();
 
 //    await next();
 //});
+
+app.Use(async (context, next) =>
+{
+    IHttpMaxRequestBodySizeFeature? maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+    if (maxRequestBodySizeFeature != null && !context.Request.Path.StartsWithSegments("/upload"))
+    {
+        maxRequestBodySizeFeature.MaxRequestBodySize = null; // désactive la limite
+    }
+
+    await next();
+});
 
 await app.RunAsync();

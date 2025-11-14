@@ -1,4 +1,4 @@
-﻿namespace BambaIba.Application.Abstractions.Interfaces;
+﻿namespace BambaIba.Domain.Videos;
 
 public interface IVideoProcessingService
 {

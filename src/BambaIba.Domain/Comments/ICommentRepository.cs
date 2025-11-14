@@ -3,7 +3,7 @@
 namespace BambaIba.Domain.Comments;
 public interface ICommentRepository
 {
-    void AddComment(Comment comment);
+    Task AddCommentAsync(Comment comment);
     void DeleteComment(Comment comment);
     Task<Comment> GetComment(Guid id);
     Task<GetCommentsResult> GetComments(Guid videoId, 

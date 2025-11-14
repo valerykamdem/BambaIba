@@ -1,5 +1,5 @@
 ﻿// BambaIba.Infrastructure/Services/MinIOVideoStorageService.cs
-using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Domain.Audios;
 using BambaIba.Domain.Videos;
 using BambaIba.Infrastructure.Settings;
 using Microsoft.AspNetCore.Http;
@@ -10,13 +10,14 @@ using Minio.ApiEndpoints;
 using Minio.DataModel.Args;
 
 
-namespace BambaIba.Infrastructure.Repositories;
+namespace BambaIba.Infrastructure.Services;
 
 public class MinIOVideoStorageService : IVideoStorageService
 {
     private readonly IMinioClient _minioClient;
     private readonly ILogger<MinIOVideoStorageService> _logger;
     private readonly MinIOSettings _settings;
+    //private readonly string _tempPath;
 
     public MinIOVideoStorageService(IMinioClient minioClient,
         IOptions<MinIOSettings> options,
@@ -25,22 +26,24 @@ public class MinIOVideoStorageService : IVideoStorageService
         _minioClient = minioClient;
         _settings = options.Value;
         _logger = logger;
+        //_tempPath = Path.Combine(Path.GetTempPath(), "bambaiba-video");
+        //Directory.CreateDirectory(_tempPath);
         InitializeBucketAsync().GetAwaiter().GetResult();
     }
 
     private async Task InitializeBucketAsync()
     {
         bool bucketExists = await _minioClient.BucketExistsAsync(
-        new BucketExistsArgs().WithBucket(_settings.BucketName));
+        new BucketExistsArgs().WithBucket(_settings.Buckets.Video));
 
         if (!bucketExists)
         {
-            _logger.LogInformation("Creating bucket {BucketName}", _settings.BucketName);
+            _logger.LogInformation("Creating bucket {BucketName}", _settings.Buckets.Video);
 
             await _minioClient.MakeBucketAsync(
-                new MakeBucketArgs().WithBucket(_settings.BucketName));
+                new MakeBucketArgs().WithBucket(_settings.Buckets.Video));
 
-            _logger.LogInformation("Bucket {BucketName} created", _settings.BucketName);
+            _logger.LogInformation("Bucket {BucketName} created", _settings.Buckets.Video);
         }
         // ✅ Rendre le bucket public (lecture seulement)
         string policy = $$"""
@@ -51,7 +54,7 @@ public class MinIOVideoStorageService : IVideoStorageService
                     "Effect": "Allow",
                     "Principal": {"AWS": ["*"]},
                     "Action": ["s3:GetObject"],
-                    "Resource": ["arn:aws:s3:::{{_settings.BucketName}}/*"]
+                    "Resource": ["arn:aws:s3:::{{_settings.Buckets.Video}}/*"]
                 }
             ]
         }
@@ -59,7 +62,9 @@ public class MinIOVideoStorageService : IVideoStorageService
 
         await _minioClient.SetPolicyAsync(
             new SetPolicyArgs()
-                .WithBucket(_settings.BucketName)
+                .WithBucket(_settings.Buckets.Video)
+                .WithBucket(_settings.Buckets.Audio)
+                .WithBucket(_settings.Buckets.Image)
                 .WithPolicy(policy));
     }
 
@@ -86,7 +91,7 @@ public class MinIOVideoStorageService : IVideoStorageService
             using (var uploadStream = new FileStream(tempFilePath, FileMode.Open, FileAccess.Read))
             {
                 await _minioClient.PutObjectAsync(new PutObjectArgs()
-                    .WithBucket(_settings.BucketName)
+                    .WithBucket(_settings.Buckets.Video)
                     .WithObject(fileName)
                     .WithStreamData(uploadStream)
                     .WithObjectSize(uploadStream.Length)
@@ -104,7 +109,7 @@ public class MinIOVideoStorageService : IVideoStorageService
             // 5. Vérifier que le fichier existe vraiment
             Minio.DataModel.ObjectStat statObject = await _minioClient.StatObjectAsync(
                 new StatObjectArgs()
-                    .WithBucket(_settings.BucketName)
+                    .WithBucket(_settings.Buckets.Video)
                     .WithObject(fileName));
 
             _logger.LogInformation(
@@ -120,16 +125,22 @@ public class MinIOVideoStorageService : IVideoStorageService
                 "Failed to upload video {VideoId}. Settings: Endpoint={Endpoint}, Bucket={Bucket}",
                 videoId,
                 _settings.Endpoint,
-                _settings.BucketName);
+                _settings.Buckets.Video);
             throw;
         }
     }
 
-    public async Task<string> UploadFileAsync(string fileName, Stream stream, string contentType)
+    public async Task<string> UploadFileAsync(Guid videoId,
+        Stream stream,string fileName, string contentType)
     {
+        //string objectName = $"videos/{videoId}/cover/{fileName}";
+        string objectName = $"thumbnails/{videoId}.jpg";
+
+        _logger.LogInformation("Uploading cover image to MinIO: {ObjectName}", objectName);
+
         await _minioClient.PutObjectAsync(new PutObjectArgs()
-            .WithBucket(_settings.BucketName)
-            .WithObject(fileName)
+            .WithBucket(_settings.Buckets.Image)
+            .WithObject(objectName)
             .WithStreamData(stream)
             .WithObjectSize(stream.Length)
             .WithContentType(contentType));
@@ -153,7 +164,7 @@ public class MinIOVideoStorageService : IVideoStorageService
             var objectsToDelete = new List<string>();
 
             IAsyncEnumerable<Minio.DataModel.Item> observable =  _minioClient.ListObjectsEnumAsync(new ListObjectsArgs()
-                .WithBucket(_settings.BucketName)
+                .WithBucket(_settings.Buckets.Video)
                 .WithPrefix(prefix)
                 .WithRecursive(true));
 
@@ -165,7 +176,7 @@ public class MinIOVideoStorageService : IVideoStorageService
             foreach (string objKey in objectsToDelete)
             {
                 await _minioClient.RemoveObjectAsync(new RemoveObjectArgs()
-                    .WithBucket(_settings.BucketName)
+                    .WithBucket(_settings.Buckets.Video)
                     .WithObject(objKey));
             }
 
@@ -178,7 +189,7 @@ public class MinIOVideoStorageService : IVideoStorageService
     public async Task<long> GetFileSizeAsync(string storagePath)
     {
         Minio.DataModel.ObjectStat stat = await _minioClient.StatObjectAsync(new StatObjectArgs()
-            .WithBucket(_settings.BucketName)
+            .WithBucket(_settings.Buckets.Video)
             .WithObject(storagePath));
 
         return stat.Size;
@@ -188,7 +199,7 @@ public class MinIOVideoStorageService : IVideoStorageService
     {
         string url = await _minioClient.PresignedGetObjectAsync(
          new PresignedGetObjectArgs()
-             .WithBucket(_settings.BucketName)
+             .WithBucket(_settings.Buckets.Video)
              .WithObject(storagePath)
              .WithExpiry(expiryInSeconds));
 
@@ -199,7 +210,7 @@ public class MinIOVideoStorageService : IVideoStorageService
     public async Task DownloadObjectAsync(string objectName, string localFilestoragePath)
     {
         GetObjectArgs args = new GetObjectArgs()
-            .WithBucket(_settings.BucketName)
+            .WithBucket(_settings.Buckets.Video)
             .WithObject(objectName)
             .WithFile(localFilestoragePath); // <--- Spécifie le chemin du fichier local
 
@@ -216,6 +227,6 @@ public class MinIOVideoStorageService : IVideoStorageService
 
     public string GetPublicUrl(string storagePath)
     {
-        return $"http://{_settings.PublicEndpoint}/{_settings.BucketName}/{storagePath}";
+        return $"http://{_settings.PublicEndpoint}/{_settings.Buckets.Video}/{storagePath}";
     }
 }

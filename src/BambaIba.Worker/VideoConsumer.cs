@@ -1,9 +1,8 @@
 ﻿using BambaIba.Application.Abstractions.Data;
-using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Settings;
+using BambaIba.Domain.Enums;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
-using BambaIba.SharedKernel.Enums;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System.Text;
@@ -147,13 +146,13 @@ public class VideoConsumer : BackgroundService
             }
 
             // 4. Mise à jour finale
-            await UpdateVideoStatusAsync(videoId, VideoStatus.Ready);
+            await UpdateVideoStatusAsync(videoId, MediaStatus.Ready);
             _logger.LogInformation("Video processing completed successfully for {VideoId}", videoId);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process video {VideoId}", videoId);
-            await UpdateVideoStatusAsync(videoId, VideoStatus.Failed);
+            await UpdateVideoStatusAsync(videoId, MediaStatus.Failed);
         }
     }
 
@@ -190,7 +189,7 @@ public class VideoConsumer : BackgroundService
         }
     }
 
-    private async Task UpdateVideoStatusAsync(Guid videoId, VideoStatus status)
+    private async Task UpdateVideoStatusAsync(Guid videoId, MediaStatus status)
     {
         using IServiceScope scope = _scopeFactory.CreateScope();
         IVideoRepository repo = scope.ServiceProvider.GetRequiredService<IVideoRepository>();
@@ -200,7 +199,7 @@ public class VideoConsumer : BackgroundService
         {
             video.Status = status;
             video.UpdatedAt = DateTime.UtcNow;
-            if (status == VideoStatus.Ready)
+            if (status == MediaStatus.Ready)
                 video.PublishedAt = DateTime.UtcNow;
 
             await repo.UpdateVideoStatus(video);

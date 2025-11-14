@@ -1,12 +1,18 @@
 ﻿using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Domain.Audios;
 using BambaIba.Domain.Comments;
 using BambaIba.Domain.Likes;
+using BambaIba.Domain.LiveChatMessages;
+using BambaIba.Domain.LiveStream;
+using BambaIba.Domain.Playlists;
+using BambaIba.Domain.PlaylistVideos;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
 using BambaIba.Infrastructure.Persistence;
 using BambaIba.Infrastructure.Repositories;
 using BambaIba.Infrastructure.Repositories.Authentications;
+using BambaIba.Infrastructure.Services;
 using BambaIba.Infrastructure.Settings;
 using BambaIba.Infrastructure.Time;
 using BambaIba.SharedKernel;
@@ -83,12 +89,20 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IVideoProcessingService, FFmpegVideoProcessingService>();
         services.AddScoped<IVideoStorageService, MinIOVideoStorageService>();
+        services.AddScoped<IAudioStorageService, MinIOAudioStorageService>();
+        services.AddScoped<IAudioProcessingService, FFmpegAudioProcessingService>();
+        services.AddScoped<ILiveStreamRepository, LiveStreamRepository>();
+        services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
+        services.AddScoped<IAudioRepository, AudioRepository>();
         services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<IVideoQualityRepository, VideoQualityRepository>();
-        services.AddHttpClient<IKeycloakAuthService, KeycloakAuthService>();
         services.AddScoped<IUserContextService, UserContextService>();
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<ILikeRepository, LikeRepository>();
+        services.AddScoped<IPlaylistRepository, PlaylistRepository>();
+        services.AddScoped<IPlaylistVideoRepository, PlaylistVideoRepository>();
+        services.AddScoped<IMediaStorageService, MinIOMediaStorageService>();
+        services.AddScoped<IMediaProcessingService, FFmpegMediaProcessingService>();
 
         services.AddHttpContextAccessor();
         services.AddHttpClient<IKeycloakAuthService, KeycloakAuthService>();

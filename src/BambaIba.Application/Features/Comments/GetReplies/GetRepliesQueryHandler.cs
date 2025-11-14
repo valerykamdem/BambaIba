@@ -10,6 +10,13 @@ public sealed class GetRepliesQueryHandler : IQueryHandler<GetRepliesQuery, Resu
     private readonly ICommentRepository _commentRepository;
     private readonly ILogger<GetRepliesQueryHandler> _logger;
 
+    public GetRepliesQueryHandler(
+        ICommentRepository commentRepository,
+        ILogger<GetRepliesQueryHandler> logger)
+    {
+        _commentRepository = commentRepository ?? throw new ArgumentNullException(nameof(commentRepository));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
 
     public async Task<Result<GetRepliesResult>> Handle(GetRepliesQuery query, CancellationToken cancellationToken)
     {

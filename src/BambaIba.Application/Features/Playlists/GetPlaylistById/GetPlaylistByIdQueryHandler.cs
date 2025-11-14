@@ -27,7 +27,7 @@ public class GetPlaylistByIdQueryHandler : IQueryHandler<GetPlaylistByIdQuery, R
         _logger = logger;
     }
 
-    public async Task<Result<PlaylistDetailResult?>> Handle(
+    public async Task<Result<PlaylistDetailResult>> Handle(
         GetPlaylistByIdQuery query,
         CancellationToken cancellationToken)
     {

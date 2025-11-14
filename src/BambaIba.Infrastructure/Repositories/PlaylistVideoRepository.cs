@@ -4,16 +4,16 @@ using BambaIba.Infrastructure.Persistence;
 namespace BambaIba.Infrastructure.Repositories;
 public class PlaylistVideoRepository : IPlaylistVideoRepository
 {
-    private readonly BambaIbaDbContext _context;
+    private readonly BambaIbaDbContext _dbContext;
     public PlaylistVideoRepository(BambaIbaDbContext context)
     {
-        _context = context;
+        _dbContext = context;
     }
 
     public async Task AddAsync(PlaylistVideo playlistVideo)
     {
-        _context.PlaylistVideos.Add(playlistVideo);
-        await _context.SaveChangesAsync();
+        await _dbContext.PlaylistVideos.AddAsync(playlistVideo);
+        await _dbContext.SaveChangesAsync();
     }
 
     public Task DeleteAsync(PlaylistVideo playlistVideo)

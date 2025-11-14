@@ -1,7 +1,10 @@
-﻿using BambaIba.Domain.Videos;
+﻿using BambaIba.Application.Extensions;
+using BambaIba.Domain.Audios;
+using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Videos;
 using Cortex.Mediator.Queries;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Videos.GetVideos;
@@ -28,15 +31,34 @@ public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result
                 query.PageSize,
                 query.Search);
 
-            GetVideosResult videos = await _videoRepository.GetVideos(
-                query.Page, query.PageSize, 
-                query.Search, cancellationToken);
+            IQueryable<Video> videos = _videoRepository.GetVideos();
 
-            _logger.LogInformation(
-                "Retrieved {Count} videos out of {Total}",
-                videos.TotalCount, videos.TotalPages);
+            if (!string.IsNullOrWhiteSpace(query.Search))
+                videos = videos.Where(a =>
+                    (a.Title ?? "").Contains(query.Search));
 
-            return Result.Success(videos);
+            PagedResult<VideoDto> pagedResult = await videos
+                .Select(v => new VideoDto
+                {
+                    Id = v.Id,
+                    Title = v.Title,
+                    Description = v.Description,
+                    ThumbnailUrl = v.ThumbnailPath,  // ← Juste le chemin, pas le fichier
+                    Duration = v.Duration,
+                    ViewCount = v.ViewCount,
+                    LikeCount = v.LikeCount,
+                    CreatedAt = (DateTime)v.CreatedAt!,
+                    UserId = v.UserId,
+                })
+                .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);
+
+            int totalCount = await videos.CountAsync(cancellationToken);
+
+            return Result.Success(new GetVideosResult
+            {
+                Videos = pagedResult.Items,
+                TotalCount = totalCount
+            });
         }
         catch (Exception ex)
         {
