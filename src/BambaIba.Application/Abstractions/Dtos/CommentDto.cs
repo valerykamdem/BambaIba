@@ -1,12 +1,4 @@
-﻿namespace BambaIba.SharedKernel.Comments;
-public sealed record GetCommentsResult
-{
-    public List<CommentDto> Comments { get; init; } = [];
-    public int TotalCount { get; init; }
-    public int Page { get; init; }
-    public int PageSize { get; init; }
-}
-
+﻿namespace BambaIba.Application.Abstractions.Dtos;
 public sealed record CommentDto
 {
     public Guid Id { get; init; }

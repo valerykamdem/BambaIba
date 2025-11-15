@@ -1,11 +1,16 @@
-﻿using BambaIba.Domain.Comments;
+﻿using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Extensions;
+using BambaIba.Application.Features.Audios.GetAudios;
+using BambaIba.Domain.Comments;
+using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Comments;
 using Cortex.Mediator.Queries;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Comments.GetReplies;
-public sealed class GetRepliesQueryHandler : IQueryHandler<GetRepliesQuery, Result<GetRepliesResult>>
+public sealed class GetRepliesQueryHandler : IQueryHandler<GetRepliesQuery, Result<PagedResult<CommentDto>>>
 {
     private readonly ICommentRepository _commentRepository;
     private readonly ILogger<GetRepliesQueryHandler> _logger;
@@ -18,14 +23,37 @@ public sealed class GetRepliesQueryHandler : IQueryHandler<GetRepliesQuery, Resu
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    public async Task<Result<GetRepliesResult>> Handle(GetRepliesQuery query, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<CommentDto>>> Handle(GetRepliesQuery query, CancellationToken cancellationToken)
     {
         try
         {
-            GetRepliesResult replies = await _commentRepository
+            IQueryable<Comment> replies = _commentRepository
                 .GetReplies(query.VideoId, query.ParentCommentId, cancellationToken);
 
-            return Result.Success(replies);
+            PagedResult<CommentDto> pagedResult = await replies
+                .Select(c => new Application.Abstractions.Dtos.CommentDto
+                {
+                    Id = c.Id,
+                    VideoId = c.VideoId,
+                    UserId = c.UserId,
+                    Content = c.Content,
+                    ParentCommentId = c.ParentCommentId,
+                    LikeCount = c.LikeCount,
+                    ReplayCount = 0, // Les réponses n'ont pas de sous-réponses
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    IsEdited = c.IsEdited
+                })
+                .ToPagedResultAsync(0,0, cancellationToken);
+
+            return Result.Success(new PagedResult<CommentDto>
+            {
+                Items = pagedResult.Items,
+                TotalCount = pagedResult.TotalCount,
+                Page = pagedResult.Page,
+                PageSize = pagedResult.PageSize,
+                TotalPages = pagedResult.TotalPages
+            });
         }
         catch (Exception ex)
         {

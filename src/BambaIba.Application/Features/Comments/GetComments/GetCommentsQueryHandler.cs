@@ -1,7 +1,7 @@
-﻿using BambaIba.Application.Extensions;
+﻿using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Extensions;
 using BambaIba.Domain.Comments;
 using BambaIba.SharedKernel;
-using BambaIba.SharedKernel.Comments;
 using Cortex.Mediator.Queries;
 using Microsoft.Extensions.Logging;
 
@@ -42,7 +42,7 @@ public class GetCommentsQueryHandler : IQueryHandler<GetCommentsQuery, Result<Pa
                     Content = c.Content,
                     ParentCommentId = c.ParentCommentId,
                     LikeCount = c.LikeCount,
-                    //ReplayCount = _dbContext.Comments.Count(r => r.ParentCommentId == c.Id),
+                    ReplayCount = comments.Count(r => r.ParentCommentId == c.Id),
                     CreatedAt = c.CreatedAt,
                     UpdatedAt = c.UpdatedAt,
                     IsEdited = c.IsEdited

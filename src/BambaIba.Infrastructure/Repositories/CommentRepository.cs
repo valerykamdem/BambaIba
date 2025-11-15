@@ -1,6 +1,5 @@
 ﻿using BambaIba.Domain.Comments;
 using BambaIba.Infrastructure.Persistence;
-using BambaIba.SharedKernel.Comments;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -64,31 +63,10 @@ public class CommentRepository : ICommentRepository
                     cancellationToken: cancellationToken);
     }
 
-    public async Task<GetRepliesResult> GetReplies(Guid videoId, Guid parentCommentId, CancellationToken cancellationToken)
+    public IQueryable<Comment> GetReplies(Guid videoId, Guid parentCommentId, CancellationToken cancellationToken)
     {
-        List<CommentDto> replies = await _dbContext.Comments
-                .Where(c => c.VideoId == videoId
-                         && c.ParentCommentId == parentCommentId)
-                .OrderBy(c => c.CreatedAt) // Les réponses en ordre chronologique
-                .Select(c => new CommentDto
-                {
-                    Id = c.Id,
-                    VideoId = c.VideoId,
-                    UserId = c.UserId,
-                    Content = c.Content,
-                    ParentCommentId = c.ParentCommentId,
-                    LikeCount = c.LikeCount,
-                    ReplayCount = 0, // Les réponses n'ont pas de sous-réponses
-                    CreatedAt = c.CreatedAt,
-                    UpdatedAt = c.UpdatedAt,
-                    IsEdited = c.IsEdited
-                })
-                .ToListAsync(cancellationToken);
-
-        return new GetRepliesResult
-        {
-            Replies = replies,
-            TotalCount = replies.Count
-        };
+        return _dbContext.Comments.AsQueryable()
+            .Where(c => c.VideoId == videoId
+                         && c.ParentCommentId == parentCommentId);
     }
 }

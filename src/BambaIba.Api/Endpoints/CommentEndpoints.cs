@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
+using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Extensions;
 using BambaIba.Application.Features.Audios.GetAudios;
 using BambaIba.Application.Features.Comments.CreateComment;
@@ -34,7 +35,7 @@ public class CommentEndpoints : ICarterModule
             .WithName("CreateComment");
 
         group.MapGet("/", GetComments)
-            .Produces<GetCommentsResult>(StatusCodes.Status200OK)
+            .Produces<PagedResult<CommentDto>>(StatusCodes.Status200OK)
             .WithName("GetComments");
 
         group.MapPut("/", UpdateComment)
@@ -50,7 +51,7 @@ public class CommentEndpoints : ICarterModule
             .WithName("DeleteComment");
 
         group.MapGet("/{commentId:guid}/replies", GetReplies)
-            .Produces<GetRepliesResult>(StatusCodes.Status200OK)
+            .Produces<PagedResult<CommentDto>>(StatusCodes.Status200OK)
             .WithName("GetReplies");
     }
 
@@ -155,8 +156,8 @@ public class CommentEndpoints : ICarterModule
             ParentCommentId = commentId
         };
 
-        Result<GetRepliesResult> result = await mediator.
-            SendQueryAsync<GetRepliesQuery, Result<GetRepliesResult>>(
+        Result<PagedResult<CommentDto>> result = await mediator.
+            SendQueryAsync<GetRepliesQuery, Result<PagedResult<CommentDto>>>(
             query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);

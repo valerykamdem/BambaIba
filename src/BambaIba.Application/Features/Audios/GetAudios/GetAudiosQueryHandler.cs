@@ -3,9 +3,7 @@ using BambaIba.Application.Extensions;
 using BambaIba.Domain.Audios;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
-using BambaIba.SharedKernel.Videos;
 using Cortex.Mediator.Queries;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Audios.GetAudios;
@@ -42,11 +40,7 @@ public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<PagedR
                 (a.Album ?? "").Contains(query.Search));
 
         //// Appliquer tri dynamique
-        //query = query.ApplySorting(request.SortBy, request.SortDescending);
-
-        int totalCount = await audios.CountAsync(cancellationToken);
-
-        _logger.LogInformation("Total={Total}", totalCount);
+        //query = query.ApplySorting(request.SortBy, request.SortDescending)
 
         PagedResult<AudioDto> pagedResult = await audios
             .Select(a => new AudioDto
