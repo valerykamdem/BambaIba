@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
+using BambaIba.Application.Extensions;
 using BambaIba.Application.Features.Audios.GetAudioById;
 using BambaIba.Application.Features.Audios.GetAudios;
 using BambaIba.Application.Features.Audios.Upload;
@@ -110,8 +111,8 @@ public class AudioEndpoints : ICarterModule
             Search = request.Search
         };
 
-        Result<GetAudiosResult> result = await mediator
-            .SendQueryAsync<GetAudiosQuery, Result<GetAudiosResult>>(
+        Result<PagedResult<AudioDto>> result = await mediator
+            .SendQueryAsync<GetAudiosQuery, Result<PagedResult<AudioDto>>>(
             query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);

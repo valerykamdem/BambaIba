@@ -2,6 +2,7 @@
 using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
 using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Extensions;
 using BambaIba.Application.Features.Videos.DeleteVideo;
 using BambaIba.Application.Features.Videos.GetVideoById;
 using BambaIba.Application.Features.Videos.GetVideos;
@@ -111,8 +112,8 @@ public class VideoEndpoints : ICarterModule
             request.Search
         );
 
-        Result<GetVideosResult> result = await mediator
-            .SendQueryAsync<GetVideosQuery, Result<GetVideosResult>>(query, cancellationToken);
+        Result<PagedResult<VideoDto>> result = await mediator
+            .SendQueryAsync<GetVideosQuery, Result<PagedResult<VideoDto>>>(query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }

@@ -1,11 +1,12 @@
-﻿using BambaIba.Domain.Comments;
+﻿using BambaIba.Application.Extensions;
+using BambaIba.Domain.Comments;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Comments;
 using Cortex.Mediator.Queries;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Comments.GetComments;
-public class GetCommentsQueryHandler : IQueryHandler<GetCommentsQuery, Result<GetCommentsResult>>
+public class GetCommentsQueryHandler : IQueryHandler<GetCommentsQuery, Result<PagedResult<CommentDto>>>
 {
     private readonly ICommentRepository _commentRepository;
     private readonly ILogger<GetCommentsQueryHandler> _logger;
@@ -18,7 +19,7 @@ public class GetCommentsQueryHandler : IQueryHandler<GetCommentsQuery, Result<Ge
         _logger = logger;
     }
 
-    public async Task<Result<GetCommentsResult>> Handle(
+    public async Task<Result<PagedResult<CommentDto>>> Handle(
         GetCommentsQuery query,
         CancellationToken cancellationToken)
     {
@@ -30,14 +31,32 @@ public class GetCommentsQueryHandler : IQueryHandler<GetCommentsQuery, Result<Ge
                query.PageSize,
                query.VideoId);
 
-            Task<GetCommentsResult> comments = 
-                _commentRepository.GetComments(
-                    query.VideoId,
-                    query.Page,
-                    query.PageSize,
-                    cancellationToken);
+            IQueryable<Comment> comments = _commentRepository.GetComments(query.VideoId, cancellationToken);
 
-            return Result.Success(await comments);
+            PagedResult<CommentDto> pagedResult = await comments
+                .Select(c => new CommentDto
+                {
+                    Id = c.Id,
+                    VideoId = c.VideoId,
+                    UserId = c.UserId,
+                    Content = c.Content,
+                    ParentCommentId = c.ParentCommentId,
+                    LikeCount = c.LikeCount,
+                    //ReplayCount = _dbContext.Comments.Count(r => r.ParentCommentId == c.Id),
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.UpdatedAt,
+                    IsEdited = c.IsEdited
+                })
+                .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);
+
+            return Result.Success(new PagedResult<CommentDto>
+            {
+                Items = pagedResult.Items,
+                TotalCount = pagedResult.TotalCount,
+                Page = pagedResult.Page,
+                PageSize = pagedResult.PageSize,
+                TotalPages = pagedResult.TotalPages
+            });
 
         }
         catch (Exception ex)

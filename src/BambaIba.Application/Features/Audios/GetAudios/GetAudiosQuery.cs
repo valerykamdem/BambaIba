@@ -1,8 +1,9 @@
-﻿using BambaIba.SharedKernel;
+﻿using BambaIba.Application.Extensions;
+using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
 
 namespace BambaIba.Application.Features.Audios.GetAudios;
-public sealed record GetAudiosQuery : IQuery<Result<GetAudiosResult>>
+public sealed record GetAudiosQuery : IQuery<Result<PagedResult<AudioDto>>>
 {
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 20;
@@ -14,6 +15,8 @@ public sealed record GetAudiosResult
 {
     public List<AudioDto> Audios { get; init; } = [];
     public int TotalCount { get; init; }
+    public int Page { get; init; }
+    public int PageSize { get; init; }
 }
 
 public sealed record AudioDto

@@ -3,12 +3,13 @@ using BambaIba.Application.Extensions;
 using BambaIba.Domain.Audios;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
+using BambaIba.SharedKernel.Videos;
 using Cortex.Mediator.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Audios.GetAudios;
-public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<GetAudiosResult>>
+public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<PagedResult<AudioDto>>>
 {
     private readonly IAudioRepository _audioRepository;
     private readonly IMediaStorageService _mediaStorageService;
@@ -24,7 +25,7 @@ public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<GetAud
         _logger = logger;
     }
 
-    public async Task<Result<GetAudiosResult>> Handle(
+    public async Task<Result<PagedResult<AudioDto>>> Handle(
         GetAudiosQuery query,
         CancellationToken cancellationToken)
     {
@@ -63,10 +64,13 @@ public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<GetAud
             })
             .ToPagedResultAsync(query.Page, query.PageSize, cancellationToken);
 
-        return Result.Success(new GetAudiosResult
+        return Result.Success(new PagedResult<AudioDto>
         {
-            Audios = pagedResult.Items,
-            TotalCount = totalCount
+            Items = pagedResult.Items,
+            TotalCount = pagedResult.TotalCount,
+            Page = pagedResult.Page,
+            PageSize = pagedResult.PageSize,
+            TotalPages = pagedResult.TotalPages
         });
     }
 }

@@ -1,6 +1,5 @@
 ﻿using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Extensions;
-using BambaIba.Domain.Audios;
 using BambaIba.Domain.Enums;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
@@ -10,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Videos.GetVideos;
-public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result<GetVideosResult>>
+public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result<PagedResult<VideoDto>>>
 {
     private readonly IVideoRepository _videoRepository;
     private readonly IMediaStorageService _mediaStorageService;
@@ -26,7 +25,7 @@ public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result
         _logger = logger;
     }
 
-    public async Task<Result<GetVideosResult>> Handle(GetVideosQuery query, CancellationToken cancellationToken)
+    public async Task<Result<PagedResult<VideoDto>>> Handle(GetVideosQuery query, CancellationToken cancellationToken)
     {
         try
         {
@@ -59,10 +58,13 @@ public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result
 
             int totalCount = await videos.CountAsync(cancellationToken);
 
-            return Result.Success(new GetVideosResult
+            return Result.Success(new PagedResult<VideoDto>
             {
-                Videos = pagedResult.Items,
-                TotalCount = totalCount
+                Items = pagedResult.Items,
+                TotalCount = pagedResult.TotalCount,
+                Page = pagedResult.Page,
+                PageSize = pagedResult.PageSize,
+                TotalPages = pagedResult.TotalPages,
             });
         }
         catch (Exception ex)

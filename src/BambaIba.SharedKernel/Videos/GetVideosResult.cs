@@ -3,6 +3,8 @@ public sealed record GetVideosResult
 {
     public List<VideoDto> Videos { get; init; } = [];
     public int TotalCount { get; init; }
+    public int Page { get; init; }
+    public int PageSize { get; init; }
 }
 
 public record VideoDto

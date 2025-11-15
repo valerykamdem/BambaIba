@@ -8,7 +8,7 @@ public sealed record UploadVideoRequest
     public string Description { get; init; } = string.Empty;
     public IFormFile VideoFile { get; init; } = null!; 
     public IFormFile? ThumbnailFile { get; init; } // Nouveau
-    public List<string?> Tags { get; init; }
+    public List<string>? Tags { get; init; }
 }
 
 //// Pour query parameters

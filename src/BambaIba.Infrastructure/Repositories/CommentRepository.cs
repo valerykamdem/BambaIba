@@ -33,42 +33,13 @@ public class CommentRepository : ICommentRepository
         return await _dbContext.Comments.FindAsync(commentId);
     }
 
-    public async Task<GetCommentsResult> GetComments(Guid videoId, 
-        int page, 
-        int pageSize, 
+    public IQueryable<Comment> GetComments(Guid videoId,
         CancellationToken cancellationToken)
     {
         IQueryable<Comment> query = _dbContext.Comments.AsQueryable()
                 .Where(c => c.VideoId == videoId && c.ParentCommentId == null);
 
-        int totalCount = await query.CountAsync(cancellationToken);
-
-        List<CommentDto> comments = await query
-            .OrderByDescending(c => c.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(c => new CommentDto
-            {
-                Id = c.Id,
-                VideoId = c.VideoId,
-                UserId = c.UserId,
-                Content = c.Content,
-                ParentCommentId = c.ParentCommentId,
-                LikeCount = c.LikeCount,
-                ReplyCount = _dbContext.Comments.Count(r => r.ParentCommentId == c.Id),
-                CreatedAt = c.CreatedAt,
-                UpdatedAt = c.UpdatedAt,
-                IsEdited = c.IsEdited
-            })
-            .ToListAsync(cancellationToken);
-
-        return new GetCommentsResult
-        {
-            Comments = comments,
-            TotalCount = totalCount,
-            Page = page,
-            PageSize = pageSize
-        };
+        return query;
     }
 
     public async Task UpdateComment(Comment comment, CancellationToken cancellationToken)
@@ -107,7 +78,7 @@ public class CommentRepository : ICommentRepository
                     Content = c.Content,
                     ParentCommentId = c.ParentCommentId,
                     LikeCount = c.LikeCount,
-                    ReplyCount = 0, // Les réponses n'ont pas de sous-réponses
+                    ReplayCount = 0, // Les réponses n'ont pas de sous-réponses
                     CreatedAt = c.CreatedAt,
                     UpdatedAt = c.UpdatedAt,
                     IsEdited = c.IsEdited

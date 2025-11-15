@@ -1,6 +1,8 @@
 ﻿using System.Security.Claims;
 using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
+using BambaIba.Application.Extensions;
+using BambaIba.Application.Features.Audios.GetAudios;
 using BambaIba.Application.Features.Comments.CreateComment;
 using BambaIba.Application.Features.Comments.DeleteComment;
 using BambaIba.Application.Features.Comments.GetComments;
@@ -10,6 +12,7 @@ using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Comments;
 using Carter;
 using Cortex.Mediator;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BambaIba.Api.Endpoints;
@@ -93,8 +96,8 @@ public class CommentEndpoints : ICarterModule
             PageSize = request.PageSize
         };
 
-        Result<GetCommentsResult> result =
-            await mediator.SendQueryAsync<GetCommentsQuery, Result<GetCommentsResult>>(
+        Result<PagedResult<CommentDto>> result =
+            await mediator.SendQueryAsync<GetCommentsQuery, Result<PagedResult<CommentDto>>>(
             query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
