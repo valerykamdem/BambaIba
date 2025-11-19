@@ -49,7 +49,7 @@ public sealed class GetVideosQueryHandler : IQueryHandler<GetVideosQuery, Result
                     Description = v.Description,
                     ThumbnailUrl = _mediaStorageService.GetPublicUrl(BucketType.Video, v.ThumbnailPath),  // ← Juste le chemin, pas le fichier
                     Duration = v.Duration,
-                    ViewCount = v.ViewCount,
+                    ViewCount = v.PlayCount,
                     LikeCount = v.LikeCount,
                     CreatedAt = (DateTime)v.CreatedAt!,
                     UserId = v.UserId,

@@ -1,4 +1,5 @@
-﻿using BambaIba.SharedKernel;
+﻿using BambaIba.Domain.Videos;
+using BambaIba.SharedKernel;
 
 namespace BambaIba.Domain.Entities;
 public sealed class View : Entity<Guid>, ISoftDeletable

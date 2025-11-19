@@ -15,15 +15,15 @@ public record PlaylistDetailResult
     public string Name { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
     public bool IsPublic { get; init; }
-    public int VideoCount { get; init; }
+    public int MediaCount { get; init; }
     public DateTime? CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
-    public List<PlaylistVideoDto> Videos { get; init; } = new();
+    public List<PlaylistItemDto> Videos { get; init; } = [];
 }
 
-public record PlaylistVideoDto
+public record PlaylistItemDto
 {
-    public Guid VideoId { get; init; }
+    public Guid MediaId { get; init; }
     public string Title { get; init; } = string.Empty;
     public string ThumbnailUrl { get; init; } = string.Empty;
     public TimeSpan Duration { get; init; }

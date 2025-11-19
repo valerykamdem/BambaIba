@@ -5,6 +5,7 @@ using BambaIba.Domain.Audios;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
+using Mapster;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -55,11 +56,11 @@ public class UploadAudioCommandHandler : ICommandHandler<UploadAudioCommand, Res
             {
                 Title = command.Title,
                 Description = command.Description,
-                Artist = command.Artist,
-                Album = command.Album,
-                Genre = command.Genre,
+                Speaker = command.Speaker,
+                Category = command.Category,
+                Topic = command.Topic,
                 UserId = userContext.LocalUserId,
-                OriginalFileName = command.AudioFileName,
+                FileName = command.AudioFileName,
                 FileSize = command.AudioFileSize,
                 Status = MediaStatus.Uploading,
                 Tags = command.Tags ?? []
@@ -88,7 +89,7 @@ public class UploadAudioCommandHandler : ICommandHandler<UploadAudioCommand, Res
                     MediaType.AudioCover,
                     cancellationToken);
 
-                audio.CoverImagePath = coverPath;
+                audio.ThumbnailPath = coverPath;
             }
 
             audio.Status = MediaStatus.Processing;

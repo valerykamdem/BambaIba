@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.11" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
 	  <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
 	  <PackageReference Include="Carter" Version="9.0.0" />
@@ -26,22 +26,22 @@
 	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.0" />
 	  <PackageReference Include="Mapster" Version="7.4.0" />
 	  <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.10" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.11" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.14.0" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0" />
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.11">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.10">
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.11">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.10" />
-	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.10" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="9.0.11" />
+	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="9.0.11" />
 	  <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 	  <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />

@@ -74,7 +74,7 @@ public sealed class UploadVideoCommandHandler : ICommandHandler<UploadVideoComma
                 Title = command.Title,
                 Description = command.Description,
                 UserId = userContext.LocalUserId,
-                OriginalFileName = command.FileName,
+                FileName = command.FileName,
                 FileSize = command.FileSize,
                 Status = MediaStatus.Uploading,
                 Tags = command.Tags ?? [],

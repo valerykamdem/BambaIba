@@ -7,7 +7,7 @@ public sealed record GetAudiosQuery : IQuery<Result<PagedResult<AudioDto>>>
 {
     public int Page { get; init; } = 1;
     public int PageSize { get; init; } = 20;
-    public string? Genre { get; init; }
+    public string? Category { get; init; }
     public string? Search { get; init; }
 }
 
@@ -23,9 +23,9 @@ public sealed record AudioDto
 {
     public Guid Id { get; init; }
     public string Title { get; init; } = string.Empty;
-    public string Artist { get; init; } = string.Empty;
-    public string Album { get; init; } = string.Empty;
-    public string Genre { get; init; } = string.Empty;
+    public string Speaker { get; init; } = string.Empty;
+    public string Category { get; init; } = string.Empty;
+    public string Topic { get; init; } = string.Empty;
     public string CoverImageUrl { get; init; } = string.Empty;
     public TimeSpan Duration { get; init; }
     public int PlayCount { get; init; }

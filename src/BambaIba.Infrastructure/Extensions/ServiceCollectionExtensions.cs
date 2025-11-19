@@ -6,7 +6,7 @@ using BambaIba.Domain.Likes;
 using BambaIba.Domain.LiveChatMessages;
 using BambaIba.Domain.LiveStream;
 using BambaIba.Domain.Playlists;
-using BambaIba.Domain.PlaylistVideos;
+using BambaIba.Domain.PlaylistItems;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
 using BambaIba.Infrastructure.Persistence;
@@ -100,7 +100,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<ILikeRepository, LikeRepository>();
         services.AddScoped<IPlaylistRepository, PlaylistRepository>();
-        services.AddScoped<IPlaylistVideoRepository, PlaylistVideoRepository>();
+        services.AddScoped<IPlaylistItemRepository, PlaylistVideoRepository>();
         services.AddScoped<IMediaStorageService, MinIOMediaStorageService>();
         services.AddScoped<IMediaProcessingService, FFmpegMediaProcessingService>();
 

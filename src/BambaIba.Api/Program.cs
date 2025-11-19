@@ -136,24 +136,24 @@ app.UseAuthorization();
 // ✅ Mapper le Hub
 app.MapHub<LiveChatHub>("/hubs/livechathub");
 
-//app.Use(async (context, next) =>
-//{
-//    using IServiceScope scope = context.RequestServices.CreateScope();
-//    IServiceProvider services = scope.ServiceProvider;
-//    IWebHostEnvironment env = services.GetRequiredService<IWebHostEnvironment>();
+app.Use(async (context, next) =>
+{
+    using IServiceScope scope = context.RequestServices.CreateScope();
+    IServiceProvider services = scope.ServiceProvider;
+    IWebHostEnvironment env = services.GetRequiredService<IWebHostEnvironment>();
 
-//    if (env.IsDevelopment())
-//    {
-//        BambaIbaDbContext db = services.GetRequiredService<BambaIbaDbContext>();
-//        // Force la création des tables si elles n’existent pas encore
-//        await db.Database.EnsureCreatedAsync();
+    if (env.IsDevelopment())
+    {
+        BambaIbaDbContext db = services.GetRequiredService<BambaIbaDbContext>();
+        // Force la création des tables si elles n’existent pas encore
+        await db.Database.EnsureCreatedAsync();
 
-//        db.Database.Migrate();
-//        SeedData.Initialize(services);
-//    }
+        db.Database.Migrate();
+        SeedData.Initialize(services);
+    }
 
-//    await next();
-//});
+    await next();
+});
 
 app.Use(async (context, next) =>
 {

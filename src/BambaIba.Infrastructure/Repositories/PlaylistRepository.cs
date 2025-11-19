@@ -26,8 +26,8 @@ public class PlaylistRepository : IPlaylistRepository
     public async Task<Playlist?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _dbContext.Playlists
-                 .Include(p => p.Videos)
-                 .ThenInclude(pv => pv.Video)
+                 .Include(p => p.Items)
+                 .ThenInclude(pv => pv.Media)
                  .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
 

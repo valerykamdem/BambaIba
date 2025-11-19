@@ -1,8 +1,8 @@
-﻿using BambaIba.Domain.PlaylistVideos;
+﻿using BambaIba.Domain.PlaylistItems;
 using BambaIba.Infrastructure.Persistence;
 
 namespace BambaIba.Infrastructure.Repositories;
-public class PlaylistVideoRepository : IPlaylistVideoRepository
+public class PlaylistVideoRepository : IPlaylistItemRepository
 {
     private readonly BambaIbaDbContext _dbContext;
     public PlaylistVideoRepository(BambaIbaDbContext context)
@@ -10,23 +10,23 @@ public class PlaylistVideoRepository : IPlaylistVideoRepository
         _dbContext = context;
     }
 
-    public async Task AddAsync(PlaylistVideo playlistVideo)
+    public async Task AddAsync(PlaylistItem playlistItem)
     {
-        await _dbContext.PlaylistVideos.AddAsync(playlistVideo);
+        await _dbContext.PlaylistItems.AddAsync(playlistItem);
         await _dbContext.SaveChangesAsync();
     }
 
-    public Task DeleteAsync(PlaylistVideo playlistVideo)
+    public Task DeleteAsync(PlaylistItem playlistItem)
     {
         throw new NotImplementedException();
     }
 
-    public Task<PlaylistVideo?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    public Task<PlaylistItem?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task UpdateAsync(PlaylistVideo playlistVideo)
+    public Task UpdateAsync(PlaylistItem playlistItem)
     {
         throw new NotImplementedException();
     }

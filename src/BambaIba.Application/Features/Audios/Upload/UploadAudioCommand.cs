@@ -7,9 +7,9 @@ public sealed record UploadAudioCommand : ICommand<Result<UploadAudioResult>>
 {
     public string Title { get; init; } = string.Empty;
     public string Description { get; init; } = string.Empty;
-    public string Artist { get; init; } = string.Empty;
-    public string Album { get; init; } = string.Empty;
-    public string Genre { get; init; } = string.Empty;
+    public string Speaker { get; init; } = string.Empty;
+    public string Category { get; init; } = string.Empty;
+    public string Topic { get; init; } = string.Empty;
     public string UserId { get; init; } = string.Empty;
     public Stream AudioStream { get; init; } = null!;
     public string AudioFileName { get; init; } = string.Empty;

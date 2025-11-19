@@ -42,8 +42,8 @@ public class VideoRepository : IVideoRepository
             return null;
 
         // 4. Enregistrer la vue (asynchrone)
-        video.ViewCount++;
-        _dbContext.Entry(video).Property(v => v.ViewCount).IsModified = true;
+        video.PlayCount++;
+        _dbContext.Entry(video).Property(v => v.PlayCount).IsModified = true;
         await _dbContext.SaveChangesAsync(cancellationToken);
 
         return video;

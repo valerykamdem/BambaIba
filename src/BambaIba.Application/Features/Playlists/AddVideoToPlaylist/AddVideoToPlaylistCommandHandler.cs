@@ -2,7 +2,7 @@
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Playlists;
-using BambaIba.Domain.PlaylistVideos;
+using BambaIba.Domain.PlaylistItems;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
@@ -14,7 +14,7 @@ public class AddVideoToPlaylistCommandHandler :
     ICommandHandler<AddVideoToPlaylistCommand, Result<AddVideoToPlaylistResult>>
 {
     private readonly IPlaylistRepository _playlistRepository;
-    private readonly IPlaylistVideoRepository _playlistVideosRepository;
+    private readonly IPlaylistItemRepository _playlistVideosRepository;
     private readonly IVideoRepository _videoRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserContextService _userContextService;
@@ -23,7 +23,7 @@ public class AddVideoToPlaylistCommandHandler :
 
     public AddVideoToPlaylistCommandHandler(
         IPlaylistRepository playlistRepository,
-        IPlaylistVideoRepository playlistVideosRepository,
+        IPlaylistItemRepository playlistVideosRepository,
         IVideoRepository videoRepository,
         IUnitOfWork unitOfWork,
         IUserContextService userContextService,
@@ -56,25 +56,25 @@ public class AddVideoToPlaylistCommandHandler :
             if (playlist.UserId != userContext.LocalUserId)
                 return AddVideoToPlaylistResult.Failure("Unauthorized");
 
-            Video video = await _videoRepository.GetVideoById(command.VideoId);
+            Video video = await _videoRepository.GetVideoById(command.MediaId);
 
             if (video == null)
                 return AddVideoToPlaylistResult.Failure("Video not found");
 
             // Vérifier si déjà dans la playlist
-            bool exists = playlist.Videos.Any(pv => pv.VideoId == command.VideoId);
+            bool exists = playlist.Items.Any(pv => pv.MediaId == command.MediaId);
             if (exists)
                 return AddVideoToPlaylistResult.Failure("Video already in playlist");
 
             // Position = dernier + 1
-            int maxPosition = playlist.Videos.Any()
-                ? playlist.Videos.Max(pv => pv.Position)
+            int maxPosition = playlist.Items.Any()
+                ? playlist.Items.Max(pv => pv.Position)
                 : 0;
 
-            var playlistVideo = new PlaylistVideo
+            var playlistVideo = new PlaylistItem
             {
                 PlaylistId = command.PlaylistId,
-                VideoId = command.VideoId,
+                MediaId = command.MediaId,
                 Position = maxPosition + 1,
                 AddedAt = DateTime.UtcNow
             };
@@ -85,10 +85,10 @@ public class AddVideoToPlaylistCommandHandler :
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Video {VideoId} added to playlist {PlaylistId}",
-                command.VideoId, command.PlaylistId);
+                "Video {MediaId} added to playlist {PlaylistId}",
+                command.MediaId, command.PlaylistId);
 
-            return AddVideoToPlaylistResult.Success($"Video {command.VideoId} added to playlist {command.PlaylistId}");
+            return AddVideoToPlaylistResult.Success($"Media {command.MediaId} added to playlist {command.PlaylistId}");
         }
         catch (Exception ex)
         {

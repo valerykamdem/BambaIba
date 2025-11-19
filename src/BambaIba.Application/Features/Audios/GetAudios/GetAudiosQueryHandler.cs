@@ -30,14 +30,14 @@ public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<PagedR
 
         IQueryable<Audio> audios = _audioRepository.GetAudioAsync();
 
-        if (!string.IsNullOrWhiteSpace(query.Genre))
-            audios = audios.Where(a => a.Genre == query.Genre);
+        if (!string.IsNullOrWhiteSpace(query.Category))
+            audios = audios.Where(a => a.Category == query.Category);
 
         if (!string.IsNullOrWhiteSpace(query.Search))
             audios = audios.Where(a =>
                 (a.Title ?? "").Contains(query.Search) ||
-                (a.Artist ?? "").Contains(query.Search) ||
-                (a.Album ?? "").Contains(query.Search));
+                (a.Speaker ?? "").Contains(query.Search) ||
+                (a.Topic ?? "").Contains(query.Search));
 
         //// Appliquer tri dynamique
         //query = query.ApplySorting(request.SortBy, request.SortDescending)
@@ -47,10 +47,10 @@ public class GetAudiosQueryHandler : IQueryHandler<GetAudiosQuery, Result<PagedR
             {
                 Id = a.Id,
                 Title = a.Title ?? string.Empty,
-                Artist = a.Artist ?? string.Empty,
-                Album = a.Album ?? string.Empty,
-                Genre = a.Genre ?? string.Empty,
-                CoverImageUrl = _mediaStorageService.GetPublicUrl(BucketType.Image, a.CoverImagePath),
+                Speaker = a.Speaker ?? string.Empty,
+                Category = a.Category ?? string.Empty,
+                Topic = a.Topic ?? string.Empty,
+                CoverImageUrl = _mediaStorageService.GetPublicUrl(BucketType.Image, a.ThumbnailPath),
                 Duration = a.Duration,
                 PlayCount = a.PlayCount,
                 CreatedAt = a.CreatedAt,

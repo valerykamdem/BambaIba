@@ -125,8 +125,8 @@ public class MinIOMediaStorageService : IMediaStorageService
     {
         string folder = type switch
         {
-            MediaType.VideoThumbnail => $"thumbnails/videos/{id}",
-            MediaType.AudioCover => $"covers/audios/{id}",
+            MediaType.VideoThumbnail => $"images/videos/{id}",
+            MediaType.AudioCover => $"images/audios/{id}",
             _ => $"images/{id}"
         };
 

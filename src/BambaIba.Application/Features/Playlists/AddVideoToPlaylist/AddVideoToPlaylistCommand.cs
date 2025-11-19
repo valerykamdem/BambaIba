@@ -5,8 +5,7 @@ namespace BambaIba.Application.Features.Playlists.AddVideoToPlaylist;
 public record AddVideoToPlaylistCommand : ICommand<Result<AddVideoToPlaylistResult>>
 {
     public Guid PlaylistId { get; init; }
-    public Guid VideoId { get; init; }
-    //public Guid UserId { get; init; }
+    public Guid MediaId { get; init; }
 }
 
 public record AddVideoToPlaylistResult

@@ -1,4 +1,5 @@
-﻿using BambaIba.SharedKernel;
+﻿using BambaIba.Domain.Videos;
+using BambaIba.SharedKernel;
 
 namespace BambaIba.Domain.Comments;
 public sealed class Comment : Entity<Guid>, ISoftDeletable

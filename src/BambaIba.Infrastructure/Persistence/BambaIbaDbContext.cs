@@ -6,8 +6,9 @@ using BambaIba.Domain.Entities;
 using BambaIba.Domain.Likes;
 using BambaIba.Domain.LiveChatMessages;
 using BambaIba.Domain.LiveStream;
+using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.Playlists;
-using BambaIba.Domain.PlaylistVideos;
+using BambaIba.Domain.PlaylistItems;
 using BambaIba.Domain.Users;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
@@ -22,6 +23,7 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
     {
     }
 
+    public DbSet<Media> Media { get; set; }
     public DbSet<Video> Videos { get; set; }
     public DbSet<Comment> Comments { get; set; }
     public DbSet<Like> Likes { get; set; }
@@ -29,7 +31,7 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
     public DbSet<View> Views { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }
     public DbSet<Playlist> Playlists { get; set; }
-    public DbSet<PlaylistVideo> PlaylistVideos { get; set; }
+    public DbSet<PlaylistItem> PlaylistItems { get; set; }
     public DbSet<VideoQuality> VideoQualities { get; set; }
     public DbSet<TranscodeJob> TranscodeJobs { get; set; }
     public DbSet<Role> Roles { get; set; }
@@ -46,19 +48,6 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // Configuration Video
-        modelBuilder.Entity<Video>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Description).HasMaxLength(5000);
-            entity.Property(e => e.UserId).IsRequired();
-            entity.Property(e => e.Duration).IsRequired();
-            entity.HasIndex(e => e.UserId);
-            entity.HasIndex(e => e.CreatedAt);
-            entity.HasIndex(e => e.Status);
-        });
 
         // Configuration Comment
         modelBuilder.Entity<Comment>(entity =>
@@ -112,29 +101,18 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
         });
 
         // Configuration PlaylistVideo
-        modelBuilder.Entity<PlaylistVideo>(entity =>
+        modelBuilder.Entity<PlaylistItem>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.HasOne(e => e.Playlist)
-                .WithMany(p => p.Videos)
+                .WithMany(p => p.Items)
                 .HasForeignKey(e => e.PlaylistId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.Video)
+            entity.HasOne(e => e.Media)
                 .WithMany()
-                .HasForeignKey(e => e.VideoId)
+                .HasForeignKey(e => e.MediaId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.PlaylistId, e.VideoId }).IsUnique();
-        });
-
-        // Configuration VideoQuality
-        modelBuilder.Entity<VideoQuality>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne<Video>()
-                .WithMany()
-                .HasForeignKey(e => e.VideoId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.VideoId, e.Quality }).IsUnique();
+            entity.HasIndex(e => new { e.PlaylistId, e.MediaId }).IsUnique();
         });
 
         // Configuration VideoQuality
@@ -182,14 +160,71 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
             entity.HasIndex(e => e.SentAt);
         });
 
+        // Table commune MediaBase
+        modelBuilder.Entity<Media>(entity =>
+        {
+            //entity.ToTable("Media");
+            entity.HasKey(m => m.Id);
+
+            entity.Property(m => m.Title).IsRequired().HasMaxLength(255);
+            entity.Property(m => m.Description).HasMaxLength(2000);
+            entity.Property(m => m.UserId).IsRequired();
+
+            // Fichier
+            entity.Property(m => m.ThumbnailPath).HasMaxLength(500);
+            entity.Property(m => m.StoragePath).HasMaxLength(500);
+            entity.Property(m => m.FileName).HasMaxLength(255);
+            entity.Property(m => m.FileSize).IsRequired();
+
+            // Métadonnées
+            entity.Property(m => m.Status).IsRequired();
+            entity.Property(m => m.Duration).IsRequired();
+            entity.Property(m => m.LikeCount);
+            entity.Property(m => m.DislikeCount);
+            entity.Property(m => m.PlayCount);
+            entity.Property(m => m.CommentCount);
+            entity.Property(m => m.IsPublic).HasDefaultValue(true);
+            entity.Property(m => m.PublishedAt);
+
+            // Tags (conversion en JSON ou string selon ton provider)
+            entity.Property(m => m.Tags)
+                  .HasConversion(
+                      v => string.Join(',', v),
+                      v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                  );
+        });
+
+        // Configuration Video (hérite de MediaBase)
+        modelBuilder.Entity<Video>(entity =>
+        {
+            //entity.ToTable("Video");
+
+            // Relation avec VideoQuality
+            entity.HasMany(v => v.Qualities)
+                  .WithOne()
+                  .HasForeignKey(q => q.VideoId)
+                  .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuration Audio (hérite de MediaBase)
         modelBuilder.Entity<Audio>(entity =>
         {
+            //entity.ToTable("Audio");
+
+            entity.Property(a => a.Speaker).HasMaxLength(255);
+            entity.Property(a => a.Category).HasMaxLength(100);
+            entity.Property(a => a.Topic).HasMaxLength(255);
+        });
+
+        // Configuration VideoQuality
+        modelBuilder.Entity<VideoQuality>(entity =>
+        {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
-            entity.HasIndex(e => e.UserId);
-            entity.HasIndex(e => e.Status);
-            entity.HasIndex(e => e.Genre);
-            entity.HasIndex(e => e.CreatedAt);
+            entity.HasOne<Video>()
+                .WithMany(v => v.Qualities)
+                .HasForeignKey(e => e.VideoId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.VideoId, e.Quality }).IsUnique();
         });
     }
 }

@@ -78,9 +78,9 @@ public class AudioEndpoints : ICarterModule
         {
             Title = title,
             Description = description,
-            Artist = artist,
-            Album = album,
-            Genre = genre,
+            Speaker = artist,
+            Category = album,
+            Topic = genre,
             //UserId = userId,
             AudioStream = audioFile.OpenReadStream(),
             AudioFileName = audioFile.FileName,
@@ -107,7 +107,7 @@ public class AudioEndpoints : ICarterModule
         {
             Page = request.Page,
             PageSize = request.PageSize,
-            Genre = request.Genre,
+            Category = request.Genre,
             Search = request.Search
         };
 

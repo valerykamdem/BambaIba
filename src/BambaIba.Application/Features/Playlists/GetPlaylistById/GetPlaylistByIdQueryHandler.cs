@@ -44,14 +44,14 @@ public class GetPlaylistByIdQueryHandler : IQueryHandler<GetPlaylistByIdQuery, R
         if (!playlist.IsPublic && playlist.UserId != userContext.LocalUserId)
             return null;
 
-        var videos = playlist.Videos
+        var videos = playlist.Items
             .OrderBy(pv => pv.Position)
-            .Select(pv => new PlaylistVideoDto
+            .Select(pv => new PlaylistItemDto
             {
-                VideoId = pv.VideoId,
-                Title = pv.Video.Title,
-                ThumbnailUrl = pv.Video.ThumbnailPath,
-                Duration = pv.Video.Duration,
+                MediaId = pv.MediaId,
+                Title = pv.Media.Title,
+                ThumbnailUrl = pv.Media.ThumbnailPath,
+                Duration = pv.Media.Duration,
                 Position = pv.Position,
                 AddedAt = pv.AddedAt
             })
@@ -64,7 +64,7 @@ public class GetPlaylistByIdQueryHandler : IQueryHandler<GetPlaylistByIdQuery, R
             Name = playlist.Name,
             Description = playlist.Description,
             IsPublic = playlist.IsPublic,
-            VideoCount = videos.Count,
+            MediaCount = videos.Count,
             CreatedAt = playlist.CreatedAt,
             UpdatedAt = playlist.UpdatedAt,
             Videos = videos
