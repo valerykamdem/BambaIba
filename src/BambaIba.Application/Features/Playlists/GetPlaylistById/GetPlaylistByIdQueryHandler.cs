@@ -1,6 +1,5 @@
 ﻿using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Application.Features.Comments.CreateComment;
 using BambaIba.Domain.Playlists;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;

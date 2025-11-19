@@ -56,9 +56,9 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
             entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
             entity.HasOne<Video>()
                 .WithMany()
-                .HasForeignKey(e => e.VideoId)
+                .HasForeignKey(e => e.MediaId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.VideoId);
+            entity.HasIndex(e => e.MediaId);
             entity.HasIndex(e => e.ParentCommentId);
         });
 

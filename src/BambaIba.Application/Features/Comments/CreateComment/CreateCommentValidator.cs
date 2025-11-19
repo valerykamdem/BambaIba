@@ -12,7 +12,7 @@ public class CreateCommentValidator : AbstractValidator<CreateCommentRequest>
         //RuleFor(x => x.UserId)
         //    .NotEmpty().WithMessage("User ID is required");
 
-        RuleFor(x => x.VideoId)
+        RuleFor(x => x.MediaId)
             .NotEmpty().WithMessage("Video ID is required");
     }
 }

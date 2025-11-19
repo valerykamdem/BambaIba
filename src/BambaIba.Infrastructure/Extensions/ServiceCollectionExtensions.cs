@@ -28,6 +28,7 @@ using Microsoft.IdentityModel.Tokens;
 using Minio;
 using Npgsql;
 using StackExchange.Redis;
+using BambaIba.Domain.MediaBase;
 
 namespace BambaIba.Infrastructure.Extensions;
 
@@ -101,6 +102,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ILikeRepository, LikeRepository>();
         services.AddScoped<IPlaylistRepository, PlaylistRepository>();
         services.AddScoped<IPlaylistItemRepository, PlaylistVideoRepository>();
+        services.AddScoped<IMediaRepository, MediaRepository>();
         services.AddScoped<IMediaStorageService, MinIOMediaStorageService>();
         services.AddScoped<IMediaProcessingService, FFmpegMediaProcessingService>();
 

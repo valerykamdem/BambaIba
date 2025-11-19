@@ -36,7 +36,7 @@ public class CommentRepository : ICommentRepository
         CancellationToken cancellationToken)
     {
         IQueryable<Comment> query = _dbContext.Comments.AsQueryable()
-                .Where(c => c.VideoId == videoId && c.ParentCommentId == null);
+                .Where(c => c.MediaId == videoId && c.ParentCommentId == null);
 
         return query;
     }
@@ -66,7 +66,7 @@ public class CommentRepository : ICommentRepository
     public IQueryable<Comment> GetReplies(Guid videoId, Guid parentCommentId, CancellationToken cancellationToken)
     {
         return _dbContext.Comments.AsQueryable()
-            .Where(c => c.VideoId == videoId
+            .Where(c => c.MediaId == videoId
                          && c.ParentCommentId == parentCommentId);
     }
 }

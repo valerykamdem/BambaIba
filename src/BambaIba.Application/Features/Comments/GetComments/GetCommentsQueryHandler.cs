@@ -29,15 +29,15 @@ public class GetCommentsQueryHandler : IQueryHandler<GetCommentsQuery, Result<Pa
                "Getting Comments: Page={Page}, PageSize={PageSize}, VideoId={VideoId}",
                query.Page,
                query.PageSize,
-               query.VideoId);
+               query.MediaId);
 
-            IQueryable<Comment> comments = _commentRepository.GetComments(query.VideoId, cancellationToken);
+            IQueryable<Comment> comments = _commentRepository.GetComments(query.MediaId, cancellationToken);
 
             PagedResult<CommentDto> pagedResult = await comments
                 .Select(c => new CommentDto
                 {
                     Id = c.Id,
-                    VideoId = c.VideoId,
+                    MediaId = c.MediaId,
                     UserId = c.UserId,
                     Content = c.Content,
                     ParentCommentId = c.ParentCommentId,

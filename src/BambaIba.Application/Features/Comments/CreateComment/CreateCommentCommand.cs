@@ -4,7 +4,7 @@ using Cortex.Mediator.Commands;
 namespace BambaIba.Application.Features.Comments.CreateComment;
 public sealed record CreateCommentCommand : ICommand<Result<CreateCommentResult>>
 {
-    public Guid VideoId { get; init; }
+    public Guid MediaId { get; init; }
     //public Guid UserId { get; init; }
     public string Content { get; init; } = string.Empty;
     public Guid? ParentCommentId { get; init; }

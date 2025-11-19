@@ -1,12 +1,8 @@
 ﻿using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Extensions;
-using BambaIba.Application.Features.Audios.GetAudios;
 using BambaIba.Domain.Comments;
-using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
-using BambaIba.SharedKernel.Comments;
 using Cortex.Mediator.Queries;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Comments.GetReplies;
@@ -34,7 +30,7 @@ public sealed class GetRepliesQueryHandler : IQueryHandler<GetRepliesQuery, Resu
                 .Select(c => new Application.Abstractions.Dtos.CommentDto
                 {
                     Id = c.Id,
-                    VideoId = c.VideoId,
+                    MediaId = c.MediaId,
                     UserId = c.UserId,
                     Content = c.Content,
                     ParentCommentId = c.ParentCommentId,

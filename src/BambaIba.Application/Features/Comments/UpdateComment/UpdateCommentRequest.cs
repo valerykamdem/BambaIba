@@ -1,3 +1,3 @@
 ﻿namespace BambaIba.Application.Features.Comments.UpdateComment;
 
-public sealed record UpdateCommentRequest(Guid VideoId, Guid CommentId, string Content);
+public sealed record UpdateCommentRequest(Guid MediaId, Guid CommentId, string Content);

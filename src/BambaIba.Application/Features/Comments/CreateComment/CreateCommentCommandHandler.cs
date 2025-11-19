@@ -2,6 +2,7 @@
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Comments;
+using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
@@ -12,7 +13,7 @@ namespace BambaIba.Application.Features.Comments.CreateComment;
 public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentCommand, Result<CreateCommentResult>>
 {
     private readonly ICommentRepository _commentRepository; 
-    private readonly IVideoRepository _videoRepository;
+    private readonly IMediaRepository _mediaRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserContextService _userContextService;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -20,14 +21,14 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
 
     public CreateCommentCommandHandler(
         ICommentRepository commentRepository,
-        IVideoRepository videoRepository,
+        IMediaRepository mediaRepository,
         IUnitOfWork unitOfWork,
         IUserContextService userContextService,
         IHttpContextAccessor httpContextAccessor,
         ILogger<CreateCommentCommandHandler> logger)
     {
         _commentRepository = commentRepository ?? throw new ArgumentNullException(nameof(commentRepository));
-        _videoRepository = videoRepository ?? throw new ArgumentNullException(nameof(videoRepository));
+        _mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
         _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
@@ -41,10 +42,10 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
             UserContext userContext = await _userContextService
                 .GetCurrentContext(_httpContextAccessor.HttpContext);
 
-            Video video = await _videoRepository.GetVideoById(command.VideoId);
+            Media media = await _mediaRepository.GetMediaById(command.MediaId);
 
-            if (video == null)
-                return Result.Failure<CreateCommentResult>(VideoErrors.NotFound(command.VideoId));
+            if (media == null)
+                return Result.Failure<CreateCommentResult>(VideoErrors.NotFound(command.MediaId));
 
             // Validation : Parent comment existe ? (si réponse)
             if (command.ParentCommentId.HasValue)
@@ -59,7 +60,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
             var comment = new Comment
             {
                 Id = Guid.CreateVersion7(),
-                VideoId = command.VideoId,
+                MediaId = command.MediaId,
                 UserId = userContext.LocalUserId,
                 Content = command.Content,
                 ParentCommentId = command.ParentCommentId,
@@ -68,13 +69,13 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
             await _commentRepository.AddCommentAsync(comment);
 
             // Incrémenter le compteur de commentaires de la vidéo
-            video.CommentCount++;
+            media.CommentCount++;
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             _logger.LogInformation(
-                "Comment created: {CommentId} by {UserId} on video {VideoId}",
-                comment.Id, userContext.LocalUserId, command.VideoId);
+                "Comment created: {CommentId} by {UserId} on video {MediaId}",
+                comment.Id, userContext.LocalUserId, command.MediaId);
 
             return Result.Success(CreateCommentResult.Success(comment.Id));
         }

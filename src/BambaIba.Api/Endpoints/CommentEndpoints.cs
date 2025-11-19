@@ -70,7 +70,7 @@ public class CommentEndpoints : ICarterModule
 
         var command = new CreateCommentCommand
         {
-            VideoId = request.VideoId,
+            MediaId = request.MediaId,
             //UserId = userId,
             Content = request.Content,
             ParentCommentId = request.ParentCommentId
@@ -85,14 +85,14 @@ public class CommentEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetComments(
-        Guid videoId,
+        Guid mediaId,
         [FromBody] GetCommentsRequest request,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
         var query = new GetCommentsQuery
         {
-            VideoId = videoId,
+            MediaId = mediaId,
             Page = request.Page,
             PageSize = request.PageSize
         };
@@ -114,7 +114,7 @@ public class CommentEndpoints : ICarterModule
                   ?? user.FindFirstValue("sub");
 
         var command = new UpdateCommentCommand(
-            request.VideoId,
+            request.MediaId,
             request.CommentId,
             request.Content);
 

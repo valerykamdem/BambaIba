@@ -2,7 +2,7 @@
 public sealed record CommentDto
 {
     public Guid Id { get; init; }
-    public Guid VideoId { get; init; }
+    public Guid MediaId { get; init; }
     public Guid UserId { get; init; }
     public string Content { get; init; } = string.Empty;
     public Guid? ParentCommentId { get; init; }
