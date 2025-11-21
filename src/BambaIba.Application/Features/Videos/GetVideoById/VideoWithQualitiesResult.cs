@@ -14,7 +14,7 @@ public sealed record VideoWithQualitiesResult
     public int LikeCount { get; init; }
     public int DislikeCount { get; init; }
     public List<VideoQualityDto> Qualities { get; init; } = [];
-    //public List<VideoQuality> Qualities { get; init; } = [];
+    //public ICollection<VideoQuality> Qualities { get; init; } = [];
     public DateTime? CreatedAt { get; init; }
     public Guid UserId { get; init; }
     public int CommentCount { get; init; }  // ← Juste le nombre

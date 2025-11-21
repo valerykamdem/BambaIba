@@ -34,7 +34,7 @@ public class VideoRepository : IVideoRepository
 
         // 1. Récupérer les métadonnées depuis PostgreSQL
         Video video = await _dbContext.Videos
-            //.Include(v => v.VideoQualities)
+            .Include(v => v.Qualities)
             .Where(v => v.Id == videoId && v.Status == MediaStatus.Ready)
             .FirstOrDefaultAsync(cancellationToken);
 
@@ -46,8 +46,7 @@ public class VideoRepository : IVideoRepository
         _dbContext.Entry(video).Property(v => v.PlayCount).IsModified = true;
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return video;
-        
+        return video;        
     }
 
     public IQueryable<Video> GetVideos()
