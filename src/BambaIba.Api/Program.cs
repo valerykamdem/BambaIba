@@ -39,17 +39,18 @@ builder.Services.AddPresentation(builder.Configuration)
     .AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration);
 
-//// ✅ CORS pour SignalR
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("SignalRPolicy", policy =>
-//    {
-//        policy.WithOrigins("http://localhost:3000") // Frontend URL
-//              .AllowAnyMethod()
-//              .AllowAnyHeader()
-//              .AllowCredentials(); // Important pour SignalR
-//    });
-//});
+// ✅ CORS pour SignalR
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000") // Frontend URL
+        //policy.WithOrigins() // Frontend URL
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials(); // Important pour SignalR
+    });
+});
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -82,7 +83,7 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddCarter();
 
-builder.Services.AddCors();
+//builder.Services.AddCors();
 
 if (builder.Environment.IsDevelopment())
 {
@@ -111,6 +112,7 @@ app.MapHealthChecks("health", new HealthCheckOptions
     ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
 });
 
+app.UseCors("AllowAll");
 //app.MapEndpoints();
 app.MapCarter();
 app.UseGlobalExceptionHandler();
@@ -126,9 +128,6 @@ app.UseExceptionHandler();
 //    options.AllowAnyMethod();
 //    options.AllowAnyOrigin();
 //});
-
-app.UseCors("AllowAll");
-//app.UseCors("SignalRPolicy");
 
 app.UseAuthentication();
 app.UseAuthorization();
