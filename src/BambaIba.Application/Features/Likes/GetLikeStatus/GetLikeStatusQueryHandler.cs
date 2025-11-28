@@ -2,6 +2,7 @@
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Likes;
+using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
@@ -12,7 +13,7 @@ namespace BambaIba.Application.Features.Likes.GetLikeStatus;
 public sealed class GetLikeStatusQueryHandler : IQueryHandler<GetLikeStatusQuery, Result<GetLikeStatusResult>>
 {
     private readonly ILikeRepository _likeRepository;
-    private readonly IVideoRepository _videoRepository;
+    private readonly IMediaRepository _mediaRepository;
     private readonly IUserContextService _userContextService;
     private readonly ILogger<GetLikeStatusQueryHandler> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -20,14 +21,14 @@ public sealed class GetLikeStatusQueryHandler : IQueryHandler<GetLikeStatusQuery
 
     public GetLikeStatusQueryHandler(
         ILikeRepository likeRepository,
-        IVideoRepository videoRepository,
+        IMediaRepository mediaRepository,
         IUserContextService userContextService,
         ILogger<GetLikeStatusQueryHandler> logger,
         IHttpContextAccessor httpContextAccessor,
         IUnitOfWork unitOfWork)
     {
         _likeRepository = likeRepository ?? throw new ArgumentNullException(nameof(likeRepository));
-        _videoRepository = videoRepository ?? throw new ArgumentNullException(nameof(videoRepository));
+        _mediaRepository = mediaRepository ?? throw new ArgumentNullException(nameof(mediaRepository));
         _userContextService = userContextService ?? throw new ArgumentNullException(nameof(userContextService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
@@ -44,21 +45,21 @@ public sealed class GetLikeStatusQueryHandler : IQueryHandler<GetLikeStatusQuery
             _logger.LogInformation("Get User id for user {UserId}",
                 userContext.LocalUserId);
 
-            Video? video = await _videoRepository.GetVideoById(query.VideoId);
+            Media? media = await _mediaRepository.GetMediaByIdAsync(query.MediaId, cancellationToken);
 
-            if (video == null)
-                return Result.Failure<GetLikeStatusResult>(VideoErrors.NotFound(query.VideoId));
+            if (media == null)
+                return Result.Failure<GetLikeStatusResult>(VideoErrors.NotFound(query.MediaId));
 
             Like? userLike = await _likeRepository
-                .GetLikeByUserAndVideoAsync(userContext.LocalUserId, video.Id, cancellationToken);
+                .GetLikeByUserAndVideoAsync(userContext.LocalUserId, media.Id, cancellationToken);
 
 
             return Result.Success(new GetLikeStatusResult
             {
                 HasLiked = userLike?.IsLike == true,
                 HasDisliked = userLike?.IsLike == false,
-                LikeCount = video?.LikeCount ?? 0,
-                DislikeCount = video?.DislikeCount ?? 0
+                LikeCount = media?.LikeCount ?? 0,
+                DislikeCount = media?.DislikeCount ?? 0
             });
 
         }

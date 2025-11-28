@@ -3,6 +3,7 @@ using System;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BambaIba.Infrastructure.Migrations
 {
     [DbContext(typeof(BambaIbaDbContext))]
-    partial class BambaIbaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251128120232_UpdateVideoQualityProperties")]
+    partial class UpdateVideoQualityProperties
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

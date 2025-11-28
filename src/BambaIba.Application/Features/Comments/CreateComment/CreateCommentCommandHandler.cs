@@ -42,7 +42,7 @@ public sealed class CreateCommentCommandHandler : ICommandHandler<CreateCommentC
             UserContext userContext = await _userContextService
                 .GetCurrentContext(_httpContextAccessor.HttpContext);
 
-            Media media = await _mediaRepository.GetMediaById(command.MediaId);
+            Media media = await _mediaRepository.GetMediaByIdAsync(command.MediaId, cancellationToken);
 
             if (media == null)
                 return Result.Failure<CreateCommentResult>(VideoErrors.NotFound(command.MediaId));

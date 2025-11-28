@@ -171,7 +171,7 @@ public class VideoConsumer : BackgroundService
             var videoQuality = new VideoQuality
             {
                 Id = Guid.CreateVersion7(),
-                VideoId = videoId,
+                MediaId = videoId,
                 Quality = quality,
                 StoragePath = qualityPath,
                 FileSize = qualitySize,

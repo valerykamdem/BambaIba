@@ -101,12 +101,12 @@ public class FFmpegMediaProcessingService : IMediaProcessingService
         {
             using FileStream stream = File.OpenRead(thumbnailPath);
             string storagePath = $"{videoId}.jpg";
-            await _storageService.UploadImageAsync(videoId, stream, storagePath, MediaType.VideoThumbnail);
+            string uploadImg = await _storageService.UploadImageAsync(videoId, stream, storagePath, MediaType.VideoThumbnail);
 
             CleanupFile(localVideoPath);
             CleanupFile(thumbnailPath);
 
-            return storagePath;
+            return uploadImg;
         }
 
         CleanupFile(localVideoPath);
@@ -207,7 +207,7 @@ public class FFmpegMediaProcessingService : IMediaProcessingService
         await process.WaitForExitAsync();
 
         // Parser JSON et extraire artist, album, etc.
-        return new Dictionary<string, string>();
+        return [];
     }
 
     private void CleanupFile(string path)

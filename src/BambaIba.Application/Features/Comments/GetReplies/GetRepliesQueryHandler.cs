@@ -27,7 +27,7 @@ public sealed class GetRepliesQueryHandler : IQueryHandler<GetRepliesQuery, Resu
                 .GetReplies(query.VideoId, query.ParentCommentId, cancellationToken);
 
             PagedResult<CommentDto> pagedResult = await replies
-                .Select(c => new Application.Abstractions.Dtos.CommentDto
+                .Select(c => new CommentDto
                 {
                     Id = c.Id,
                     MediaId = c.MediaId,
@@ -35,7 +35,7 @@ public sealed class GetRepliesQueryHandler : IQueryHandler<GetRepliesQuery, Resu
                     Content = c.Content,
                     ParentCommentId = c.ParentCommentId,
                     LikeCount = c.LikeCount,
-                    ReplayCount = 0, // Les réponses n'ont pas de sous-réponses
+                    ReplyCount = 0, // Les réponses n'ont pas de sous-réponses
                     CreatedAt = c.CreatedAt,
                     UpdatedAt = c.UpdatedAt,
                     IsEdited = c.IsEdited

@@ -23,11 +23,11 @@ public class LikeRepository : ILikeRepository
 
     public async Task<Like> GetLikeByUserAndVideoAsync(
         Guid userId, 
-        Guid videoId, 
+        Guid mediaId, 
         CancellationToken cancellationToken)
     {
         return await _dbContext.Likes
-            .Where(l => l.UserId == userId && l.VideoId == videoId)
+            .Where(l => l.UserId == userId && l.MediaId == mediaId)
             .FirstOrDefaultAsync(cancellationToken);
     }
 

@@ -88,10 +88,6 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BambaIbaDbContext>());
 
-        services.AddScoped<IVideoProcessingService, FFmpegVideoProcessingService>();
-        services.AddScoped<IVideoStorageService, MinIOVideoStorageService>();
-        services.AddScoped<IAudioStorageService, MinIOAudioStorageService>();
-        services.AddScoped<IAudioProcessingService, FFmpegAudioProcessingService>();
         services.AddScoped<ILiveStreamRepository, LiveStreamRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<IAudioRepository, AudioRepository>();

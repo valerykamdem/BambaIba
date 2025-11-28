@@ -3,6 +3,7 @@ using System;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace BambaIba.Infrastructure.Migrations
 {
     [DbContext(typeof(BambaIbaDbContext))]
-    partial class BambaIbaDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251128010341_UpdatePropertyLike")]
+    partial class UpdatePropertyLike
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -959,10 +962,6 @@ namespace BambaIba.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("is_deleted");
 
-                    b.Property<Guid>("MediaId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("media_id");
-
                     b.Property<string>("Quality")
                         .IsRequired()
                         .HasColumnType("text")
@@ -981,12 +980,16 @@ namespace BambaIba.Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("updated_by");
 
+                    b.Property<Guid>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
                     b.HasKey("Id")
                         .HasName("pk_video_qualities");
 
-                    b.HasIndex("MediaId", "Quality")
+                    b.HasIndex("VideoId", "Quality")
                         .IsUnique()
-                        .HasDatabaseName("ix_video_qualities_media_id_quality");
+                        .HasDatabaseName("ix_video_qualities_video_id_quality");
 
                     b.ToTable("video_qualities", (string)null);
                 });
@@ -1091,10 +1094,10 @@ namespace BambaIba.Infrastructure.Migrations
                 {
                     b.HasOne("BambaIba.Domain.Videos.Video", null)
                         .WithMany("Qualities")
-                        .HasForeignKey("MediaId")
+                        .HasForeignKey("VideoId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_video_qualities_videos_media_id");
+                        .HasConstraintName("fk_video_qualities_videos_video_id");
                 });
 
             modelBuilder.Entity("BambaIba.Domain.Entities.Role", b =>

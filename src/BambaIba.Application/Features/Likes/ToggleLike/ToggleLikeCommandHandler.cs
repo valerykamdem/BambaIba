@@ -7,6 +7,7 @@ using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Features.Comments.CreateComment;
 using BambaIba.Domain.Comments;
 using BambaIba.Domain.Likes;
+using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
@@ -16,18 +17,18 @@ namespace BambaIba.Application.Features.Likes.ToggleLike;
 public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand, Result<ToggleLikeResult>>
 {
     private readonly ILikeRepository _likeRepository;
-    private readonly IVideoRepository _videoRepository;
+    private readonly IMediaRepository _mediaRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ToggleLikeCommandHandler> _logger;
 
     public ToggleLikeCommandHandler(
         ILikeRepository likeRepository,
-        IVideoRepository videoRepository,
+        IMediaRepository mediaRepository,
         IUnitOfWork unitOfWork,
         ILogger<ToggleLikeCommandHandler> logger)
     { 
         _likeRepository = likeRepository;
-        _videoRepository = videoRepository;
+        _mediaRepository = mediaRepository;
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -37,15 +38,15 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
 
         try
         {
-            Video video = await _videoRepository.GetVideoById(command.VideoId);
+            Media media = await _mediaRepository.GetMediaByIdAsync(command.MediaId, cancellationToken);
 
-            if (video == null)
-                return ToggleLikeResult.Failure("Video not found");
+            if (media == null)
+                return ToggleLikeResult.Failure("Media not found");
             
             Like existingLike = await _likeRepository
                 .GetLikeByUserAndVideoAsync(
                     command.UserId,
-                    command.VideoId,
+                    command.MediaId,
                     cancellationToken); 
 
             if (existingLike != null)
@@ -56,15 +57,15 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                     _likeRepository.Delete(existingLike);
 
                     if (existingLike.IsLike)
-                        video.LikeCount--;
+                        media.LikeCount--;
                     else
-                        video.DislikeCount--;
+                        media.DislikeCount--;
 
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                     return ToggleLikeResult.Success(
-                        video.LikeCount,
-                        video.DislikeCount,
+                        media.LikeCount,
+                        media.DislikeCount,
                         new UserLikeStatus { HasLiked = false, HasDisliked = false });
                 }
                 else
@@ -72,13 +73,13 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                     // User change d'avis (like → dislike ou vice versa)
                     if (existingLike.IsLike)
                     {
-                        video.LikeCount--;
-                        video.DislikeCount++;
+                        media.LikeCount--;
+                        media.DislikeCount++;
                     }
                     else
                     {
-                        video.DislikeCount--;
-                        video.LikeCount++;
+                        media.DislikeCount--;
+                        media.LikeCount++;
                     }
 
                     existingLike.IsLike = command.IsLike;
@@ -87,8 +88,8 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                     return Result.Success(ToggleLikeResult.Success(
-                        video.LikeCount,
-                        video.DislikeCount,
+                        media.LikeCount,
+                        media.DislikeCount,
                         new UserLikeStatus
                         {
                             HasLiked = command.IsLike,
@@ -102,7 +103,7 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                 var like = new Like
                 {
                     Id = Guid.CreateVersion7(),
-                    VideoId = command.VideoId,
+                    MediaId = command.MediaId,
                     UserId = command.UserId,
                     IsLike = command.IsLike,
                     CreatedAt = DateTime.UtcNow
@@ -111,15 +112,15 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                 await _likeRepository.AddLikeAsync(like);
 
                 if (command.IsLike)
-                    video.LikeCount++;
+                    media.LikeCount++;
                 else
-                    video.DislikeCount++;
+                    media.DislikeCount++;
 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
 
                 return Result.Success(ToggleLikeResult.Success(
-                    video.LikeCount,
-                    video.DislikeCount,
+                    media.LikeCount,
+                    media.DislikeCount,
                     new UserLikeStatus
                     {
                         HasLiked = command.IsLike,

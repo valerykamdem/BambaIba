@@ -3,7 +3,7 @@ using Cortex.Mediator.Commands;
 
 namespace BambaIba.Application.Features.Likes.ToggleLike;
 public sealed record ToggleLikeCommand(
-    Guid VideoId,
+    Guid MediaId,
     Guid UserId,
     bool IsLike) : ICommand<Result<ToggleLikeResult>>;
 

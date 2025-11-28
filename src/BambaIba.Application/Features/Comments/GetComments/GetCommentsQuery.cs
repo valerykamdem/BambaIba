@@ -1,7 +1,6 @@
 ﻿using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Extensions;
 using BambaIba.SharedKernel;
-using BambaIba.SharedKernel.Comments;
 using Cortex.Mediator.Queries;
 
 namespace BambaIba.Application.Features.Comments.GetComments;

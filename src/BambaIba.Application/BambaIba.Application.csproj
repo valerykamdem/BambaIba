@@ -7,7 +7,6 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Folder Include="Abstractions\Mappings\" />
 		<Folder Include="Features\Channels\" />
 		<Folder Include="Features\VideoQuality\" />
 		<Folder Include="Features\Subscriptions\" />

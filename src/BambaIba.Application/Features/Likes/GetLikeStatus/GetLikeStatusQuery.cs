@@ -2,7 +2,7 @@
 using Cortex.Mediator.Queries;
 
 namespace BambaIba.Application.Features.Likes.GetLikeStatus;
-public sealed record GetLikeStatusQuery(Guid VideoId) : IQuery<Result<GetLikeStatusResult>>;
+public sealed record GetLikeStatusQuery(Guid MediaId) : IQuery<Result<GetLikeStatusResult>>;
 
 public record GetLikeStatusResult
 {

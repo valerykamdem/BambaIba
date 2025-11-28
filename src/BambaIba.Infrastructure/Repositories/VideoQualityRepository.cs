@@ -17,9 +17,9 @@ public class VideoQualityRepository : IVideoQualityRepository
         await _dbContext.SaveChangesAsync();
     }
 
-    public IQueryable<VideoQuality> GetAllByVideoId(Guid videoId)
+    public IQueryable<VideoQuality> GetAllByMediaId(Guid mediaId)
     {
        return _dbContext.VideoQualities.AsQueryable()
-            .Where(q => q.VideoId == videoId);
+            .Where(q => q.MediaId == mediaId);
     }
 }

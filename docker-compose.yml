@@ -184,6 +184,22 @@ services:
     networks:
       - bambaiba_network
 
+# NGINX Service
+  nginx:
+    image: nginx:latest
+    container_name: bambaiba_minio_proxy
+    ports:
+      - "8443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - minio
+    networks:
+      - bambaiba_network
+
 # RABBBITMQ Service
   bambaiba_worker:
     image: ${DOCKER_REGISTRY-}bambaibaworker

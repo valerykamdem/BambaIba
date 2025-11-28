@@ -68,9 +68,9 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
             entity.HasKey(e => e.Id);
             entity.HasOne<Video>()
                 .WithMany()
-                .HasForeignKey(e => e.VideoId)
+                .HasForeignKey(e => e.MediaId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.VideoId, e.UserId }).IsUnique();
+            entity.HasIndex(e => new { e.MediaId, e.UserId }).IsUnique();
         });
 
         // Configuration View
@@ -202,7 +202,7 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
             // Relation avec VideoQuality
             entity.HasMany(v => v.Qualities)
                   .WithOne()
-                  .HasForeignKey(q => q.VideoId)
+                  .HasForeignKey(q => q.MediaId)
                   .OnDelete(DeleteBehavior.Cascade);
         });
 
@@ -222,9 +222,9 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
             entity.HasKey(e => e.Id);
             entity.HasOne<Video>()
                 .WithMany(v => v.Qualities)
-                .HasForeignKey(e => e.VideoId)
+                .HasForeignKey(e => e.MediaId)
                 .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.VideoId, e.Quality }).IsUnique();
+            entity.HasIndex(e => new { e.MediaId, e.Quality }).IsUnique();
         });
     }
 }

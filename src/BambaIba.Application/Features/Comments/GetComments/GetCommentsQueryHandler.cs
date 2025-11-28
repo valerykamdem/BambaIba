@@ -42,7 +42,7 @@ public class GetCommentsQueryHandler : IQueryHandler<GetCommentsQuery, Result<Pa
                     Content = c.Content,
                     ParentCommentId = c.ParentCommentId,
                     LikeCount = c.LikeCount,
-                    ReplayCount = comments.Count(r => r.ParentCommentId == c.Id),
+                    ReplyCount = comments.Count(r => r.ParentCommentId == c.Id),
                     CreatedAt = c.CreatedAt,
                     UpdatedAt = c.UpdatedAt,
                     IsEdited = c.IsEdited

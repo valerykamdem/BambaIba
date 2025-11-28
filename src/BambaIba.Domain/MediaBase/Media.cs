@@ -7,6 +7,10 @@ public abstract class Media : Entity<Guid>, ISoftDeletable
 {
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
+    public string Speaker { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public string Topic { get; set; } = string.Empty;
+    public string Language { get; set; } = string.Empty;
     public Guid UserId { get; set; }
 
     // File and Stockage
