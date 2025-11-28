@@ -3,7 +3,6 @@ using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Extensions;
-using BambaIba.Application.Features.Audios.GetAudios;
 using BambaIba.Application.Features.Comments.CreateComment;
 using BambaIba.Application.Features.Comments.DeleteComment;
 using BambaIba.Application.Features.Comments.GetComments;
