@@ -174,7 +174,7 @@ services:
 # Serveur RTMP pour le streaming
   nginx-rtmp:
     image: tiangolo/nginx-rtmp
-    container_name: bambaiba-rtmp
+    container_name: bambaiba_rtmp
     ports:
       - "1935:1935"  # Port RTMP
       - "8080:80"    # Port HLS

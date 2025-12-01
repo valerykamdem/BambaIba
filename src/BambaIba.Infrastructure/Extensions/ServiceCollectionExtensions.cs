@@ -1,14 +1,17 @@
-﻿using BambaIba.Application.Abstractions.Data;
+﻿using BambaIba.Application.Abstractions.Caching;
+using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Audios;
 using BambaIba.Domain.Comments;
 using BambaIba.Domain.Likes;
 using BambaIba.Domain.LiveChatMessages;
 using BambaIba.Domain.LiveStream;
-using BambaIba.Domain.Playlists;
+using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.PlaylistItems;
+using BambaIba.Domain.Playlists;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
+using BambaIba.Infrastructure.Caching;
 using BambaIba.Infrastructure.Persistence;
 using BambaIba.Infrastructure.Repositories;
 using BambaIba.Infrastructure.Repositories.Authentications;
@@ -28,7 +31,6 @@ using Microsoft.IdentityModel.Tokens;
 using Minio;
 using Npgsql;
 using StackExchange.Redis;
-using BambaIba.Domain.MediaBase;
 
 namespace BambaIba.Infrastructure.Extensions;
 
@@ -90,8 +92,9 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ILiveStreamRepository, LiveStreamRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
-        services.AddScoped<IAudioRepository, AudioRepository>();
-        services.AddScoped<IVideoRepository, VideoRepository>();
+        //services.AddScoped<IAudioRepository, AudioRepository>();
+        //services.AddScoped<IVideoRepository, VideoRepository>();
+        services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IVideoQualityRepository, VideoQualityRepository>();
         services.AddScoped<IUserContextService, UserContextService>();
         services.AddScoped<ICommentRepository, CommentRepository>();

@@ -8,6 +8,7 @@ using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using BambaIba.Domain.MediaBase;
 
 namespace BambaIba.Application.Features.Playlists.AddVideoToPlaylist;
 public class AddVideoToPlaylistCommandHandler : 
@@ -15,7 +16,7 @@ public class AddVideoToPlaylistCommandHandler :
 {
     private readonly IPlaylistRepository _playlistRepository;
     private readonly IPlaylistItemRepository _playlistVideosRepository;
-    private readonly IVideoRepository _videoRepository;
+    private readonly IMediaRepository _mediaRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserContextService _userContextService;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -24,7 +25,7 @@ public class AddVideoToPlaylistCommandHandler :
     public AddVideoToPlaylistCommandHandler(
         IPlaylistRepository playlistRepository,
         IPlaylistItemRepository playlistVideosRepository,
-        IVideoRepository videoRepository,
+        IMediaRepository mediaRepository,
         IUnitOfWork unitOfWork,
         IUserContextService userContextService,
         IHttpContextAccessor httpContextAccessor,
@@ -32,7 +33,7 @@ public class AddVideoToPlaylistCommandHandler :
     {
         _playlistRepository = playlistRepository;
         _playlistVideosRepository = playlistVideosRepository;
-        _videoRepository = videoRepository;
+        _mediaRepository = mediaRepository;
         _unitOfWork = unitOfWork;
         _userContextService = userContextService;
         _httpContextAccessor = httpContextAccessor;
@@ -56,10 +57,10 @@ public class AddVideoToPlaylistCommandHandler :
             if (playlist.UserId != userContext.LocalUserId)
                 return AddVideoToPlaylistResult.Failure("Unauthorized");
 
-            Video video = await _videoRepository.GetVideoById(command.MediaId);
+            Media media = await _mediaRepository.GetMediaByIdAsync(command.MediaId, cancellationToken);
 
-            if (video == null)
-                return AddVideoToPlaylistResult.Failure("Video not found");
+            if (media == null)
+                return AddVideoToPlaylistResult.Failure("media not found");
 
             // Vérifier si déjà dans la playlist
             bool exists = playlist.Items.Any(pv => pv.MediaId == command.MediaId);

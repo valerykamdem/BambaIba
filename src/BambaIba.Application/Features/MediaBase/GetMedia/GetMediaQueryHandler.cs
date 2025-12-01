@@ -1,9 +1,8 @@
-﻿using BambaIba.Application.Abstractions.Interfaces;
+﻿using BambaIba.Application.Abstractions.Caching;
+using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Extensions;
-using BambaIba.Domain.Audios;
 using BambaIba.Domain.Enums;
 using BambaIba.Domain.MediaBase;
-using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +13,18 @@ namespace BambaIba.Application.Features.MediaBase.GetMedia;
 public sealed class GetMediaQueryHandler : IQueryHandler<GetMediaQuery, Result<PagedResult<MediaDto>>>
 {
     private readonly IMediaRepository _mediaRepository;
+    private readonly ICacheService _cacheService;
     private readonly IMediaStorageService _mediaStorageService;
     private readonly ILogger<GetMediaQueryHandler> _logger;
 
     public GetMediaQueryHandler(
         IMediaRepository mediaRepository,
+        ICacheService cacheService,
         IMediaStorageService mediaStorageService,
     ILogger<GetMediaQueryHandler> logger)
     {
         _mediaRepository = mediaRepository;
+        _cacheService = cacheService;
         _mediaStorageService = mediaStorageService;
         _logger = logger;
     }
@@ -31,6 +33,16 @@ public sealed class GetMediaQueryHandler : IQueryHandler<GetMediaQuery, Result<P
     {
         try
         {
+            if (await _cacheService.GetAsync<PagedResult<MediaDto>>($"GetMediaQuery-{query.Page}-{query.PageSize}", cancellationToken) is { } cachedResult)
+            {
+                _logger.LogInformation(
+                    "Retrieved media from cache: Page={Page}, PageSize={PageSize}, Search={Search}",
+                    query.Page,
+                    query.PageSize,
+                    query.Search);
+                return Result.Success(cachedResult);
+            }
+
             _logger.LogInformation(
                 "Getting videos: Page={Page}, PageSize={PageSize}, Search={Search}",
                 query.Page,
@@ -73,14 +85,18 @@ public sealed class GetMediaQueryHandler : IQueryHandler<GetMediaQuery, Result<P
 
             int totalCount = await media.CountAsync(cancellationToken);
 
-            return Result.Success(new PagedResult<MediaDto>
+            var newPagedResult = new PagedResult<MediaDto>
             {
                 Items = pagedResult.Items,
-                TotalCount = pagedResult.TotalCount,
+                TotalCount = totalCount,
                 Page = pagedResult.Page,
                 PageSize = pagedResult.PageSize,
-                TotalPages = pagedResult.TotalPages,
-            });
+                TotalPages = pagedResult.TotalPages
+            };
+
+            await _cacheService.SetAsync($"GetMediaQuery-{query.Page}-{query.PageSize}", newPagedResult, TimeSpan.FromMinutes(5), cancellationToken);
+
+            return Result.Success(newPagedResult);
         }
         catch (Exception ex)
         {

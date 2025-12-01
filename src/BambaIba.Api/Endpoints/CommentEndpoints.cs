@@ -33,7 +33,7 @@ public class CommentEndpoints : ICarterModule
             .WithValidation<CreateCommentRequest>()
             .WithName("CreateComment");
 
-        group.MapGet("/", GetComments)
+        group.MapGet("/{mediaId:guid}", GetComments)
             .Produces<PagedResult<CommentDto>>(StatusCodes.Status200OK)
             .WithName("GetComments");
 
@@ -85,15 +85,15 @@ public class CommentEndpoints : ICarterModule
 
     private static async Task<IResult> GetComments(
         Guid mediaId,
-        [FromBody] GetCommentsRequest request,
+        //[AsParameters] GetCommentsRequest request,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
         var query = new GetCommentsQuery
         {
             MediaId = mediaId,
-            Page = request.Page,
-            PageSize = request.PageSize
+            Page = 10, //request.Page,
+            PageSize = 100// request.PageSize
         };
 
         Result<PagedResult<CommentDto>> result =
