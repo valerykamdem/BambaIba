@@ -7,7 +7,7 @@ HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration);
 
-builder.Services.AddHostedService<VideoConsumer>();
+builder.Services.AddHostedService<MediaConsumer>();
 
 // 👉 Logger
 builder.Services.AddLogging(config =>

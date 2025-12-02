@@ -1,6 +1,8 @@
 ﻿using BambaIba.Application.Abstractions.Data;
+using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Settings;
 using BambaIba.Domain.Enums;
+using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
 using RabbitMQ.Client;
@@ -10,20 +12,19 @@ using System.Text;
 namespace BambaIba.Worker;
 
 
-
-public class VideoConsumer : BackgroundService
+public class MediaConsumer : BackgroundService
 {
-    private readonly ILogger<VideoConsumer> _logger;
+    private readonly ILogger<MediaConsumer> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IVideoProcessingService _processingService;
-    private readonly IVideoStorageService _storageService;
+    private readonly IMediaProcessingService _processingService;
+    private readonly IMediaStorageService _storageService;
     private readonly IUnitOfWork _unitOfWork;
 
-    public VideoConsumer(
-        ILogger<VideoConsumer> logger,
+    public MediaConsumer(
+        ILogger<MediaConsumer> logger,
         IServiceScopeFactory scopeFactory,
-        IVideoProcessingService processingService,
-        IVideoStorageService storageService,
+        IMediaProcessingService processingService,
+        IMediaStorageService storageService,
         IUnitOfWork unitOfWork)
     {
         _logger = logger;
@@ -87,7 +88,7 @@ public class VideoConsumer : BackgroundService
                 _logger.LogInformation(" [x] Received video {VideoId}", videoId);
 
                 // Appel de ton traitement factorisé
-                await ProcessVideoAsync(videoId);
+                await ProcessVideoAsync(videoId, stoppingToken);
 
                 // Ack async
                 await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
@@ -109,18 +110,18 @@ public class VideoConsumer : BackgroundService
         _logger.LogInformation(" [*] Worker started, waiting for messages...");
     }
 
-    private async Task ProcessVideoAsync(Guid videoId)
+    private async Task ProcessVideoAsync(Guid videoId, CancellationToken cancellationToken)
     {
         _logger.LogInformation("Starting video processing for {VideoId}", videoId);
 
         try
         {
             // --- SCOPE 1: Charger la vidéo ---
-            Video video;
+            Media video;
             using (IServiceScope scope = _scopeFactory.CreateScope())
             {
-                IVideoRepository repo = scope.ServiceProvider.GetRequiredService<IVideoRepository>();
-                video = await repo.GetVideoById(videoId);
+                IMediaRepository repo = scope.ServiceProvider.GetRequiredService<IMediaRepository>();
+                video = await repo.GetMediaByIdAsync(videoId, cancellationToken);
             }
 
             if (video == null || string.IsNullOrEmpty(video.StoragePath))
@@ -130,7 +131,7 @@ public class VideoConsumer : BackgroundService
             }
 
             // 1. Durée
-            video.Duration = await _processingService.GetVideoDurationAsync(video.StoragePath);
+            video.Duration = await _processingService.GetDurationAsync(video.StoragePath);
             _logger.LogInformation("Duration extracted: {Duration}", video.Duration);
 
             // 2. Miniature
@@ -146,13 +147,13 @@ public class VideoConsumer : BackgroundService
             }
 
             // 4. Mise à jour finale
-            await UpdateVideoStatusAsync(videoId, MediaStatus.Ready);
+            await UpdateMediaStatusAsync(videoId, MediaStatus.Ready, cancellationToken);
             _logger.LogInformation("Video processing completed successfully for {VideoId}", videoId);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to process video {VideoId}", videoId);
-            await UpdateVideoStatusAsync(videoId, MediaStatus.Failed);
+            await UpdateMediaStatusAsync(videoId, MediaStatus.Failed, cancellationToken);
         }
     }
 
@@ -189,12 +190,12 @@ public class VideoConsumer : BackgroundService
         }
     }
 
-    private async Task UpdateVideoStatusAsync(Guid videoId, MediaStatus status)
+    private async Task UpdateMediaStatusAsync(Guid videoId, MediaStatus status, CancellationToken cancellationToken)
     {
         using IServiceScope scope = _scopeFactory.CreateScope();
-        IVideoRepository repo = scope.ServiceProvider.GetRequiredService<IVideoRepository>();
+        IMediaRepository repo = scope.ServiceProvider.GetRequiredService<IMediaRepository>();
 
-        Video video = await repo.GetVideoById(videoId);
+        Media video = await repo.GetMediaByIdAsync(videoId, cancellationToken);
         if (video != null)
         {
             video.Status = status;
@@ -202,7 +203,7 @@ public class VideoConsumer : BackgroundService
             if (status == MediaStatus.Ready)
                 video.PublishedAt = DateTime.UtcNow;
 
-            await repo.UpdateVideoStatus(video);
+            await repo.UpdateMediaStatus(video);
         }
     }
 }

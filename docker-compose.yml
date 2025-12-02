@@ -170,20 +170,6 @@ services:
     networks:
       - bambaiba_network
 
-# RTMP Service
-# Serveur RTMP pour le streaming
-  nginx-rtmp:
-    image: tiangolo/nginx-rtmp
-    container_name: bambaiba_rtmp
-    ports:
-      - "1935:1935"  # Port RTMP
-      - "8080:80"    # Port HLS
-    volumes:
-      - ./nginx-rtmp.conf:/etc/nginx/nginx.conf
-      - ./hls:/tmp/hls
-    networks:
-      - bambaiba_network
-
 # NGINX Service
   nginx:
     image: nginx:latest
@@ -200,7 +186,7 @@ services:
     networks:
       - bambaiba_network
 
-# RABBBITMQ Service
+# Worker Service
   bambaiba_worker:
     image: ${DOCKER_REGISTRY-}bambaibaworker
     container_name: bambaiba_worker
@@ -231,6 +217,7 @@ volumes:
   minio_data:
   bambaiba_api_data:
   rabbitmq_data:
+  owncast_data:
 
 networks:
   bambaiba_network:

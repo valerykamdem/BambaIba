@@ -5,9 +5,10 @@
     <DockerTargetOS>Linux</DockerTargetOS>
     <DockerPublishLocally>False</DockerPublishLocally>
     <ProjectGuid>81dded9d-158b-e303-5f62-77a2896d2a5a</ProjectGuid>
-	<ComposeProjectName>bambaiba_dev</ComposeProjectName>
+    <ComposeProjectName>bambaiba_dev</ComposeProjectName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="docker-compose.azuracast.yml" />
     <None Include="docker-compose.build.yml" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
@@ -15,6 +16,6 @@
     <None Include="docker-compose.prod.yml" />
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
-	<None Include=".env" />
+    <None Include=".env" />
   </ItemGroup>
 </Project>
