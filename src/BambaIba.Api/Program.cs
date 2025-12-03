@@ -6,6 +6,7 @@ using BambaIba.Infrastructure.Extensions;
 using BambaIba.Infrastructure.Persistence;
 using Carter;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
@@ -44,11 +45,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // Frontend URL
-        //policy.WithOrigins() // Frontend URL
+        policy.WithOrigins("http://localhost:3000", "http://localhost:7000")
               .AllowAnyMethod()
               .AllowAnyHeader()
-              .AllowCredentials(); // Important pour SignalR
+              .AllowCredentials();
     });
 });
 
@@ -78,6 +78,10 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/app/data-protection-keys"))
+    .SetApplicationName("BambaIba");
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -96,7 +100,7 @@ if (builder.Environment.IsDevelopment())
 WebApplication app = builder.Build();
 
 //// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
@@ -132,6 +136,8 @@ app.UseExceptionHandler();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
+
 // ✅ Mapper le Hub
 app.MapHub<LiveChatHub>("/hubs/livechathub");
 
@@ -145,8 +151,7 @@ app.Use(async (context, next) =>
     {
         BambaIbaDbContext db = services.GetRequiredService<BambaIbaDbContext>();
         // Force la création des tables si elles n’existent pas encore
-        await db.Database.EnsureCreatedAsync();
-
+        //await db.Database.EnsureCreatedAsync();
         db.Database.Migrate();
         SeedData.Initialize(services);
     }

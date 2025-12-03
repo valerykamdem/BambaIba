@@ -23,14 +23,14 @@ public sealed class UploadMediaCommandHandler : ICommandHandler<UploadMediaComma
     private readonly ILogger<UploadMediaCommandHandler> _logger;
     private readonly IUserContextService _userContextService;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly VideoPublisher _videoPublisher;
+    private readonly MediaPublisher _videoPublisher;
 
     public UploadMediaCommandHandler(
         IServiceScopeFactory serviceScopeFactory,
         ILogger<UploadMediaCommandHandler> logger,
         IUserContextService userContextService,
         IHttpContextAccessor httpContextAccessor,
-        VideoPublisher videoPublisher
+        MediaPublisher videoPublisher
         )
     {
         _serviceScopeFactory = serviceScopeFactory;
@@ -150,8 +150,10 @@ public sealed class UploadMediaCommandHandler : ICommandHandler<UploadMediaComma
 
                 _logger.LogInformation("{Type} uploaded to storage: {StoragePath}", command.Type, storagePath);
 
-                // 4. Traitement asynchrone
+                //// 4. Traitement asynchrone
                 _ = Task.Run(async () => await ProcessMediaAsync(media.Id, media.ThumbnailPath, cancellationToken), cancellationToken);
+
+                //await _videoPublisher.PublishMediaForProcessingAsync(media.Id, media.ThumbnailPath, cancellationToken);
 
                 return Result.Success(UploadMediaResult.Success(
                     media.Id, media.Status, $"{command.Type} uploaded successfully"));

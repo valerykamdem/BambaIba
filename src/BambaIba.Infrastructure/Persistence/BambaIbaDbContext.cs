@@ -7,12 +7,13 @@ using BambaIba.Domain.Likes;
 using BambaIba.Domain.LiveChatMessages;
 using BambaIba.Domain.LiveStream;
 using BambaIba.Domain.MediaBase;
-using BambaIba.Domain.Playlists;
 using BambaIba.Domain.PlaylistItems;
+using BambaIba.Domain.Playlists;
 using BambaIba.Domain.Users;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BambaIba.Infrastructure.Persistence;
@@ -186,11 +187,18 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
             entity.Property(m => m.IsPublic).HasDefaultValue(true);
             entity.Property(m => m.PublishedAt);
 
-            // Tags (conversion en JSON ou string selon ton provider)
+            // Tags (conversion + comparer)
             entity.Property(m => m.Tags)
                   .HasConversion(
                       v => string.Join(',', v),
                       v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                  )
+                  .Metadata.SetValueComparer(
+                      new ValueComparer<List<string>>(
+                          (c1, c2) => c1.SequenceEqual(c2),
+                          c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                          c => c.ToList()
+                      )
                   );
         });
 

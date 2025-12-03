@@ -4,11 +4,11 @@ using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
 namespace BambaIba.Application.Abstractions.Services;
-public class VideoPublisher
+public class MediaPublisher
 {
     private readonly ConnectionFactory _factory;
 
-    public VideoPublisher(IOptions<RabbitMqOptions> options)
+    public MediaPublisher(IOptions<RabbitMqOptions> options)
     {
         RabbitMqOptions cfg = options.Value;
         _factory = new ConnectionFactory()
@@ -19,7 +19,7 @@ public class VideoPublisher
         };
     }
 
-    public async Task PublishVideoForProcessingAsync(Guid videoId, CancellationToken cancellationToken = default)
+    public async Task PublishMediaForProcessingAsync(Guid mediaId, string path, CancellationToken cancellationToken = default)
     {
         // 1. Connexion async
         await using IConnection connection = await _factory.CreateConnectionAsync(cancellationToken);
@@ -29,7 +29,7 @@ public class VideoPublisher
 
         // 3. Déclarer la queue (assure qu’elle existe)
         await channel.QueueDeclareAsync(
-            queue: "video-processing",
+            queue: "media-processing",
             durable: true,
             exclusive: false,
             autoDelete: false,
@@ -38,7 +38,8 @@ public class VideoPublisher
         );
 
         // 4. Préparer le message
-        byte[] body = Encoding.UTF8.GetBytes(videoId.ToString());
+        string payload = $"{mediaId}|{path}";
+        byte[] body = Encoding.UTF8.GetBytes(payload);
 
         // --- Création explicite des propriétés ---
         // Crée un objet qui implémente IBasicProperties
@@ -50,8 +51,8 @@ public class VideoPublisher
 
         // 5. Publier le message (note le <IBasicProperties>)
         await channel.BasicPublishAsync(
-             exchange: "video_exchange",
-             routingKey: "video-processing",
+             exchange: "media_exchange",
+             routingKey: "media-processing",
              //mandatory: false,
              //basicProperties: props, // Passage de l'objet BasicProperties
              body: body,

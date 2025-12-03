@@ -1,13 +1,16 @@
-﻿using BambaIba.Application.Abstractions.Data;
+﻿using System.Text;
+using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Application.Features.MediaBase.UploadMedia;
 using BambaIba.Application.Settings;
+using BambaIba.Domain.Audios;
 using BambaIba.Domain.Enums;
 using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.VideoQualities;
 using BambaIba.Domain.Videos;
+using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using System.Text;
 
 namespace BambaIba.Worker;
 
@@ -50,7 +53,7 @@ public class MediaConsumer : BackgroundService
         await using IChannel channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
 
         await channel.ExchangeDeclareAsync(
-            exchange: "video-exchange",
+            exchange: "media-exchange",
             type: ExchangeType.Direct,
             durable: true,
             autoDelete: false,
@@ -60,7 +63,7 @@ public class MediaConsumer : BackgroundService
 
         // 3. Déclarer la queue
         await channel.QueueDeclareAsync(
-            queue: "video-processing",
+            queue: "media-processing",
             durable: true,
             exclusive: false,
             autoDelete: false,
@@ -69,9 +72,9 @@ public class MediaConsumer : BackgroundService
         );
 
         await channel.QueueBindAsync(
-            queue: "video-processing",
-            exchange: "video-exchange",
-            routingKey: "video-processing",
+            queue: "media-processing",
+            exchange: "media-exchange",
+            routingKey: "media-processing",
             cancellationToken: stoppingToken
         );
 
@@ -83,12 +86,15 @@ public class MediaConsumer : BackgroundService
             {
                 byte[] body = ea.Body.ToArray();
                 string message = Encoding.UTF8.GetString(body);
-                var videoId = Guid.Parse(message);
+                string[] parts = message.Split('|');
+                var mediaId = Guid.Parse(parts[0]);
+                string path = parts[1];
 
-                _logger.LogInformation(" [x] Received video {VideoId}", videoId);
+                _logger.LogInformation(" [x] Received video {MediaId}", mediaId);
 
                 // Appel de ton traitement factorisé
-                await ProcessVideoAsync(videoId, stoppingToken);
+                //await ProcessVideoAsync(videoId, stoppingToken);
+                await ProcessMediaAsync(mediaId, path, stoppingToken);
 
                 // Ack async
                 await channel.BasicAckAsync(ea.DeliveryTag, multiple: false, cancellationToken: stoppingToken);
@@ -109,6 +115,119 @@ public class MediaConsumer : BackgroundService
 
         _logger.LogInformation(" [*] Worker started, waiting for messages...");
     }
+
+
+
+    private async Task ProcessMediaAsync(Guid mediaId, string? thumbnailPath, CancellationToken cancellationToken)
+    {
+        using IServiceScope scope = _scopeFactory.CreateScope();
+        IMediaRepository mediaRepository = scope.ServiceProvider.GetRequiredService<IMediaRepository>();
+        IUnitOfWork unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+        IMediaStorageService storageService = scope.ServiceProvider.GetRequiredService<IMediaStorageService>();
+        IMediaProcessingService processingService = scope.ServiceProvider.GetRequiredService<IMediaProcessingService>();
+        IVideoQualityRepository videoQlRepository = scope.ServiceProvider.GetRequiredService<IVideoQualityRepository>();
+        ILogger<UploadMediaCommandHandler> logger = scope.ServiceProvider.GetRequiredService<ILogger<UploadMediaCommandHandler>>();
+
+        Media? media = await mediaRepository.GetMediaByIdAsync(mediaId, cancellationToken);
+        if (media == null || string.IsNullOrEmpty(media.StoragePath))
+        {
+            logger.LogWarning("Media not found or has no storage path: {MediaId}", mediaId);
+            return;
+        }
+
+        try
+        {
+            string localPath;
+
+            if (media is Video video)
+            {
+                logger.LogInformation("Starting video processing for {VideoId}", mediaId);
+
+                // Télécharger la vidéo
+                localPath = await storageService.DownloadVideoAsync(video.StoragePath, cancellationToken);
+
+                // Extraire la durée
+                video.Duration = await processingService.GetDurationAsync(localPath);
+                video.Status = MediaStatus.Ready;
+                video.PublishedAt = DateTime.UtcNow;
+                video.UpdatedAt = DateTime.UtcNow;
+
+                // Générer miniature si absente
+                if (string.IsNullOrEmpty(thumbnailPath))
+                {
+                    thumbnailPath = await processingService.GenerateThumbnailAsync(video.Id, localPath);
+                    video.ThumbnailPath = thumbnailPath;
+                }
+
+                await mediaRepository.UpdateMediaStatus(video);
+
+                // Transcoder en plusieurs qualités
+                foreach (string quality in VideoQualitySetting.All)
+                {
+                    try
+                    {
+                        string qualityPath = await processingService.TranscodeVideoAsync(video.Id, video.StoragePath, quality, cancellationToken);
+                        long qualitySize = await storageService.GetFileSizeAsync(qualityPath);
+
+                        var videoQuality = new VideoQuality
+                        {
+                            Id = Guid.CreateVersion7(),
+                            MediaId = video.Id,
+                            Quality = quality,
+                            StoragePath = qualityPath,
+                            FileSize = qualitySize,
+                            CreatedAt = DateTime.UtcNow
+                        };
+
+                        await videoQlRepository.AddVideoQuality(videoQuality);
+                        await unitOfWork.SaveChangesAsync(cancellationToken);
+
+                        logger.LogInformation("Transcoding completed for {Quality}: {QualityPath}", quality, qualityPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Failed to transcode video {VideoId} to {Quality}", video.Id, quality);
+                    }
+                }
+            }
+            else if (media is Audio audio)
+            {
+                logger.LogInformation("Starting audio processing for {AudioId}", mediaId);
+
+                // Télécharger l’audio
+                localPath = await storageService.DownloadAudioAsync(audio.StoragePath, cancellationToken);
+
+                try
+                {
+                    audio.Duration = await processingService.GetDurationAsync(localPath);
+                    audio.Status = MediaStatus.Ready;
+                    audio.PublishedAt = DateTime.UtcNow;
+                    audio.UpdatedAt = DateTime.UtcNow;
+
+                    await mediaRepository.UpdateMediaStatus(audio);
+
+                    logger.LogInformation("Audio processing completed: {AudioId}", audio.Id);
+                }
+                finally
+                {
+                    if (File.Exists(localPath))
+                        File.Delete(localPath);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to process media {MediaId}", mediaId);
+
+            if (media != null)
+            {
+                media.Status = MediaStatus.Failed;
+                media.UpdatedAt = DateTime.UtcNow;
+                await mediaRepository.UpdateMediaStatus(media);
+            }
+        }
+    }
+
 
     private async Task ProcessVideoAsync(Guid videoId, CancellationToken cancellationToken)
     {

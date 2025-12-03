@@ -22,7 +22,6 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/BambaIba.Api/BambaIba.Api.csproj", "src/BambaIba.Api/"]
-COPY ["src/BambaIba.Api/BambaIba.Api.csproj", "src/BambaIba.Api/"]
 COPY ["src/BambaIba.Application/BambaIba.Application.csproj", "src/BambaIba.Application/"]
 COPY ["src/BambaIba.Domain/BambaIba.Domain.csproj", "src/BambaIba.Domain/"]
 COPY ["src/BambaIba.Infrastructure/BambaIba.Infrastructure.csproj", "src/BambaIba.Infrastructure/"]

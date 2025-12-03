@@ -29,7 +29,7 @@ public static class ServiceCollectionExtensions
         //services.Configure<RabbitMqOptions>(
         //    configuration.GetSection(RabbitMqOptions.SectionName));
 
-        services.AddSingleton<VideoPublisher>();
+        services.AddSingleton<MediaPublisher>();
 
 
         services.AddCortexMediator(configuration,

@@ -4,10 +4,15 @@ name: bambaiba_dev
 services:
   bambaiba_api:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      # - ASPNETCORE_ENVIRONMENT=Development
       - DOTNET_USE_POLLING_FILE_WATCHER=true
       - ASPNETCORE_HTTP_PORTS=7000
       # - ASPNETCORE_HTTPS_PORTS=7001
+      - Keycloak__AuthClientSecret=${Keycloak__AuthClientSecret}
+      - Keycloak__AuthClientId=${Keycloak__AuthClientId}
+      - Keycloak__AdminClientSecret=${Keycloak__AdminClientSecret}
+      - Keycloak__AdminClientId=${Keycloak__AdminClientId}
+      - Kestrel__Certificates__Development__Password=${Kestrel__Certificates__Development__Password}
     ports:
       - "7000:7000"
       # - "7001:7001"
@@ -17,8 +22,12 @@ services:
       - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
       - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
-
-
+      - ./data-protection:/app/data-protection-keys
+      # Monte le appsettings.json de ton projet dans le conteneur
+      - ./src/BambaIba.Api/appsettings.json:/app/appsettings.json:ro
+      # Monte aussi le appsettings.Development.json
+      - ./src/BambaIba.Api/appsettings.Development.json:/app/appsettings.Development.json:ro
+      
 
 # services:
 #   bambaiba_api:
