@@ -28,7 +28,8 @@ public class LikeEndpoints : ICarterModule
     }
 
     private static async Task<IResult> ToggleLike(
-        [FromBody] ToggleLikeCommand command,
+        Guid mediaId,
+        [FromBody] ToggleLikeRequest request,
         IMediator mediator,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
@@ -39,6 +40,8 @@ public class LikeEndpoints : ICarterModule
         if (string.IsNullOrEmpty(userId))
             return Results.Unauthorized();
 
+        var command = new ToggleLikeCommand(mediaId, request.IsLike);
+
         Result<ToggleLikeResult> result = await mediator
             .SendCommandAsync<ToggleLikeCommand, Result<ToggleLikeResult>>(
             command,
@@ -48,7 +51,7 @@ public class LikeEndpoints : ICarterModule
     }
 
     private static async Task<IResult> GetLikeStatus(
-        Guid videoId,
+        Guid mediaId,
         IMediator mediator,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
@@ -57,7 +60,7 @@ public class LikeEndpoints : ICarterModule
                   ?? user.FindFirstValue("sub")
                   ?? string.Empty;
 
-        var query = new GetLikeStatusQuery(videoId);
+        var query = new GetLikeStatusQuery(mediaId);
 
         Result<GetLikeStatusResult> result = await mediator
             .SendQueryAsync<GetLikeStatusQuery, Result<GetLikeStatusResult>>(

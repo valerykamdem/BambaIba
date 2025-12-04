@@ -6,8 +6,8 @@ public sealed record GetLikeStatusQuery(Guid MediaId) : IQuery<Result<GetLikeSta
 
 public record GetLikeStatusResult
 {
-    public bool HasLiked { get; init; }
-    public bool HasDisliked { get; init; }
+    //public bool HasLiked { get; init; }
+    //public bool HasDisliked { get; init; }
     public int LikeCount { get; init; }
     public int DislikeCount { get; init; }
 }

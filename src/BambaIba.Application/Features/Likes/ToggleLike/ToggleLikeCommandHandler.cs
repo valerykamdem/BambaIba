@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BambaIba.Application.Abstractions.Data;
+using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Features.Comments.CreateComment;
 using BambaIba.Domain.Comments;
 using BambaIba.Domain.Likes;
@@ -11,6 +13,7 @@ using BambaIba.Domain.MediaBase;
 using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.Likes.ToggleLike;
@@ -18,17 +21,23 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
 {
     private readonly ILikeRepository _likeRepository;
     private readonly IMediaRepository _mediaRepository;
+    private readonly IUserContextService _userContextService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<ToggleLikeCommandHandler> _logger;
 
     public ToggleLikeCommandHandler(
         ILikeRepository likeRepository,
         IMediaRepository mediaRepository,
+        IUserContextService userContextService,
+        IHttpContextAccessor httpContextAccessor,
         IUnitOfWork unitOfWork,
         ILogger<ToggleLikeCommandHandler> logger)
     { 
         _likeRepository = likeRepository;
         _mediaRepository = mediaRepository;
+        _userContextService = userContextService;
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         _unitOfWork = unitOfWork;
         _logger = logger;
     }
@@ -38,14 +47,17 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
 
         try
         {
+            UserContext userContext = await _userContextService
+                .GetCurrentContext(_httpContextAccessor.HttpContext);
+
             Media media = await _mediaRepository.GetMediaByIdAsync(command.MediaId, cancellationToken);
 
             if (media == null)
                 return ToggleLikeResult.Failure("Media not found");
             
             Like existingLike = await _likeRepository
-                .GetLikeByUserAndVideoAsync(
-                    command.UserId,
+                .GetLikeByUserAndMediaAsync(
+                    userContext.LocalUserId,
                     command.MediaId,
                     cancellationToken); 
 
@@ -104,7 +116,7 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                 {
                     Id = Guid.CreateVersion7(),
                     MediaId = command.MediaId,
-                    UserId = command.UserId,
+                    UserId = userContext.LocalUserId,
                     IsLike = command.IsLike,
                     CreatedAt = DateTime.UtcNow
                 };
