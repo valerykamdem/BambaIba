@@ -4,13 +4,17 @@ using BambaIba.Application.Extensions;
 using BambaIba.Domain.Enums;
 using BambaIba.Domain.MediaBase;
 using BambaIba.SharedKernel;
-using Cortex.Mediator.Queries;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.MediaBase.GetMedia;
 
-public sealed class GetMediaQueryHandler : IQueryHandler<GetMediaQuery, Result<PagedResult<MediaDto>>>
+public sealed record GetMediaQuery(
+    int Page,
+    int PageSize,
+    string? Search);
+
+public sealed class GetMediaQueryHandler
 {
     private readonly IMediaRepository _mediaRepository;
     private readonly ICacheService _cacheService;

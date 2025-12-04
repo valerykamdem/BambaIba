@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
-using BambaIba.Application.Features.Playlists.AddVideoToPlaylist;
+using BambaIba.Application.Features.Playlists.AddMediaToPlaylist;
 using BambaIba.Application.Features.Playlists.CreatePlaylist;
 using BambaIba.Application.Features.Playlists.GetPlaylistById;
 using BambaIba.SharedKernel;
@@ -92,7 +92,7 @@ public class PlaylistEndpoints : ICarterModule
 
     private static async Task<IResult> AddVideo(
         Guid id,
-        AddVideoToPlaylistCommand command,
+        AddMediaToPlaylistCommand command,
         IMediator mediator,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
@@ -107,8 +107,8 @@ public class PlaylistEndpoints : ICarterModule
         //    //UserId = userId!
         //};
 
-        Result<AddVideoToPlaylistResult> result = await mediator
-            .SendCommandAsync<AddVideoToPlaylistCommand, Result<AddVideoToPlaylistResult>>(
+        Result<AddMediaToPlaylistResult> result = await mediator
+            .SendCommandAsync<AddMediaToPlaylistCommand, Result<AddMediaToPlaylistResult>>(
             command, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);

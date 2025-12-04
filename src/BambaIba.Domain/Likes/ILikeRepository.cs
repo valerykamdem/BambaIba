@@ -3,7 +3,7 @@ public interface ILikeRepository
 {
     Task AddLikeAsync(Like like);
     
-    Task<Like> GetLikeByUserAndVideoAsync(Guid userId, Guid mediaId, 
+    Task<Like> GetLikeByUserAndMediaAsync(Guid userId, Guid mediaId, 
         CancellationToken cancellationToken);
     
     void Delete(Like like);

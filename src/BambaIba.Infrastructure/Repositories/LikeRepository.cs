@@ -21,7 +21,7 @@ public class LikeRepository : ILikeRepository
         _dbContext.Likes.Remove(like);
     }
 
-    public async Task<Like> GetLikeByUserAndVideoAsync(
+    public async Task<Like> GetLikeByUserAndMediaAsync(
         Guid userId, 
         Guid mediaId, 
         CancellationToken cancellationToken)

@@ -1,10 +1,13 @@
 ﻿using System.Reflection;
 using BambaIba.Application.Abstractions.Services;
+using BambaIba.Application.Features.MediaBase.GetMedia;
 using BambaIba.Application.Settings;
 using Cortex.Mediator.DependencyInjection;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Wolverine;
 
 namespace BambaIba.Application.Extensions;
 
@@ -17,20 +20,23 @@ public static class ServiceCollectionExtensions
 
         services.AddValidatorsFromAssembly(typeof(ServiceCollectionExtensions).Assembly);
 
-        //TypeAdapterConfig config = TypeAdapterConfig.GlobalSettings;
-        //config.Scan(assembly);
-        //services.AddSingleton(config);
+        //builder.Host.UseWolverine();
 
-        //AddPersistence(services, configuration);
-        //AddAuthentication(services, configuration);
-        //AddAuthorization(services);
-        //AddRedis(services, configuration);
+        services.AddWolverine(opts =>
+        {
+            // Découverte automatique des handlers dans l’assembly Application
+            opts.Discovery.IncludeAssembly(typeof(ServiceCollectionExtensions).Assembly);
 
-        //services.Configure<RabbitMqOptions>(
-        //    configuration.GetSection(RabbitMqOptions.SectionName));
+            //// Exemple : si tu veux RabbitMQ
+            //opts.UseRabbitMq("amqp://guest:guest@rabbitmq:5672")
+            //    .AutoProvision()
+            //    .AutoPurgeOnStartup();
 
-        services.AddSingleton<MediaPublisher>();
+            // Politique de transactions automatiques
+            opts.Policies.AutoApplyTransactions();
+        });
 
+        services.AddScoped<MediaPublisher>();
 
         services.AddCortexMediator(configuration,
             [typeof(ServiceCollectionExtensions)], // Scanne l'assembly pour trouver les handlers

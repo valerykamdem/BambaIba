@@ -1,6 +1,7 @@
 ﻿
 
 using System.Security.Claims;
+using System.Text.Json;
 using BambaIba.Api.Extensions;
 using BambaIba.Api.Hubs;
 using BambaIba.Api.Infrastructure;
@@ -15,6 +16,7 @@ using Carter;
 using Cortex.Mediator;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Wolverine.Transports;
 
 namespace BambaIba.Api.Endpoints;
 
@@ -25,6 +27,19 @@ public class LiveStreamEndpoints : ICarterModule
         RouteGroupBuilder group = app.MapGroup("/api/live")
             .WithTags("LiveStreams")
             .WithOpenApi();
+
+        // Streamer endpoints
+        group.MapGet("/LiveStream", LiveStream)
+            //.RequireAuthorization()
+            .Produces<StartLiveStreamResult>(StatusCodes.Status200OK)
+            .WithName("LiveStream");
+
+        //// Streamer endpoints
+        //group.MapGet("/station/{id}/listeners", Listeners)
+        //    //.RequireAuthorization()
+        //    .Produces<StartLiveStreamResult>(StatusCodes.Status200OK)
+        //    .WithName("listeners");
+
 
         // Streamer endpoints
         group.MapPost("/start", StartStream)
@@ -56,6 +71,38 @@ public class LiveStreamEndpoints : ICarterModule
         group.MapPost("/ended", OnStreamEnded)
             .WithName("OnStreamEnded");
     }
+
+    private static async Task<IResult> LiveStream(
+        IHttpClientFactory httpClientFactory,
+        CancellationToken cancellationToken)
+    {
+        HttpClient client = httpClientFactory.CreateClient();
+        HttpResponseMessage response = await client.GetAsync("http://localhost:8005/api/nowplaying", cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        string json = await response.Content.ReadAsStringAsync();
+        return Results.Content(json, "application/json");
+    }
+
+    //private static async Task<IResult> Listeners(
+    //    int id,
+    //   IHttpClientFactory httpClientFactory,
+    //   CancellationToken cancellationToken)
+    //{
+    //    HttpClient client = httpClientFactory.CreateClient();
+    //    HttpResponseMessage response = await client.GetAsync($"http://localhost:8005/api/nowplaying/{id}", cancellationToken);
+    //    response.EnsureSuccessStatusCode();
+
+    //    JsonElement json = await response.Content.ReadFromJsonAsync<JsonElement>();
+    //    JsonElement listeners = json.GetProperty("listeners");
+
+    //    return Results.Json(new
+    //    {
+    //        total = listeners.GetProperty("total").GetInt32(),
+    //        unique = listeners.GetProperty("unique").GetInt32()
+    //    });
+    //}
+
 
     private static async Task<IResult> StartStream(
         StartLiveStreamRequest request,
@@ -158,7 +205,7 @@ public class LiveStreamEndpoints : ICarterModule
     private static async Task<IResult> OnStreamStarted(
         HttpRequest request,
         BambaIbaDbContext context,
-        IHubContext<LiveChatHub> hubContext)
+        IHubContext<LiveHub> hubContext)
     {
         IFormCollection form = await request.ReadFormAsync();
         string streamKey = form["name"].ToString();
@@ -188,7 +235,7 @@ public class LiveStreamEndpoints : ICarterModule
     private static async Task<IResult> OnStreamEnded(
         HttpRequest request,
         BambaIbaDbContext context,
-        IHubContext<LiveChatHub> hubContext)
+        IHubContext<LiveHub> hubContext)
     {
         IFormCollection form = await request.ReadFormAsync();
         string streamKey = form["name"].ToString();

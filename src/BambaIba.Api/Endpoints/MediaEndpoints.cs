@@ -3,14 +3,16 @@ using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
 using BambaIba.Application.Extensions;
 using BambaIba.Application.Features.MediaBase.DeleteMedia;
-using BambaIba.Application.Features.MediaBase.GetMediaById;
 using BambaIba.Application.Features.MediaBase.GetMedia;
+using BambaIba.Application.Features.MediaBase.GetMediaById;
 using BambaIba.Application.Features.MediaBase.UploadMedia;
 using BambaIba.SharedKernel;
 using Carter;
 using Cortex.Mediator;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Wolverine;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 
 namespace BambaIba.Api.Endpoints;
@@ -70,7 +72,7 @@ public class MediaEndpoints : ICarterModule
     private static async Task<IResult> UploadMedia(
         //HttpRequest httpRequest,
         [FromForm] UploadMediaRequest request,  // ← Request binding
-        IMediator mediator, ClaimsPrincipal user,
+        IMediator mediator, IMessageBus bus, ClaimsPrincipal user,
         CancellationToken cancellationToken)
     {
 
@@ -107,13 +109,17 @@ public class MediaEndpoints : ICarterModule
         Result<UploadMediaResult> result = await mediator
             .SendCommandAsync<UploadMediaCommand, Result<UploadMediaResult>>(command, cancellationToken);
 
+        //Result<UploadMediaResult> result = 
+        //    await bus.InvokeAsync<Result<UploadMediaResult>>(command, cancellationToken);
+
         return result.Match(Results.Ok, CustomResults.Problem);
     }
 
     // Handler pour Getmedia (avec Request object pour query params)
     private static async Task<IResult> GetMedia(
         [AsParameters] GetMediaRequest request,  // ← Query binding
-        IMediator mediator, CancellationToken cancellationToken)
+        IMessageBus bus,
+        CancellationToken cancellationToken)
     {
         var query = new GetMediaQuery
         (
@@ -122,11 +128,29 @@ public class MediaEndpoints : ICarterModule
             request.Search
         );
 
-        Result<PagedResult<MediaDto>> result = await mediator
-            .SendQueryAsync<GetMediaQuery, Result<PagedResult<MediaDto>>>(query, cancellationToken);
+        Result<PagedResult<MediaDto>> result = 
+            await bus.InvokeAsync<Result<PagedResult<MediaDto>>>(query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }
+
+    //// Handler pour Getmedia (avec Request object pour query params)
+    //private static async Task<IResult> GetMedia(
+    //    [AsParameters] GetMediaRequest request,  // ← Query binding
+    //    IMediator mediator, CancellationToken cancellationToken)
+    //{
+    //    var query = new GetMediaQuery
+    //    (
+    //        request.Page,
+    //        request.PageSize,
+    //        request.Search
+    //    );
+
+    //    Result<PagedResult<MediaDto>> result = await mediator
+    //        .SendQueryAsync<GetMediaQuery, Result<PagedResult<MediaDto>>>(query, cancellationToken);
+
+    //    return result.Match(Results.Ok, CustomResults.Problem);
+    //}
 
     // Handler pour GetMediaById
     private static async Task<IResult> GetMediaById(
