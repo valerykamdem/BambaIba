@@ -7,19 +7,24 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace BambaIba.Api.Hubs;
 
-[Authorize]
 // Modifier LiveChatHub pour gérer le compteur de viewers
-public class LiveChatHub : Hub
+public class LiveHub : Hub
 {
     private readonly BambaIbaDbContext _context;
-    private readonly ILogger<LiveChatHub> _logger;
+    private readonly ILogger<LiveHub> _logger;
 
-    public LiveChatHub(
+    public LiveHub(
         BambaIbaDbContext context,
-        ILogger<LiveChatHub> logger)
+        ILogger<LiveHub> logger)
     {
         _context = context;
         _logger = logger;
+    }
+
+    // Méthode ouverte à tous (radio libre)
+    public async Task SubscribeToRadio()
+    {
+        await Clients.Caller.SendAsync("Info", "Connecté au flux radio");
     }
 
     public async Task JoinStream(string streamId)
@@ -70,10 +75,14 @@ public class LiveChatHub : Hub
         });
     }
 
+    [Authorize]
     public async Task SendMessage(string streamId, string message)
     {
         string? userId = Context.UserIdentifier;
         string userName = Context.User?.Identity?.Name ?? "Anonymous";
+
+        if (string.IsNullOrEmpty(userId))
+            throw new HubException("User must be authenticated to send messages.");
 
         if (string.IsNullOrWhiteSpace(message) || message.Length > 500)
             return;
@@ -83,7 +92,7 @@ public class LiveChatHub : Hub
         {
             var chatMessage = new LiveChatMessage
             {
-                //Id = Guid.NewGuid(),
+                Id = Guid.CreateVersion7(),
                 LiveStreamId = streamGuid,
                 UserId = Guid.Parse(userId),
                 UserName = userName,
@@ -97,7 +106,7 @@ public class LiveChatHub : Hub
 
         var messageDto = new
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             StreamId = streamId,
             UserId = userId,
             UserName = userName,

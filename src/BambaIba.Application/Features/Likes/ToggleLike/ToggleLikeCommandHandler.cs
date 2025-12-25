@@ -64,11 +64,11 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
             if (existingLike != null)
             {
                 // User clique sur le même bouton → Retirer le like/dislike
-                if (existingLike.IsLike == command.IsLike)
+                if (existingLike.IsLiked == command.IsLiked)
                 {
                     _likeRepository.Delete(existingLike);
 
-                    if (existingLike.IsLike)
+                    if (existingLike.IsLiked)
                         media.LikeCount--;
                     else
                         media.DislikeCount--;
@@ -83,7 +83,7 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                 else
                 {
                     // User change d'avis (like → dislike ou vice versa)
-                    if (existingLike.IsLike)
+                    if (existingLike.IsLiked)
                     {
                         media.LikeCount--;
                         media.DislikeCount++;
@@ -94,7 +94,7 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                         media.LikeCount++;
                     }
 
-                    existingLike.IsLike = command.IsLike;
+                    existingLike.IsLiked = command.IsLiked;
                     existingLike.CreatedAt = DateTime.UtcNow;
 
                     await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -104,8 +104,8 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                         media.DislikeCount,
                         new UserLikeStatus
                         {
-                            HasLiked = command.IsLike,
-                            HasDisliked = !command.IsLike
+                            HasLiked = command.IsLiked,
+                            HasDisliked = !command.IsLiked
                         }));
                 }
             }
@@ -117,13 +117,13 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                     Id = Guid.CreateVersion7(),
                     MediaId = command.MediaId,
                     UserId = userContext.LocalUserId,
-                    IsLike = command.IsLike,
+                    IsLiked = command.IsLiked,
                     CreatedAt = DateTime.UtcNow
                 };
 
                 await _likeRepository.AddLikeAsync(like);
 
-                if (command.IsLike)
+                if (command.IsLiked)
                     media.LikeCount++;
                 else
                     media.DislikeCount++;
@@ -135,8 +135,8 @@ public sealed class ToggleLikeCommandHandler : ICommandHandler<ToggleLikeCommand
                     media.DislikeCount,
                     new UserLikeStatus
                     {
-                        HasLiked = command.IsLike,
-                        HasDisliked = !command.IsLike
+                        HasLiked = command.IsLiked,
+                        HasDisliked = !command.IsLiked
                     }));
             }
         }

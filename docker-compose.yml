@@ -218,6 +218,17 @@ services:
     networks:
         - bambaiba_network
     
+# # Radio Service
+#   bambaiba_radio:
+#     image: azuracast/azuracast:latest
+#     ports:
+#       - "80:80"
+#       - "1443:443"
+#     volumes:
+#       - azuracast_db_data:/var/lib/mysql
+#       - azuracast_station_data:/var/azuracast/stations
+#     # Si vous avez du code personnalisé, vous pouvez le monter ici :
+#     # - ./custom-code:/var/azuracast/www/custom
 
 volumes:
   keycloak_pg_data:
@@ -227,6 +238,8 @@ volumes:
   bambaiba_api_data:
   rabbitmq_data:
   owncast_data:
+  azuracast_db_data:
+  azuracast_station_data:
 
 networks:
   bambaiba_network:

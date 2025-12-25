@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Serilog;
+using Wolverine;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +25,10 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 //builder.Services.AddControllers();
 
 builder.Services.AddSignalR();
+builder.Services.AddHttpClient();
+
+builder.Services.AddSingleton<IAzuraCastPollingService, AzuraCastPollingService>();
+builder.Services.AddHostedService<AzuraCastPollingService>();
 
 // 👉 Logger
 builder.Services.AddLogging(config =>
@@ -34,6 +39,11 @@ builder.Services.AddLogging(config =>
 // Enregistre la section RabbitMQ dans RabbitMqOptions
 builder.Services.Configure<RabbitMqOptions>(
     builder.Configuration.GetSection("RabbitMQ"));
+
+builder.Services.Configure<RadioLiveOptions>(
+    builder.Configuration.GetSection("RadioLive"));
+
+//builder.Host.UseWolverine();
 
 // Services
 builder.Services.AddPresentation(builder.Configuration)
@@ -139,7 +149,7 @@ app.UseAuthorization();
 app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 
 // ✅ Mapper le Hub
-app.MapHub<LiveChatHub>("/hubs/livechathub");
+app.MapHub<LiveHub>("/Hubs/LiveHub");
 
 app.Use(async (context, next) =>
 {
@@ -151,7 +161,7 @@ app.Use(async (context, next) =>
     {
         BambaIbaDbContext db = services.GetRequiredService<BambaIbaDbContext>();
         // Force la création des tables si elles n’existent pas encore
-        //await db.Database.EnsureCreatedAsync();
+        await db.Database.EnsureCreatedAsync();
         db.Database.Migrate();
         SeedData.Initialize(services);
     }

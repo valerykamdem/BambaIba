@@ -4,7 +4,7 @@ using Cortex.Mediator.Commands;
 namespace BambaIba.Application.Features.Likes.ToggleLike;
 public sealed record ToggleLikeCommand(
     Guid MediaId,
-    bool IsLike) : ICommand<Result<ToggleLikeResult>>;
+    bool IsLiked) : ICommand<Result<ToggleLikeResult>>;
 
 
 public sealed record ToggleLikeResult

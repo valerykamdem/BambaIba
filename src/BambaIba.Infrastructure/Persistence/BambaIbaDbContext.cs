@@ -55,7 +55,7 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
-            entity.HasOne<Video>()
+            entity.HasOne<Media>()
                 .WithMany()
                 .HasForeignKey(e => e.MediaId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -67,7 +67,7 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<Like>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasOne<Video>()
+            entity.HasOne<Media>()
                 .WithMany()
                 .HasForeignKey(e => e.MediaId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -78,7 +78,7 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<View>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasOne<Video>()
+            entity.HasOne<Media>()
                 .WithMany()
                 .HasForeignKey(e => e.VideoId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -120,7 +120,7 @@ public sealed class BambaIbaDbContext : DbContext, IUnitOfWork
         modelBuilder.Entity<TranscodeJob>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasOne<Video>()
+            entity.HasOne<Media>()
                 .WithMany()
                 .HasForeignKey(e => e.VideoId)
                 .OnDelete(DeleteBehavior.Cascade);
