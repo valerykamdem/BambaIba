@@ -1,4 +1,4 @@
-﻿using BambaIba.Domain.Comments;
+﻿using BambaIba.Domain.Entities.Comments;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Comments;
 using Cortex.Mediator.Commands;

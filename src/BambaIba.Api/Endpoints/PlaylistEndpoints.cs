@@ -19,8 +19,7 @@ public class PlaylistEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapGroup("/api/playlists")
-            .WithTags("Playlists")
-            .WithOpenApi();
+            .WithTags("Playlists");
 
         group.MapPost("/", CreatePlaylist)
             .RequireAuthorization()

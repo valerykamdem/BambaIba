@@ -1,5 +1,5 @@
 ﻿using System.Threading;
-using BambaIba.Domain.Playlists;
+using BambaIba.Domain.Entities.Playlists;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

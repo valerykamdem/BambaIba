@@ -1,6 +1,6 @@
-﻿using BambaIba.Domain.Likes;
-using BambaIba.Domain.MediaBase;
-using BambaIba.Domain.Videos;
+﻿using BambaIba.Domain.Entities.Likes;
+using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
 using Microsoft.Extensions.Logging;

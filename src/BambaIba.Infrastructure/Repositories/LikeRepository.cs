@@ -1,5 +1,4 @@
-﻿using BambaIba.Domain.Likes;
-using BambaIba.Domain.Videos;
+﻿using BambaIba.Domain.Entities.Likes;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

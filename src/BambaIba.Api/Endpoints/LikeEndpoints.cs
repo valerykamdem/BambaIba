@@ -13,9 +13,9 @@ public class LikeEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
-        RouteGroupBuilder group = app.MapGroup("/api/media/{mediaId:guid}/likes")
-            .WithTags("Likes")
-            .WithOpenApi();
+        RouteGroupBuilder group = app.MapGroup("/api/media/{mediaId:guid}/likes");
+            //.WithTags("Likes")
+            //.WithOpenApi();
 
         group.MapPost("/", ToggleLike)
             .RequireAuthorization()

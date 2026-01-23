@@ -8,7 +8,7 @@ using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Features.Register;
 using BambaIba.Domain.Entities;
-using BambaIba.Domain.Users;
+using BambaIba.Domain.Entities.Users;
 using BambaIba.Infrastructure.Persistence;
 using BambaIba.Infrastructure.Settings;
 using BambaIba.SharedKernel;

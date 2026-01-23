@@ -1,9 +1,9 @@
 ﻿using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Comments;
-using BambaIba.Domain.MediaBase;
-using BambaIba.Domain.Videos;
+using BambaIba.Domain.Entities.Comments;
+using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.Videos;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 using Microsoft.AspNetCore.Http;

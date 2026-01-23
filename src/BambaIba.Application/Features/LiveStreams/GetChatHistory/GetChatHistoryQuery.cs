@@ -1,5 +1,5 @@
 ﻿
-using BambaIba.Domain.LiveChatMessages;
+using BambaIba.Domain.Entities.LiveChatMessages;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
 

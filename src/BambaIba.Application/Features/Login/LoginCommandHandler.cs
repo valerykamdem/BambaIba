@@ -1,6 +1,6 @@
 ﻿using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Users;
+using BambaIba.Domain.Entities.Users;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 

@@ -1,6 +1,6 @@
-﻿using BambaIba.Domain.Enums;
-using BambaIba.Domain.MediaBase;
-using BambaIba.Domain.Videos;
+﻿using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.Videos;
+using BambaIba.Domain.Enums;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

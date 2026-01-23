@@ -1,7 +1,7 @@
 ﻿
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Features.Register;
-using BambaIba.Domain.Users;
+using BambaIba.Domain.Entities.Users;
 using BambaIba.SharedKernel;
 
 namespace BambaIba.Application.Abstractions.Interfaces;

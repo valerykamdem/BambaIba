@@ -12,7 +12,6 @@ using Cortex.Mediator;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Wolverine;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 
 namespace BambaIba.Api.Endpoints;
@@ -23,8 +22,7 @@ public class MediaEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapGroup("/api/media")
-            .WithTags("media")
-            .WithOpenApi();
+            .WithTags("media");
 
         // Upload vidéo (multipart/form-data)
         group.MapPost("/upload", UploadMedia)

@@ -1,4 +1,4 @@
-﻿using BambaIba.Domain.Comments;
+﻿using BambaIba.Domain.Entities.Comments;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

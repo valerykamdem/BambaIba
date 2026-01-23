@@ -1,7 +1,7 @@
 ﻿// StartLiveStreamCommandHandler.cs
 using System.Security.Cryptography;
+using BambaIba.Domain.Entities.LiveStream;
 using BambaIba.Domain.Enums;
-using BambaIba.Domain.LiveStream;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 using Microsoft.Extensions.Configuration;

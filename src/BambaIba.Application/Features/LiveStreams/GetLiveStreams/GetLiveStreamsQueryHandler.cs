@@ -1,6 +1,6 @@
 ﻿// GetLiveStreamsQueryHandler.cs
+using BambaIba.Domain.Entities.LiveStream;
 using BambaIba.Domain.Enums;
-using BambaIba.Domain.LiveStream;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
 using Microsoft.EntityFrameworkCore;

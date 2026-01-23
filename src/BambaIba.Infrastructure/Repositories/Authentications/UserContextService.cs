@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Users;
+using BambaIba.Domain.Entities.Users;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;

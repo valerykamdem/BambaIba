@@ -22,8 +22,7 @@ public class CommentEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapGroup("/api/comments")
-            .WithTags("Comments")
-            .WithOpenApi();
+            .WithTags("Comments");
 
 
         group.MapPost("/", CreateComment)

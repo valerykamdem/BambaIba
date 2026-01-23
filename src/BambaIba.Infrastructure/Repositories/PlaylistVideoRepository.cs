@@ -1,4 +1,4 @@
-﻿using BambaIba.Domain.PlaylistItems;
+﻿using BambaIba.Domain.Entities.PlaylistItems;
 using BambaIba.Infrastructure.Persistence;
 
 namespace BambaIba.Infrastructure.Repositories;

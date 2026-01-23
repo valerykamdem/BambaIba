@@ -10,23 +10,23 @@
 	  <Folder Include="Configurations\" />
 	  <Folder Include="Authentication\" />
 	  <PackageReference Include="Dapper" Version="2.1.66" />
-	  <PackageReference Include="EFCore.NamingConventions" Version="10.0.0" />
+	  <PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
 	  <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
 	  <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.0.0" />
 	  <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="5.0.0" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.1">
+	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.1">
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.1" />
-	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.1" />
-	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.1" />
+	  <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.2" />
+	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.2" />
+	  <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
 	  <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.15.0" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
 	  <PackageReference Include="Minio" Version="7.0.0" />
@@ -34,9 +34,9 @@
 	  <PackageReference Include="AspNetCore.HealthChecks.NpgSql" Version="9.0.0" />
 	  <PackageReference Include="AspNetCore.HealthChecks.Redis" Version="9.0.0" />
     <!-- Authorization core (typically part of ASP.NET Core shared framework, added explicitly if needed) -->
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.2" />
     <!-- JWT bearer authentication support -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" />
   </ItemGroup>
 
   <ItemGroup>

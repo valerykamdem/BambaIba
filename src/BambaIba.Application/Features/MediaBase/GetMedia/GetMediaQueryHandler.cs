@@ -1,8 +1,8 @@
 ﻿using BambaIba.Application.Abstractions.Caching;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Extensions;
+using BambaIba.Domain.Entities.MediaBase;
 using BambaIba.Domain.Enums;
-using BambaIba.Domain.MediaBase;
 using BambaIba.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;

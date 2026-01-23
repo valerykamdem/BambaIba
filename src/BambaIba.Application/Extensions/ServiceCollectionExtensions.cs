@@ -1,12 +1,9 @@
 ﻿using System.Reflection;
 using BambaIba.Application.Abstractions.Services;
-using BambaIba.Application.Features.MediaBase.GetMedia;
-using BambaIba.Application.Settings;
 using Cortex.Mediator.DependencyInjection;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Wolverine;
 
 namespace BambaIba.Application.Extensions;

@@ -1,10 +1,7 @@
 ﻿using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Abstractions.Mappings;
-using BambaIba.Domain.Enums;
-using BambaIba.Domain.MediaBase;
-using BambaIba.Domain.Videos;
+using BambaIba.Domain.Entities.MediaBase;
 using BambaIba.SharedKernel;
-using BambaIba.SharedKernel.Videos;
 using Cortex.Mediator.Queries;
 using Microsoft.Extensions.Logging;
 

@@ -1,4 +1,4 @@
-﻿using BambaIba.Domain.VideoQualities;
+﻿using BambaIba.Domain.Entities.VideoQualities;
 using BambaIba.Infrastructure.Persistence;
 
 namespace BambaIba.Infrastructure.Repositories;

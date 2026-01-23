@@ -1,7 +1,5 @@
 ﻿using BambaIba.Api.Hubs;
-using BambaIba.Application.Features.LiveStreams.StartLiveStream;
 using Carter;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 
 namespace BambaIba.Api.Endpoints;
@@ -11,8 +9,7 @@ public class RadioEndpoints : ICarterModule
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapGroup("/api/radio")
-            .WithTags("LiveStreams")
-            .WithOpenApi();
+            .WithTags("LiveStreams");
 
         // Streamer endpoints
         group.MapGet("/LiveStream", LiveStream)

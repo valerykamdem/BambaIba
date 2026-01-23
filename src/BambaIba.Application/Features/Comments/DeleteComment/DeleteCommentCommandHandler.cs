@@ -1,7 +1,7 @@
 ﻿using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Comments;
-using BambaIba.Domain.Users;
+using BambaIba.Domain.Entities.Comments;
+using BambaIba.Domain.Entities.Users;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Comments;
 using Cortex.Mediator.Commands;

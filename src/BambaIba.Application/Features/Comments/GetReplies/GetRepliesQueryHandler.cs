@@ -1,6 +1,6 @@
 ﻿using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Extensions;
-using BambaIba.Domain.Comments;
+using BambaIba.Domain.Entities.Comments;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Queries;
 using Microsoft.Extensions.Logging;

@@ -1,6 +1,6 @@
 ﻿// BambaIba.Api/Hubs/LiveChatHub.cs
-using BambaIba.Domain.LiveChatMessages;
-using BambaIba.Domain.LiveStream;
+using BambaIba.Domain.Entities.LiveChatMessages;
+using BambaIba.Domain.Entities.LiveStream;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;

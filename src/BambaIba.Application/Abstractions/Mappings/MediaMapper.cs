@@ -1,10 +1,10 @@
 ﻿using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Features.MediaBase.GetMedia;
 using BambaIba.Application.Features.MediaBase.GetMediaById;
-using BambaIba.Domain.Audios;
+using BambaIba.Domain.Entities.Audios;
+using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.Videos;
 using BambaIba.Domain.Enums;
-using BambaIba.Domain.MediaBase;
-using BambaIba.Domain.Videos;
 using BambaIba.SharedKernel.Videos;
 
 namespace BambaIba.Application.Abstractions.Mappings;

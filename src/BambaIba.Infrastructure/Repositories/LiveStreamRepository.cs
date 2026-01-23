@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using BambaIba.Application.Features.LiveStreams.GetLiveStreams;
+using BambaIba.Domain.Entities.LiveStream;
 using BambaIba.Domain.Enums;
-using BambaIba.Domain.LiveStream;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

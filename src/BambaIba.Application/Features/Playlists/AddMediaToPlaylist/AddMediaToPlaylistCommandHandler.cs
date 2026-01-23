@@ -1,13 +1,13 @@
 ﻿using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Playlists;
-using BambaIba.Domain.PlaylistItems;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using BambaIba.Domain.MediaBase;
+using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.PlaylistItems;
+using BambaIba.Domain.Entities.Playlists;
 
 namespace BambaIba.Application.Features.Playlists.AddMediaToPlaylist;
 public class AddMediaToPlaylistCommandHandler : 

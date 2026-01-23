@@ -1,7 +1,7 @@
 ﻿using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Playlists;
+using BambaIba.Domain.Entities.Playlists;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 using Microsoft.AspNetCore.Http;

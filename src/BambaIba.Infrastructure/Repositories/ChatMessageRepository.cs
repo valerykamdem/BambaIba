@@ -1,6 +1,6 @@
 ﻿using System.Threading;
 using BambaIba.Application.Features.LiveStreams.GetChatHistory;
-using BambaIba.Domain.LiveChatMessages;
+using BambaIba.Domain.Entities.LiveChatMessages;
 using BambaIba.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 

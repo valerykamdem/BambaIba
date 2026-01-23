@@ -1,4 +1,4 @@
-﻿using BambaIba.Domain.Users;
+﻿using BambaIba.Domain.Entities.Users;
 using BambaIba.SharedKernel;
 
 namespace BambaIba.Domain.Entities;
