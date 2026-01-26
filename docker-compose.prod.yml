@@ -36,7 +36,12 @@ services:
       - "8080:8080"
     restart: unless-stopped
     # En production, utilisez plutôt
-    # command: start
+    # command:
+      # - start 
+      # - --optimized 
+      # - --import-realm
+    # volumes: 
+      # - ./keycloak-import:/opt/keycloak/data/import:ro
 
   minio:
     # Console (9001) désactivée en prod, seul l’API (9000) est exposée
