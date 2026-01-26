@@ -85,9 +85,7 @@ services:
     # Simplification de la commande, en utilisant les variables KC_*
     command: #start --import-realm
       - start-dev 
-      - --import-realm 
-      - --export=/opt/keycloak/data/export 
-      - --export-users=realm_file
+      # - --import-realm 
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_USER}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD}     
@@ -109,7 +107,8 @@ services:
     volumes:
       # Le volume pour les exports/imports doit être dans le dossier 'data/import'
       - ./.keycloak-export:/opt/keycloak/data/export 
-      - ./.keycloak-import:/opt/keycloak/data/import
+      # - ./.keycloak-import:/opt/keycloak/data/import
+      - ./.keycloak-entrypoint/keycloak-entrypoint.sh:/opt/keycloak/custom/keycloak-entrypoint.sh
     ports:
       - "18081:8080"      
     depends_on:
