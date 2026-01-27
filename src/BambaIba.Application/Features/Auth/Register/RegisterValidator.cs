@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace BambaIba.Application.Features.Register;
+namespace BambaIba.Application.Features.Auth.Register;
 
 public class RegisterValidator : AbstractValidator<RegisterCommand>
 {

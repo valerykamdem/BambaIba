@@ -2,7 +2,7 @@
 -- PostgreSQL database cluster dump
 --
 
--- Started on 2026-01-26 13:53:29
+-- Started on 2026-01-27 21:34:30
 
 SET default_transaction_read_only = off;
 
@@ -44,7 +44,7 @@ ALTER ROLE keycloakuser WITH SUPERUSER INHERIT CREATEROLE CREATEDB LOGIN REPLICA
 -- Dumped from database version 16.10
 -- Dumped by pg_dump version 16.1
 
--- Started on 2026-01-26 13:53:29
+-- Started on 2026-01-27 21:34:33
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -57,7 +57,7 @@ SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
--- Completed on 2026-01-26 13:53:32
+-- Completed on 2026-01-27 21:34:38
 
 --
 -- PostgreSQL database dump complete
@@ -74,7 +74,7 @@ SET row_security = off;
 -- Dumped from database version 16.10
 -- Dumped by pg_dump version 16.1
 
--- Started on 2026-01-26 13:53:33
+-- Started on 2026-01-27 21:34:39
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1793,13 +1793,13 @@ d8e8e4b8-045c-4709-8563-a48bf3a66b3a	t	t	admin-cli	0	t	\N	\N	f	\N	f	9ccc2b44-8d1
 f62fa0c1-357e-4d58-af34-9d108b6b24c0	t	f	realm-management	0	f	\N	\N	t	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_realm-management}	f	client-secret	\N	\N	\N	t	f	f	f
 157360ea-5728-4d05-877e-9bf20421e380	t	f	broker	0	f	\N	\N	t	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_broker}	f	client-secret	\N	\N	\N	t	f	f	f
 32e509de-618c-43e7-a7fc-7dafe19d8bf8	t	t	admin-cli	0	t	\N	\N	f	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_admin-cli}	f	client-secret	\N	\N	\N	f	f	t	f
-8675ed84-ae64-4ead-aaf4-913e1d7d3397	t	f	bambaiba-realm	0	f	\N	\N	t	\N	f	9ccc2b44-8d11-4694-87e4-8e194b225e1d	\N	0	f	f	bambaiba-realm Realm	f	client-secret	\N	\N	\N	t	f	f	f
 d8d4e759-1346-4d49-8cb2-8d96ba570f07	t	t	bambaiba-admin-client	0	f	X8wmErNGX4tl3sJyrtSIfqTan1i3agyh		f	http://localhost:18081	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	-1	t	f		t	client-secret			\N	f	f	t	f
 7e903410-f31f-4bc8-8402-777e4538d2a1	t	t	bambaiba-auth-client	0	f	OKMIDc3yEjQtWNNfXnNoOSR5rZqJZZ3r		f	http://localhost:18081	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	-1	t	f		f	client-secret	http://localhost:18081		\N	t	f	t	f
 88acef04-74b2-48a9-b20a-91e8a91a6071	t	t	bambaiba-api	0	t	\N		f		f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	-1	t	f		f	client-secret			\N	t	f	t	f
-862e68c6-d552-4480-9b9f-4d3a69704afa	t	t	security-admin-console	0	t	\N	/admin/bambaiba/console/	f	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_security-admin-console}	f	client-secret	${authAdminUrl}	\N	\N	t	f	f	f
-32b64136-f72f-40be-8350-89e652c4d54f	t	f	account	0	t	\N	/realms/bambaiba/account/	f	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_account}	f	client-secret	${authBaseUrl}	\N	\N	t	f	f	f
-660743a4-25c1-46dd-b9c1-a861be2a2d84	t	f	account-console	0	t	\N	/realms/bambaiba/account/	f	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_account-console}	f	client-secret	${authBaseUrl}	\N	\N	t	f	f	f
+8675ed84-ae64-4ead-aaf4-913e1d7d3397	t	f	bambaiba-realm-realm	0	f	\N	\N	t	\N	f	9ccc2b44-8d11-4694-87e4-8e194b225e1d	\N	0	f	f	bambaiba-realm Realm	f	client-secret	\N	\N	\N	t	f	f	f
+862e68c6-d552-4480-9b9f-4d3a69704afa	t	t	security-admin-console	0	t	\N	/admin/bambaiba-realm/console/	f	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_security-admin-console}	f	client-secret	${authAdminUrl}	\N	\N	t	f	f	f
+32b64136-f72f-40be-8350-89e652c4d54f	t	f	account	0	t	\N	/realms/bambaiba-realm/account/	f	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_account}	f	client-secret	${authBaseUrl}	\N	\N	t	f	f	f
+660743a4-25c1-46dd-b9c1-a861be2a2d84	t	f	account-console	0	t	\N	/realms/bambaiba-realm/account/	f	\N	f	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	openid-connect	0	f	f	${client_account-console}	f	client-secret	${authBaseUrl}	\N	\N	t	f	f	f
 \.
 
 
@@ -2911,8 +2911,6 @@ COPY public.migration_model (id, version, update_time) FROM stdin;
 --
 
 COPY public.offline_client_session (user_session_id, client_id, offline_flag, "timestamp", data, client_storage_provider, external_client_id, version) FROM stdin;
-e2b219fe-1408-484f-80e5-3ac70a4eab32	6844dd1b-0ae6-4e81-9ece-5f8b5dcb649e	0	1769430821	{"authMethod":"openid-connect","redirectUri":"http://localhost:18081/admin/master/console/#/master","notes":{"clientId":"6844dd1b-0ae6-4e81-9ece-5f8b5dcb649e","iss":"http://localhost:18081/realms/master","startedAt":"1769430107","response_type":"code","level-of-authentication":"-1","code_challenge_method":"S256","nonce":"cb592610-f475-4aa5-b5ca-173c6ab2cd50","response_mode":"query","scope":"openid","userSessionStartedAt":"1769430107","redirect_uri":"http://localhost:18081/admin/master/console/#/master","state":"1f30113b-a0d0-4792-9639-53497db85194","code_challenge":"SpukOecSsZiboIMRzK3inbCWNk97RIC7IIcg8Co77H0"}}	local	local	9
-b31087fe-d516-4e67-9532-169fff233813	6844dd1b-0ae6-4e81-9ece-5f8b5dcb649e	0	1769429028	{"authMethod":"openid-connect","redirectUri":"http://localhost:18081/admin/master/console/#/master/clients/8675ed84-ae64-4ead-aaf4-913e1d7d3397/settings","notes":{"clientId":"6844dd1b-0ae6-4e81-9ece-5f8b5dcb649e","iss":"http://localhost:18081/realms/master","startedAt":"1769429026","response_type":"code","level-of-authentication":"-1","code_challenge_method":"S256","nonce":"b40800fb-b242-436d-b2ba-1cef0a909899","response_mode":"query","scope":"openid","userSessionStartedAt":"1769429026","redirect_uri":"http://localhost:18081/admin/master/console/#/master/clients/8675ed84-ae64-4ead-aaf4-913e1d7d3397/settings","state":"0da678d1-48f8-4f59-b0ef-c8176a73af5a","code_challenge":"FBoBLq_X-t86KkxGnOxSfFtmF6IEnntXbSUd0xvgKss"}}	local	local	1
 \.
 
 
@@ -2923,8 +2921,6 @@ b31087fe-d516-4e67-9532-169fff233813	6844dd1b-0ae6-4e81-9ece-5f8b5dcb649e	0	1769
 --
 
 COPY public.offline_user_session (user_session_id, user_id, realm_id, created_on, offline_flag, data, last_session_refresh, broker_session_id, version) FROM stdin;
-b31087fe-d516-4e67-9532-169fff233813	f1bd369f-b87c-4434-bdf7-e6cc125849d1	9ccc2b44-8d11-4694-87e4-8e194b225e1d	1769429026	0	{"ipAddress":"172.18.0.1","authMethod":"openid-connect","rememberMe":false,"started":0,"notes":{"KC_DEVICE_NOTE":"eyJpcEFkZHJlc3MiOiIxNzIuMTguMC4xIiwib3MiOiJXaW5kb3dzIiwib3NWZXJzaW9uIjoiMTAiLCJicm93c2VyIjoiQ2hyb21lLzE0NC4wLjAiLCJkZXZpY2UiOiJPdGhlciIsImxhc3RBY2Nlc3MiOjAsIm1vYmlsZSI6ZmFsc2V9","AUTH_TIME":"1769429026","authenticators-completed":"{\\"2c1ee7ad-ade8-4bf7-900c-768b2ad6d5fa\\":1769429026}"},"state":"LOGGED_IN"}	1769429028	\N	1
-e2b219fe-1408-484f-80e5-3ac70a4eab32	f1bd369f-b87c-4434-bdf7-e6cc125849d1	9ccc2b44-8d11-4694-87e4-8e194b225e1d	1769430107	0	{"ipAddress":"172.18.0.1","authMethod":"openid-connect","rememberMe":false,"started":0,"notes":{"KC_DEVICE_NOTE":"eyJpcEFkZHJlc3MiOiIxNzIuMTguMC4xIiwib3MiOiJXaW5kb3dzIiwib3NWZXJzaW9uIjoiMTAiLCJicm93c2VyIjoiRWRnZS8xNDQuMC4wIiwiZGV2aWNlIjoiT3RoZXIiLCJsYXN0QWNjZXNzIjowLCJtb2JpbGUiOmZhbHNlfQ==","AUTH_TIME":"1769430107","authenticators-completed":"{\\"2c1ee7ad-ade8-4bf7-900c-768b2ad6d5fa\\":1769430107}"},"state":"LOGGED_IN"}	1769430821	\N	9
 \.
 
 
@@ -3482,7 +3478,7 @@ e1b67e77-9ddd-4c0c-972d-5e52f6003df3	bambaiba-api	included.client.audience
 
 COPY public.realm (id, access_code_lifespan, user_action_lifespan, access_token_lifespan, account_theme, admin_theme, email_theme, enabled, events_enabled, events_expiration, login_theme, name, not_before, password_policy, registration_allowed, remember_me, reset_password_allowed, social, ssl_required, sso_idle_timeout, sso_max_lifespan, update_profile_on_soc_login, verify_email, master_admin_client, login_lifespan, internationalization_enabled, default_locale, reg_email_as_username, admin_events_enabled, admin_events_details_enabled, edit_username_allowed, otp_policy_counter, otp_policy_window, otp_policy_period, otp_policy_digits, otp_policy_alg, otp_policy_type, browser_flow, registration_flow, direct_grant_flow, reset_credentials_flow, client_auth_flow, offline_session_idle_timeout, revoke_refresh_token, access_token_life_implicit, login_with_email_allowed, duplicate_emails_allowed, docker_auth_flow, refresh_token_max_reuse, allow_user_managed_access, sso_max_lifespan_remember_me, sso_idle_timeout_remember_me, default_role) FROM stdin;
 9ccc2b44-8d11-4694-87e4-8e194b225e1d	60	300	60	\N	\N	\N	t	f	0	\N	master	0	\N	f	f	f	f	EXTERNAL	1800	36000	f	f	9f3e1992-eb18-490a-a7af-2ddc4d947be5	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	9e4ca14f-c769-445f-9823-0ee4e7f5995f	eeb5d5fc-01af-4213-a5a3-cbd285fb578b	8bbfc34c-d8d9-48c1-b79a-f955cb70b8bb	37d5edc9-7089-4b85-ac73-d99fb431baf4	f11b41ec-6388-4979-b2e9-7cf504fcb9ca	2592000	f	900	t	f	3ad6bc93-f13c-4f59-9680-33b92c2d92b8	0	f	0	0	333d5b0e-b35b-447c-849f-6d1954882d54
-22478864-d5ad-4829-b2bf-92ed9d9ca9c8	60	300	300	\N	\N	\N	t	f	0	\N	bambaiba	0	\N	f	f	f	f	EXTERNAL	1800	36000	f	f	8675ed84-ae64-4ead-aaf4-913e1d7d3397	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	905d0947-4059-4fc3-a85f-30a710778cf1	e6a564ce-e81a-4447-a408-448dc4b24859	1fa01ed5-af2b-434e-a1b3-ab153785f0ef	0f75fe80-a603-4c1a-b430-4e6e306b45d0	c424c49c-aa15-4816-b9ef-efba43376b05	2592000	f	900	t	f	5bf4fd2b-7ee7-4684-9d34-82bbac5b2483	0	f	0	0	6337a65d-feea-4b7c-b5e2-6d122b88b571
+22478864-d5ad-4829-b2bf-92ed9d9ca9c8	60	300	300	\N	\N	\N	t	f	0	\N	bambaiba-realm	0	\N	f	f	f	f	EXTERNAL	1800	36000	f	f	8675ed84-ae64-4ead-aaf4-913e1d7d3397	1800	f	\N	f	f	f	f	0	1	30	6	HmacSHA1	totp	905d0947-4059-4fc3-a85f-30a710778cf1	e6a564ce-e81a-4447-a408-448dc4b24859	1fa01ed5-af2b-434e-a1b3-ab153785f0ef	0f75fe80-a603-4c1a-b430-4e6e306b45d0	c424c49c-aa15-4816-b9ef-efba43376b05	2592000	f	900	t	f	5bf4fd2b-7ee7-4684-9d34-82bbac5b2483	0	f	0	0	6337a65d-feea-4b7c-b5e2-6d122b88b571
 \.
 
 
@@ -3560,6 +3556,15 @@ cibaInterval	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	5
 cibaAuthRequestedUserHint	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	login_hint
 parRequestUriLifespan	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	60
 firstBrokerLoginFlowId	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	d64f7b8b-da55-434a-93d6-45e763615e6a
+displayName	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	BambaIba Realm
+_browser_header.contentSecurityPolicyReportOnly	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	
+_browser_header.xContentTypeOptions	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	nosniff
+_browser_header.referrerPolicy	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	no-referrer
+_browser_header.xRobotsTag	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	none
+_browser_header.xFrameOptions	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	SAMEORIGIN
+_browser_header.contentSecurityPolicy	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	frame-src 'self'; frame-ancestors 'self'; object-src 'none';
+_browser_header.xXSSProtection	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	1; mode=block
+_browser_header.strictTransportSecurity	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	max-age=31536000; includeSubDomains
 frontendUrl	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	
 acr.loa.map	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	{}
 displayNameHtml	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	
@@ -3572,15 +3577,6 @@ clientOfflineSessionIdleTimeout	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	0
 clientOfflineSessionMaxLifespan	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	0
 client-policies.profiles	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	{"profiles":[]}
 client-policies.policies	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	{"policies":[]}
-displayName	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	BambaIba
-_browser_header.contentSecurityPolicyReportOnly	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	
-_browser_header.xContentTypeOptions	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	nosniff
-_browser_header.referrerPolicy	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	no-referrer
-_browser_header.xRobotsTag	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	none
-_browser_header.xFrameOptions	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	SAMEORIGIN
-_browser_header.contentSecurityPolicy	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	frame-src 'self'; frame-ancestors 'self'; object-src 'none';
-_browser_header.xXSSProtection	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	1; mode=block
-_browser_header.strictTransportSecurity	22478864-d5ad-4829-b2bf-92ed9d9ca9c8	max-age=31536000; includeSubDomains
 \.
 
 
@@ -3671,9 +3667,9 @@ COPY public.redirect_uris (client_id, value) FROM stdin;
 d8d4e759-1346-4d49-8cb2-8d96ba570f07	/*
 7e903410-f31f-4bc8-8402-777e4538d2a1	http://localhost:18081/*
 88acef04-74b2-48a9-b20a-91e8a91a6071	/*
-862e68c6-d552-4480-9b9f-4d3a69704afa	/admin/bambaiba/console/*
-32b64136-f72f-40be-8350-89e652c4d54f	/realms/bambaiba/account/*
-660743a4-25c1-46dd-b9c1-a861be2a2d84	/realms/bambaiba/account/*
+32b64136-f72f-40be-8350-89e652c4d54f	/realms/bambaiba-realm/account/*
+660743a4-25c1-46dd-b9c1-a861be2a2d84	/realms/bambaiba-realm/account/*
+862e68c6-d552-4480-9b9f-4d3a69704afa	/admin/bambaiba-realm/console/*
 \.
 
 
@@ -6340,13 +6336,13 @@ ALTER TABLE ONLY public.identity_provider_config
     ADD CONSTRAINT fkdc4897cf864c4e43 FOREIGN KEY (identity_provider_id) REFERENCES public.identity_provider(internal_id);
 
 
--- Completed on 2026-01-26 13:53:37
+-- Completed on 2026-01-27 21:34:48
 
 --
 -- PostgreSQL database dump complete
 --
 
--- Completed on 2026-01-26 13:53:37
+-- Completed on 2026-01-27 21:34:48
 
 --
 -- PostgreSQL database cluster dump complete

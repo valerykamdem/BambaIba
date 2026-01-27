@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Concertation.Banking.API.Features.Auth.RefreshToken;
+namespace BambaIba.Application.Features.Auth.RefreshToken;
 
 public class RefreshTokenValidator : AbstractValidator<RefreshTokenCommand>
 {

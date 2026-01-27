@@ -1,6 +1,6 @@
 ﻿
 using BambaIba.Application.Abstractions.Dtos;
-using BambaIba.Application.Features.Register;
+using BambaIba.Application.Features.Auth.Register;
 using BambaIba.Domain.Entities.Users;
 using BambaIba.SharedKernel;
 

@@ -3,7 +3,7 @@ using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 
-namespace BambaIba.Application.Features.Register;
+namespace BambaIba.Application.Features.Auth.Register;
 
 public sealed record RegisterCommand(
     string Email,

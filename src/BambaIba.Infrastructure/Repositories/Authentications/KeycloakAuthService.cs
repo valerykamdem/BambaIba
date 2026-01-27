@@ -6,7 +6,7 @@ using System.Text.Json;
 using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Application.Features.Register;
+using BambaIba.Application.Features.Auth.Register;
 using BambaIba.Domain.Entities;
 using BambaIba.Domain.Entities.Users;
 using BambaIba.Infrastructure.Persistence;

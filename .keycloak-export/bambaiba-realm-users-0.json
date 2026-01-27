@@ -1,0 +1,88 @@
+{
+  "realm" : "bambaiba-realm",
+  "users" : [ {
+    "id" : "1e861589-92eb-461e-b844-9f07baa5c252",
+    "username" : "service-account-bambaiba-admin-client",
+    "emailVerified" : false,
+    "createdTimestamp" : 1761221304182,
+    "enabled" : true,
+    "totp" : false,
+    "serviceAccountClientId" : "bambaiba-admin-client",
+    "credentials" : [ ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-bambaiba-realm" ],
+    "clientRoles" : {
+      "realm-management" : [ "manage-users" ],
+      "account" : [ "manage-account" ]
+    },
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "ddd2c493-94bc-47d8-b94e-b5f24188e8d4",
+    "username" : "user1@user.com",
+    "firstName" : "User1",
+    "lastName" : "User1",
+    "email" : "user1@user.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1763546025192,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "bc28eeff-f59c-45f9-8ddf-289590fc348b",
+      "type" : "password",
+      "createdDate" : 1763546027845,
+      "secretData" : "{\"value\":\"P8yY7eaTiqWIa9rCQmeLxWg7fPFtgY242D6wY/AotUg=\",\"salt\":\"echH95I0Yy5G6SkIO5hqBA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-bambaiba-realm" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "94557eed-86d5-4d01-bc8d-767f1a6bd89c",
+    "username" : "user2@user.com",
+    "firstName" : "User",
+    "lastName" : "User2",
+    "email" : "user2@user.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1764761712128,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "002b7143-bc62-4516-9c7d-12a05a48ee03",
+      "type" : "password",
+      "createdDate" : 1764761712753,
+      "secretData" : "{\"value\":\"WjQf+hJWGxb70AuHdxTMKUMqIWI0BDb1gLdi98Unheg=\",\"salt\":\"P9o5I1Y/SJvN4h5pwCT/1w==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-bambaiba-realm" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  }, {
+    "id" : "5339f261-b577-47ba-b3c7-fe335de2090f",
+    "username" : "user@user.com",
+    "firstName" : "User",
+    "lastName" : "User",
+    "email" : "user@user.com",
+    "emailVerified" : true,
+    "createdTimestamp" : 1763545929112,
+    "enabled" : true,
+    "totp" : false,
+    "credentials" : [ {
+      "id" : "893c3e4f-e408-4ccb-a1d7-3d0c44ca9c45",
+      "type" : "password",
+      "createdDate" : 1763545941126,
+      "secretData" : "{\"value\":\"SAv6X2Ykjbk43Fghx8zwLTO/wqcyRSR9f+knwPoWxlM=\",\"salt\":\"95zGs2OO8BkhAYqJ40YRXA==\",\"additionalParameters\":{}}",
+      "credentialData" : "{\"hashIterations\":5,\"algorithm\":\"argon2\",\"additionalParameters\":{\"hashLength\":[\"32\"],\"memory\":[\"7168\"],\"type\":[\"id\"],\"version\":[\"1.3\"],\"parallelism\":[\"1\"]}}"
+    } ],
+    "disableableCredentialTypes" : [ ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "default-roles-bambaiba-realm" ],
+    "notBefore" : 0,
+    "groups" : [ ]
+  } ]
+}

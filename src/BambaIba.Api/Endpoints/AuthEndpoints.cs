@@ -1,16 +1,17 @@
 ﻿using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
 using BambaIba.Application.Abstractions.Dtos;
-using BambaIba.Application.Features.Login;
-using BambaIba.Application.Features.Register;
+using BambaIba.Application.Features.Auth.Login;
+using BambaIba.Application.Features.Auth.RefreshToken;
+using BambaIba.Application.Features.Auth.Register;
 using BambaIba.SharedKernel;
 using BambaIba.SharedKernel.Videos;
 using Carter;
-using Concertation.Banking.API.Features.Auth.RefreshToken;
 using Cortex.Mediator;
 using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Mvc;
+using Wolverine;
 
 namespace BambaIba.Api.Endpoints;
 
@@ -28,17 +29,15 @@ public class AuthEndpoint : ICarterModule
     }
 
     private static async Task<IResult> LoginEndpoint(
-        [FromBody] LoginCommand command, 
-        IMediator mediator, CancellationToken cancellationToken)
+        [FromBody] LoginCommand command, IMessageBus bus,
+        CancellationToken cancellationToken)
     {
 
-        Result<AuthResultDto> result = await mediator
-        .SendCommandAsync<LoginCommand, Result<AuthResultDto>>(command, cancellationToken);
+        Result<AuthResultDto> result = 
+            await bus.InvokeAsync<Result<AuthResultDto>>(command, cancellationToken);
 
-        //if (!result.IsSuccess)
-        //    return Results.BadRequest(result.Error);//return Results.Unauthorized();
-
-        return result.Match(Results.Ok, CustomResults.Problem);
+        //return result.Match(Results.Ok, CustomResults.Problem);
+        return Results.Ok(result);
     }
 
     private static async Task<IResult> RegisterEndpoint(
@@ -49,11 +48,7 @@ public class AuthEndpoint : ICarterModule
         Result<AuthResultDto> result = await mediator
             .SendCommandAsync<RegisterCommand, Result<AuthResultDto>>(command, cancellationToken);
 
-        //if (!result.IsSuccess)
-        //    return Results.BadRequest(result.Error);
-
-        // Retourner les informations de l'utilisateur et le token
-        return result.Match(Results.Ok, CustomResults.Problem);
+        return Results.Ok(result);
     }
 
     private static async Task<IResult> RefreshTokenEndpoint(
@@ -69,9 +64,7 @@ public class AuthEndpoint : ICarterModule
         Result<TokenResponseDto> result = await mediator
             .SendCommandAsync<RefreshTokenCommand, Result<TokenResponseDto>>(command, cancellationToken);
         
-        //if (!response.IsSuccess)
-        //    return Results.BadRequest(response.Error);
-        
-        return result.Match(Results.Ok, CustomResults.Problem);
+        //return result.Match(Results.Ok, CustomResults.Problem);
+        return Results.Ok(result);
     }
 }

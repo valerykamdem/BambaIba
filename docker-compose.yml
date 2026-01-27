@@ -83,8 +83,9 @@ services:
     image: quay.io/keycloak/keycloak:latest
     container_name: bambaiba_idp
     # Simplification de la commande, en utilisant les variables KC_*
-    command: #start --import-realm
-      - start-dev 
+    command:
+      - start-dev
+      # comment import path after first run 
       # - --import-realm 
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_USER}
@@ -106,7 +107,8 @@ services:
       KC_FEATURES: token-exchange,admin-fine-grained-authz      
     volumes:
       # Le volume pour les exports/imports doit être dans le dossier 'data/import'
-      - ./.keycloak-export:/opt/keycloak/data/export 
+      - ./.keycloak-export:/opt/keycloak/data/export
+      # comment import path after first run
       # - ./.keycloak-import:/opt/keycloak/data/import
       - ./.keycloak-entrypoint/keycloak-entrypoint.sh:/opt/keycloak/custom/keycloak-entrypoint.sh
     ports:

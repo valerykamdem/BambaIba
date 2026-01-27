@@ -47,7 +47,7 @@ builder.Services.Configure<RadioLiveOptions>(
 
 // Services
 builder.Services.AddPresentation(builder.Configuration)
-    .AddApplicationServices(builder.Configuration)
+    .AddApplicationServices()
     .AddInfrastructureServices(builder.Configuration);
 
 // ✅ CORS pour SignalR

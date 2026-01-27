@@ -1,7 +1,6 @@
-﻿using BambaIba.Application.Features.Login;
-using FluentValidation;
+﻿using FluentValidation;
 
-namespace BambaIba.Banking.API.Features.Auth.Login;
+namespace BambaIba.Application.Features.Auth.Login;
 
 public class LoginValidator : AbstractValidator<LoginCommand>
 {

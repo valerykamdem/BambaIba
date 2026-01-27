@@ -10,8 +10,7 @@ namespace BambaIba.Application.Extensions;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddApplicationServices(this IServiceCollection services,
-        IConfiguration configuration)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         Assembly assembly = typeof(ServiceCollectionExtensions).Assembly;
 
@@ -35,7 +34,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<MediaPublisher>();
 
-        services.AddCortexMediator(configuration,
+        services.AddCortexMediator(
             [typeof(ServiceCollectionExtensions)], // Scanne l'assembly pour trouver les handlers
            options => options.AddDefaultBehaviors());
 

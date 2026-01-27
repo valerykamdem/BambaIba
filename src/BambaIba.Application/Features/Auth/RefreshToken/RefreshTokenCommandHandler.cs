@@ -4,7 +4,7 @@ using BambaIba.Domain.Entities;
 using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 
-namespace Concertation.Banking.API.Features.Auth.RefreshToken;
+namespace BambaIba.Application.Features.Auth.RefreshToken;
 
 public record RefreshTokenCommand(string RefreshToken) : ICommand<Result<TokenResponseDto>>;
 
