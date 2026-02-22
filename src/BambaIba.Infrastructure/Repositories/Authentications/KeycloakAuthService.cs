@@ -23,13 +23,13 @@ public class KeycloakAuthService : IKeycloakAuthService
 {
     private readonly HttpClient _client;
     private readonly KeycloakSettings _settings;
-    private readonly BambaIbaDbContext _db;
+    private readonly BIDbContext _db;
     private readonly IUnitOfWork _unitOfWork;
 
     public KeycloakAuthService(
         HttpClient client,
         IOptions<KeycloakSettings> keycloakSettings,
-        BambaIbaDbContext db,
+        BIDbContext db,
         IUnitOfWork unitOfWork)
     {
         _client = client;
@@ -165,7 +165,7 @@ public class KeycloakAuthService : IKeycloakAuthService
         if (!response.IsSuccessStatusCode)
         {
             string errorBody = await response.Content.ReadAsStringAsync();
-            return Result.Failure<bool>(Error.Failure("403",$"Échec de création utilisateur : {errorBody}"));
+            return Result.Failure<bool>(Error.Failure("403",$"User creation failed : {errorBody}"));
         }
 
         //// Obtenir l'ID de l'utilisateur créé
@@ -199,7 +199,7 @@ public class KeycloakAuthService : IKeycloakAuthService
         if (!response.IsSuccessStatusCode)
         {
             string error = await response.Content.ReadAsStringAsync();
-            throw new Exception($"Échec d'obtention du token admin : {error}");
+            throw new Exception($"Failed to obtain admin token : {error}");
         }
 
         string responseBody = await response.Content.ReadAsStringAsync();
@@ -211,7 +211,7 @@ public class KeycloakAuthService : IKeycloakAuthService
         });
 
         return token?.Access_Token
-            ?? throw new Exception("Impossible de parser le token");
+            ?? throw new Exception("Unable to parse the token");
     }
 
     /// <summary>
@@ -267,7 +267,7 @@ public class KeycloakAuthService : IKeycloakAuthService
     {
         // Valider les informations reçues
         if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Password))
-            return Result.Failure<AuthResultDto>(Error.Failure("400", "Email ou mot de passe manquant"));
+            return Result.Failure<AuthResultDto>(Error.Failure("400", "Missing email or password"));
 
         // Étape 1 : Créer l'utilisateur dans Keycloak
         Result<bool> creationResult = await CreateUserInKeycloak(request);
@@ -279,7 +279,7 @@ public class KeycloakAuthService : IKeycloakAuthService
         TokenResponseDto? tokenResult = await ExchangeCredentialsForTokenAsync(request.Email, request.Password);
 
         if (tokenResult == null)
-            return Result.Failure<AuthResultDto>(Error.Failure("400", "Échec de récupération du token"));
+            return Result.Failure<AuthResultDto>(Error.Failure("400", "Token retrieval failed"));
 
         // Étape 3 : Créer ou récupérer l'utilisateur local
         User user = await GetUserFromTokenAsync(tokenResult.UserId, tokenResult.Access_Token, request.CivilStatus);

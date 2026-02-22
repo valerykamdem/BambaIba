@@ -9,8 +9,8 @@ public static class MigrationExtensions
     {
         using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-        using BambaIbaDbContext dbContext =
-            scope.ServiceProvider.GetRequiredService<BambaIbaDbContext>();
+        using BIDbContext dbContext =
+            scope.ServiceProvider.GetRequiredService<BIDbContext>();
 
         dbContext.Database.Migrate();
     }

@@ -1,7 +1,7 @@
 ﻿// BambaIba.Infrastructure/Settings/FFmpegSettings.cs
 namespace BambaIba.Infrastructure.Settings;
 
-public class FFmpegSettings
+public sealed class FFmpegSettings
 {
     public const string SectionName = "FFmpeg";
 

@@ -1,0 +1,13 @@
+[leveldb2]
+enabled = true
+dir = "/data/filerldb2"
+
+[grpc]
+enabled = true
+
+[http]
+enabled = true
+
+[security]
+jwt.signing.key = "UNE_CLE_SECRETE_TRES_LONGUE"
+

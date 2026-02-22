@@ -1,8 +1,7 @@
-﻿using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Application.Features.MediaBase.GetMedia;
-using BambaIba.Application.Features.MediaBase.GetMediaById;
+﻿using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Entities.Audios;
-using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.MediaAssets;
 using BambaIba.Domain.Entities.Videos;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel.Videos;
@@ -22,10 +21,10 @@ public static class MediaMapper
             //Url = audio.StoragePath,
             ThumbnailUrl = audio.ThumbnailPath,
             Duration = audio.Duration,
-            LikeCount = audio.LikeCount,
-            DislikeCount = audio.DislikeCount,
-            PlayCount = audio.PlayCount,
-            CommentCount = audio.CommentCount,
+            //LikeCount = audio.LikeCount,
+            //DislikeCount = audio.DislikeCount,
+            //PlayCount = audio.PlayCount,
+            //CommentCount = audio.CommentCount,
             IsPublic = audio.IsPublic,
             PublishedAt = audio.PublishedAt,
             Tags = audio.Tags
@@ -43,21 +42,21 @@ public static class MediaMapper
             //Url = video.StoragePath,
             ThumbnailUrl = video.ThumbnailPath,
             Duration = video.Duration,
-            LikeCount = video.LikeCount,
-            DislikeCount = video.DislikeCount,
-            PlayCount = video.PlayCount,
-            CommentCount = video.CommentCount,
+            //LikeCount = video.LikeCount,
+            //DislikeCount = video.DislikeCount,
+            //PlayCount = video.PlayCount,
+            //CommentCount = video.CommentCount,
             IsPublic = video.IsPublic,
             PublishedAt = video.PublishedAt,
             Tags = video.Tags
         };
     }
 
-    public static MediaWithQualitiesResult ToResult(Media media, IMediaStorageService storageService)
+    public static MediaDetailsDto ToResult(MediaAsset media, IMediaStorageService storageService)
     {
-        if (media is Video video)
+        return media switch
         {
-            return new MediaWithQualitiesResult
+            Video video => new MediaDetailsDto
             {
                 Id = video.Id,
                 Type = "video",
@@ -66,10 +65,10 @@ public static class MediaMapper
                 MediaUrl = storageService.GetPublicUrl(BucketType.Video, video.StoragePath),
                 ThumbnailUrl = storageService.GetPublicUrl(BucketType.Image, video.ThumbnailPath),
                 Duration = video.Duration,
-                PlayCount = video.PlayCount,
-                LikeCount = video.LikeCount,
-                DislikeCount = video.DislikeCount,
-                CommentCount = video.CommentCount,
+                //PlayCount = video.PlayCount,
+                //LikeCount = video.LikeCount,
+                //DislikeCount = video.DislikeCount,
+                //CommentCount = video.CommentCount,
                 CreatedAt = video.CreatedAt,
                 PublishedAt = video.PublishedAt,
                 UserId = video.UserId,
@@ -80,11 +79,9 @@ public static class MediaMapper
                     Quality = q.Quality,
                     VideoUrl = storageService.GetPublicUrl(BucketType.Video, q.StoragePath)
                 }).ToList()
-            };
-        }
-        else if (media is Audio audio)
-        {
-            return new MediaWithQualitiesResult
+            },
+
+            Audio audio => new MediaDetailsDto
             {
                 Id = audio.Id,
                 Type = "audio",
@@ -93,10 +90,6 @@ public static class MediaMapper
                 MediaUrl = storageService.GetPublicUrl(BucketType.Audio, audio.StoragePath),
                 ThumbnailUrl = storageService.GetPublicUrl(BucketType.Image, audio.ThumbnailPath),
                 Duration = audio.Duration,
-                PlayCount = audio.PlayCount,
-                LikeCount = audio.LikeCount,
-                DislikeCount = audio.DislikeCount,
-                CommentCount = audio.CommentCount,
                 CreatedAt = audio.CreatedAt,
                 PublishedAt = audio.PublishedAt,
                 UserId = audio.UserId,
@@ -106,10 +99,10 @@ public static class MediaMapper
                 Category = audio.Category,
                 Topic = audio.Topic,
                 //Qualities = new List<VideoQualityDto>() // vide pour audio
-            };
-        }
+            },
 
-        throw new InvalidOperationException("Unsupported media type");
+            _ => throw new InvalidOperationException("Unsupported media type")
+        };
     }
-
 }
+

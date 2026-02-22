@@ -5,5 +5,6 @@ public enum MediaStatus
     Uploading,
     Processing,
     Ready,
+    Pending,
     Failed
 }

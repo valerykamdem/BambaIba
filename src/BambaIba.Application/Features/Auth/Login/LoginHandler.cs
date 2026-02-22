@@ -5,16 +5,18 @@ using BambaIba.SharedKernel;
 
 namespace BambaIba.Application.Features.Auth.Login;
 
-public record LoginCommand(string Email, string Password);
+public record LoginCommand(
+    string Email,
+    string Password);
 
-public class LoginHandler
+public sealed class LoginHandler(IKeycloakAuthService keycloakAuth)
 {
-    public static async Task<Result<AuthResultDto>> Handle(LoginCommand command, IKeycloakAuthService keycloakAuth)
+    public async Task<Result<AuthResultDto>> Handle(LoginCommand command)
     {
         // Appel à Keycloak pour obtenir le token
         TokenResponseDto? tokenResponse = await keycloakAuth.ExchangeCredentialsForTokenAsync(command.Email, command.Password);
         if (tokenResponse == null)
-            return Result.Failure<AuthResultDto>(Error.Failure("400", "Echec de connexion"));
+            return Result.Failure<AuthResultDto>(Error.Problem("400", "Connection failed"));
 
         // Créer ou récupérer l'utilisateur dans ton app
         User user = await keycloakAuth.GetUserFromTokenAsync(tokenResponse.UserId, tokenResponse.Access_Token, string.Empty);

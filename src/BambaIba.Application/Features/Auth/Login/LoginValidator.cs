@@ -7,10 +7,10 @@ public class LoginValidator : AbstractValidator<LoginCommand>
     public LoginValidator()
     {
         // ✅ Email valide
-        RuleFor(x => x.Email).EmailAddress().WithMessage("Email invalide");
+        RuleFor(x => x.Email).EmailAddress().WithMessage("Invalid email address");
 
         // ✅ Mot de passe ≥ 6 caractères
-        RuleFor(x => x.Password).MinimumLength(6).WithMessage("Mot de passe trop court");
+        RuleFor(x => x.Password).MinimumLength(6).WithMessage("Password too short");
 
         //// ✅ Prénom obligatoire
         //RuleFor(x => x.FirstName).NotEmpty().WithMessage("Prénom requis");

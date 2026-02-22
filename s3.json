@@ -1,0 +1,23 @@
+{
+  "identities": [
+    {
+      "name": "dev-user",
+      "credentials": [
+        {
+          "accessKey": "BAMBAIBA_DEV_01",
+          "secretKey": "9f8d7c6b5a4e3d2c1b0"
+        }
+      ],
+      "actions": [
+        "Read",
+        "Write",
+        "List",
+        "Tagging",
+        "Admin"
+      ],
+      "resources": [
+        "*"
+      ]
+    }
+  ]
+}

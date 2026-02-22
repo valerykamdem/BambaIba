@@ -10,11 +10,11 @@ namespace BambaIba.Api.Hubs;
 // Modifier LiveChatHub pour gérer le compteur de viewers
 public class LiveHub : Hub
 {
-    private readonly BambaIbaDbContext _context;
+    private readonly BIDbContext _context;
     private readonly ILogger<LiveHub> _logger;
 
     public LiveHub(
-        BambaIbaDbContext context,
+        BIDbContext context,
         ILogger<LiveHub> logger)
     {
         _context = context;

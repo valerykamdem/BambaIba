@@ -4,8 +4,8 @@ using BambaIba.Infrastructure.Persistence;
 namespace BambaIba.Infrastructure.Repositories;
 public class PlaylistVideoRepository : IPlaylistItemRepository
 {
-    private readonly BambaIbaDbContext _dbContext;
-    public PlaylistVideoRepository(BambaIbaDbContext context)
+    private readonly BIDbContext _dbContext;
+    public PlaylistVideoRepository(BIDbContext context)
     {
         _dbContext = context;
     }

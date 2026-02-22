@@ -5,8 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BambaIba.Infrastructure.Repositories;
 public class LikeRepository : ILikeRepository
 {
-    private readonly BambaIbaDbContext _dbContext;
-    public LikeRepository(BambaIbaDbContext dbContext)
+    private readonly BIDbContext _dbContext;
+    public LikeRepository(BIDbContext dbContext)
     {
         _dbContext = dbContext;
     }

@@ -22,10 +22,3 @@ public class MinIOSettings
         !string.IsNullOrEmpty(Buckets.Audio) &&
         !string.IsNullOrEmpty(Buckets.Image);
 }
-
-public class BucketNames
-{
-    public string Video { get; set; } = string.Empty;
-    public string Audio { get; set; } = string.Empty;
-    public string Image { get; set; } = string.Empty;
-}

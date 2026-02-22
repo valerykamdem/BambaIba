@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BambaIba.Infrastructure.Repositories;
 public class ChatMessageRepository : IChatMessageRepository
 {
-    private readonly BambaIbaDbContext _dbContext;
-    public ChatMessageRepository(BambaIbaDbContext dbContext)
+    private readonly BIDbContext _dbContext;
+    public ChatMessageRepository(BIDbContext dbContext)
     {
         _dbContext = dbContext;
     }

@@ -8,8 +8,8 @@ public static class SeedData
 {
     public static void Initialize(IServiceProvider serviceProvider)
     {
-        using var context = new BambaIbaDbContext(
-            serviceProvider.GetRequiredService<DbContextOptions<BambaIbaDbContext>>());
+        using var context = new BIDbContext(
+            serviceProvider.GetRequiredService<DbContextOptions<BIDbContext>>());
 
         if (context.Roles.Any())
             return;

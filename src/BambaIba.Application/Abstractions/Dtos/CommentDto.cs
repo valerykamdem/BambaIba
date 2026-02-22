@@ -1,14 +1,16 @@
 ﻿namespace BambaIba.Application.Abstractions.Dtos;
-public sealed record CommentDto
-{
-    public Guid Id { get; init; }
-    public Guid MediaId { get; init; }
-    public Guid UserId { get; init; }
-    public string Content { get; init; } = string.Empty;
-    public Guid? ParentCommentId { get; init; }
-    public int LikeCount { get; init; }
-    public int ReplyCount { get; init; }
-    public DateTime? CreatedAt { get; init; }
-    public DateTime? UpdatedAt { get; init; }
-    public bool IsEdited { get; init; }
-}
+
+public sealed record CommentDto(
+    string Id,
+    string MediaId,
+    string UserId,
+    string UserName,      // TODO: Remplir via lookup User
+    string? UserAvatar,   // TODO: Remplir via lookup User
+    string Content,
+    DateTime CreatedAt,
+    int LikeCount,
+    int DislikeCount,    
+    int RepliesCount,     // Nouveau : Calculé via Aggregationb
+    bool IsEdited,
+    bool IsLiked          // Nouveau : Calculé via lookup Réactions
+);

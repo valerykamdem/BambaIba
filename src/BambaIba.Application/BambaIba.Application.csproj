@@ -7,30 +7,30 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Folder Include="Features\Channels\" />
-		<Folder Include="Features\VideoQuality\" />
-		<Folder Include="Features\Subscriptions\" />
-		<Folder Include="Features\Users\" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Cortex.Mediator" Version="2.2.0" />
+		<PackageReference Include="Cortex.Mediator" Version="3.1.2" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
 		<PackageReference Include="Mapster" Version="7.4.0" />
 		<PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
-		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.2" />
+		<PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.3.9" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="10.0.3" />
+		<PackageReference Include="MongoDB.Driver" Version="3.6.0" />
 		<PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
-		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.15.0" />
-		<PackageReference Include="WolverineFx" Version="5.12.1" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+		<PackageReference Include="WolverineFx" Version="5.15.0" />
+		<PackageReference Include="WolverineFx.Postgresql" Version="5.15.0" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\BambaIba.Domain\BambaIba.Domain.csproj" />
 		<ProjectReference Include="..\BambaIba.SharedKernel\BambaIba.SharedKernel.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Abstractions\Helpers\" />
 	</ItemGroup>
 
 </Project>

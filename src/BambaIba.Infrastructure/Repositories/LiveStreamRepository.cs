@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BambaIba.Infrastructure.Repositories;
 public class LiveStreamRepository : ILiveStreamRepository
 {
-    private readonly BambaIbaDbContext _dbContext;
-    public LiveStreamRepository(BambaIbaDbContext dbContext)
+    private readonly BIDbContext _dbContext;
+    public LiveStreamRepository(BIDbContext dbContext)
     {
         _dbContext = dbContext;
     }

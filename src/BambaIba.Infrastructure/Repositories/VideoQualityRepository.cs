@@ -4,9 +4,9 @@ using BambaIba.Infrastructure.Persistence;
 namespace BambaIba.Infrastructure.Repositories;
 public class VideoQualityRepository : IVideoQualityRepository
 {
-    private readonly BambaIbaDbContext _dbContext;
+    private readonly BIDbContext _dbContext;
 
-    public VideoQualityRepository(BambaIbaDbContext dbContext)
+    public VideoQualityRepository(BIDbContext dbContext)
     {
         _dbContext = dbContext;
     }

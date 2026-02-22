@@ -18,24 +18,38 @@
     },
     "BambaIba.Api": {
       "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
       "dotnetRunMessages": true,
-      "applicationUrl": "http://localhost:7000",
+      "applicationUrl": "http://localhost:7000"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "environmentVariables": {
+        "ASPNETCORE_HTTP_PORTS": "7000",
+        "COMPOSE_PROJECT_NAME": "bambalaiba_dev",
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "publishAllPorts": true,
+      "useSSL": true
+    },
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
-    },
-      "Container (Dockerfile)": {
-        "commandName": "Docker",
-        "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
-        "environmentVariables": {
-          //"ASPNETCORE_HTTPS_PORTS": "7001",
-          "ASPNETCORE_HTTP_PORTS": "7000",
-          "COMPOSE_PROJECT_NAME": "bambalaiba_dev",
-          "ASPNETCORE_ENVIRONMENT": "Development"
-        },
-        "publishAllPorts": true,
-        "useSSL": true
-      }
-    },
-    "$schema": "https://json.schemastore.org/launchsettings.json"
+    }
+  },
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:64982/",
+      "sslPort": 44307
+    }
   }
+}

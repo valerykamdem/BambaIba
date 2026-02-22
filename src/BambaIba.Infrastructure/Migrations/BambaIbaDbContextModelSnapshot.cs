@@ -10,19 +10,19 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BambaIba.Infrastructure.Migrations
 {
-    [DbContext(typeof(BambaIbaDbContext))]
+    [DbContext(typeof(BIDbContext))]
     partial class BambaIbaDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.11")
+                .HasAnnotation("ProductVersion", "10.0.2")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("BambaIba.Domain.Comments.Comment", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.Comments.Comment", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -93,6 +93,530 @@ namespace BambaIba.Infrastructure.Migrations
                         .HasDatabaseName("ix_comments_parent_comment_id");
 
                     b.ToTable("comments", (string)null);
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.Likes.Like", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsLiked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_liked");
+
+                    b.Property<Guid>("MediaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("media_id");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_likes");
+
+                    b.HasIndex("MediaId", "UserId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_likes_media_id_user_id");
+
+                    b.ToTable("likes", (string)null);
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.LiveChatMessages.LiveChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("LiveStreamId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("live_stream_id");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("message");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_live_chat_messages");
+
+                    b.HasIndex("LiveStreamId")
+                        .HasDatabaseName("ix_live_chat_messages_live_stream_id");
+
+                    b.HasIndex("SentAt")
+                        .HasDatabaseName("ix_live_chat_messages_sent_at");
+
+                    b.ToTable("live_chat_messages", (string)null);
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.LiveStream.LiveStream", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ended_at");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_public");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<string>("StreamKey")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("stream_key");
+
+                    b.Property<string>("StreamerId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("streamer_id");
+
+                    b.Property<string>("ThumbnailPath")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("thumbnail_path");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<int>("ViewerCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("viewer_count");
+
+                    b.HasKey("Id")
+                        .HasName("pk_live_streams");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_live_streams_status");
+
+                    b.HasIndex("StreamKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_live_streams_stream_key");
+
+                    b.HasIndex("StreamerId")
+                        .HasDatabaseName("ix_live_streams_streamer_id");
+
+                    b.ToTable("live_streams", (string)null);
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.MediaAssets.MediaAsset", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("category");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)")
+                        .HasColumnName("discriminator");
+
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("interval")
+                        .HasColumnName("duration");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_name");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint")
+                        .HasColumnName("file_size");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsPublic")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true)
+                        .HasColumnName("is_public");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("language");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("published_at");
+
+                    b.Property<string>("Speaker")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("speaker");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer")
+                        .HasColumnName("status");
+
+                    b.Property<string>("StoragePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("storage_path");
+
+                    b.Property<string>("Tags")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tags");
+
+                    b.Property<string>("ThumbnailPath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("thumbnail_path");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("Topic")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("topic");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_media_assets");
+
+                    b.ToTable("media_assets", (string)null);
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("MediaAsset");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.MediaStats.MediaStat", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("CommentCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("comment_count");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<int>("DislikeCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("dislike_count");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<int>("LikeCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("like_count");
+
+                    b.Property<Guid>("MediaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("media_id");
+
+                    b.Property<int>("PlayCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("play_count");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_media_stats");
+
+                    b.HasIndex("MediaId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_media_stats_media_id");
+
+                    b.ToTable("media_stats", (string)null);
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.PlaylistItems.PlaylistItem", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime>("AddedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("added_at");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<Guid>("MediaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("media_id");
+
+                    b.Property<Guid>("PlaylistId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("playlist_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.HasKey("Id")
+                        .HasName("pk_playlist_items");
+
+                    b.HasIndex("MediaId")
+                        .HasDatabaseName("ix_playlist_items_media_id");
+
+                    b.HasIndex("PlaylistId", "MediaId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_playlist_items_playlist_id_media_id");
+
+                    b.ToTable("playlist_items", (string)null);
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.Playlists.Playlist", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<bool>("IsPublic")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_public");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_playlists");
+
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_playlists_user_id");
+
+                    b.ToTable("playlists", (string)null);
                 });
 
             modelBuilder.Entity("BambaIba.Domain.Entities.Role", b =>
@@ -322,550 +846,7 @@ namespace BambaIba.Infrastructure.Migrations
                     b.ToTable("user_roles", (string)null);
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.Entities.View", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_on_utc");
-
-                    b.Property<string>("IpAddress")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("ip_address");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.Property<Guid>("VideoId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("video_id");
-
-                    b.Property<DateTime>("ViewedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("viewed_at");
-
-                    b.Property<TimeSpan>("WatchDuration")
-                        .HasColumnType("interval")
-                        .HasColumnName("watch_duration");
-
-                    b.HasKey("Id")
-                        .HasName("pk_views");
-
-                    b.HasIndex("VideoId")
-                        .HasDatabaseName("ix_views_video_id");
-
-                    b.HasIndex("ViewedAt")
-                        .HasDatabaseName("ix_views_viewed_at");
-
-                    b.ToTable("views", (string)null);
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.Likes.Like", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_on_utc");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsLiked")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_liked");
-
-                    b.Property<Guid>("MediaId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("media_id");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_likes");
-
-                    b.HasIndex("MediaId", "UserId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_likes_media_id_user_id");
-
-                    b.ToTable("likes", (string)null);
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.LiveChatMessages.LiveChatMessage", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_on_utc");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<Guid>("LiveStreamId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("live_stream_id");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("message");
-
-                    b.Property<DateTime>("SentAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sent_at");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("user_name");
-
-                    b.HasKey("Id")
-                        .HasName("pk_live_chat_messages");
-
-                    b.HasIndex("LiveStreamId")
-                        .HasDatabaseName("ix_live_chat_messages_live_stream_id");
-
-                    b.HasIndex("SentAt")
-                        .HasDatabaseName("ix_live_chat_messages_sent_at");
-
-                    b.ToTable("live_chat_messages", (string)null);
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.LiveStream.LiveStream", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_on_utc");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<DateTime?>("EndedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("ended_at");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_public");
-
-                    b.Property<DateTime?>("StartedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("started_at");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
-                    b.Property<string>("StreamKey")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("stream_key");
-
-                    b.Property<string>("StreamerId")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("streamer_id");
-
-                    b.Property<string>("ThumbnailPath")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("thumbnail_path");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("title");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.Property<int>("ViewerCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("viewer_count");
-
-                    b.HasKey("Id")
-                        .HasName("pk_live_streams");
-
-                    b.HasIndex("Status")
-                        .HasDatabaseName("ix_live_streams_status");
-
-                    b.HasIndex("StreamKey")
-                        .IsUnique()
-                        .HasDatabaseName("ix_live_streams_stream_key");
-
-                    b.HasIndex("StreamerId")
-                        .HasDatabaseName("ix_live_streams_streamer_id");
-
-                    b.ToTable("live_streams", (string)null);
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.MediaBase.Media", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("category");
-
-                    b.Property<int>("CommentCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("comment_count");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_on_utc");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("description");
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(5)
-                        .HasColumnType("character varying(5)")
-                        .HasColumnName("discriminator");
-
-                    b.Property<int>("DislikeCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("dislike_count");
-
-                    b.Property<TimeSpan>("Duration")
-                        .HasColumnType("interval")
-                        .HasColumnName("duration");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("file_name");
-
-                    b.Property<long>("FileSize")
-                        .HasColumnType("bigint")
-                        .HasColumnName("file_size");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsPublic")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true)
-                        .HasColumnName("is_public");
-
-                    b.Property<string>("Language")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("language");
-
-                    b.Property<int>("LikeCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("like_count");
-
-                    b.Property<int>("PlayCount")
-                        .HasColumnType("integer")
-                        .HasColumnName("play_count");
-
-                    b.Property<DateTime?>("PublishedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("published_at");
-
-                    b.Property<string>("Speaker")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("speaker");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer")
-                        .HasColumnName("status");
-
-                    b.Property<string>("StoragePath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("storage_path");
-
-                    b.Property<string>("Tags")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("tags");
-
-                    b.Property<string>("ThumbnailPath")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("thumbnail_path");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("title");
-
-                    b.Property<string>("Topic")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
-                        .HasColumnName("topic");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_media");
-
-                    b.ToTable("media", (string)null);
-
-                    b.HasDiscriminator().HasValue("Media");
-
-                    b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.PlaylistItems.PlaylistItem", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("AddedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("added_at");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_on_utc");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<Guid>("MediaId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("media_id");
-
-                    b.Property<Guid>("PlaylistId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("playlist_id");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer")
-                        .HasColumnName("position");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.HasKey("Id")
-                        .HasName("pk_playlist_items");
-
-                    b.HasIndex("MediaId")
-                        .HasDatabaseName("ix_playlist_items_media_id");
-
-                    b.HasIndex("PlaylistId", "MediaId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_playlist_items_playlist_id_media_id");
-
-                    b.ToTable("playlist_items", (string)null);
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.Playlists.Playlist", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("created_by");
-
-                    b.Property<DateTime?>("DeletedOnUtc")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("deleted_on_utc");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("text")
-                        .HasColumnName("description");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
-                    b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_public");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
-                        .HasColumnName("name");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("text")
-                        .HasColumnName("updated_by");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("user_id");
-
-                    b.HasKey("Id")
-                        .HasName("pk_playlists");
-
-                    b.HasIndex("UserId")
-                        .HasDatabaseName("ix_playlists_user_id");
-
-                    b.ToTable("playlists", (string)null);
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.Users.User", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.Users.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -932,7 +913,7 @@ namespace BambaIba.Infrastructure.Migrations
                     b.ToTable("users", (string)null);
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.VideoQualities.VideoQuality", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.VideoQualities.VideoQuality", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -991,91 +972,126 @@ namespace BambaIba.Infrastructure.Migrations
                     b.ToTable("video_qualities", (string)null);
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.Audios.Audio", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.View", b =>
                 {
-                    b.HasBaseType("BambaIba.Domain.MediaBase.Media");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("created_by");
+
+                    b.Property<DateTime?>("DeletedOnUtc")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_on_utc");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("ip_address");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_deleted");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("text")
+                        .HasColumnName("updated_by");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("user_id");
+
+                    b.Property<Guid>("VideoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("video_id");
+
+                    b.Property<DateTime>("ViewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("viewed_at");
+
+                    b.Property<TimeSpan>("WatchDuration")
+                        .HasColumnType("interval")
+                        .HasColumnName("watch_duration");
+
+                    b.HasKey("Id")
+                        .HasName("pk_views");
+
+                    b.HasIndex("VideoId")
+                        .HasDatabaseName("ix_views_video_id");
+
+                    b.HasIndex("ViewedAt")
+                        .HasDatabaseName("ix_views_viewed_at");
+
+                    b.ToTable("views", (string)null);
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.Audios.Audio", b =>
+                {
+                    b.HasBaseType("BambaIba.Domain.Entities.MediaAssets.MediaAsset");
 
                     b.HasDiscriminator().HasValue("Audio");
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.Videos.Video", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.Videos.Video", b =>
                 {
-                    b.HasBaseType("BambaIba.Domain.MediaBase.Media");
+                    b.HasBaseType("BambaIba.Domain.Entities.MediaAssets.MediaAsset");
 
                     b.HasDiscriminator().HasValue("Video");
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.Comments.Comment", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.Comments.Comment", b =>
                 {
-                    b.HasOne("BambaIba.Domain.MediaBase.Media", null)
+                    b.HasOne("BambaIba.Domain.Entities.MediaAssets.MediaAsset", null)
                         .WithMany()
                         .HasForeignKey("MediaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_comments_media_media_id");
+                        .HasConstraintName("fk_comments_media_assets_media_id");
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.Entities.TranscodeJob", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.Likes.Like", b =>
                 {
-                    b.HasOne("BambaIba.Domain.MediaBase.Media", null)
-                        .WithMany()
-                        .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_transcode_jobs_media_video_id");
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.Entities.UserRole", b =>
-                {
-                    b.HasOne("BambaIba.Domain.Entities.Role", "Role")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_roles_roles_role_id");
-
-                    b.HasOne("BambaIba.Domain.Users.User", "User")
-                        .WithMany("UserRoles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_user_roles_users_user_id");
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.Entities.View", b =>
-                {
-                    b.HasOne("BambaIba.Domain.MediaBase.Media", null)
-                        .WithMany()
-                        .HasForeignKey("VideoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_views_media_video_id");
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.Likes.Like", b =>
-                {
-                    b.HasOne("BambaIba.Domain.MediaBase.Media", null)
+                    b.HasOne("BambaIba.Domain.Entities.MediaAssets.MediaAsset", null)
                         .WithMany()
                         .HasForeignKey("MediaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_likes_media_media_id");
+                        .HasConstraintName("fk_likes_media_assets_media_id");
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.PlaylistItems.PlaylistItem", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.MediaStats.MediaStat", b =>
                 {
-                    b.HasOne("BambaIba.Domain.MediaBase.Media", "Media")
+                    b.HasOne("BambaIba.Domain.Entities.MediaAssets.MediaAsset", "Media")
+                        .WithOne("Stat")
+                        .HasForeignKey("BambaIba.Domain.Entities.MediaStats.MediaStat", "MediaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_media_stats_media_assets_media_id");
+
+                    b.Navigation("Media");
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.PlaylistItems.PlaylistItem", b =>
+                {
+                    b.HasOne("BambaIba.Domain.Entities.MediaAssets.MediaAsset", "Media")
                         .WithMany()
                         .HasForeignKey("MediaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_playlist_items_media_media_id");
+                        .HasConstraintName("fk_playlist_items_media_assets_media_id");
 
-                    b.HasOne("BambaIba.Domain.Playlists.Playlist", "Playlist")
+                    b.HasOne("BambaIba.Domain.Entities.Playlists.Playlist", "Playlist")
                         .WithMany("Items")
                         .HasForeignKey("PlaylistId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1087,9 +1103,40 @@ namespace BambaIba.Infrastructure.Migrations
                     b.Navigation("Playlist");
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.VideoQualities.VideoQuality", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.TranscodeJob", b =>
                 {
-                    b.HasOne("BambaIba.Domain.Videos.Video", null)
+                    b.HasOne("BambaIba.Domain.Entities.MediaAssets.MediaAsset", null)
+                        .WithMany()
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_transcode_jobs_media_assets_video_id");
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.UserRole", b =>
+                {
+                    b.HasOne("BambaIba.Domain.Entities.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_roles_roles_role_id");
+
+                    b.HasOne("BambaIba.Domain.Entities.Users.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_user_roles_users_user_id");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.VideoQualities.VideoQuality", b =>
+                {
+                    b.HasOne("BambaIba.Domain.Entities.Videos.Video", null)
                         .WithMany("Qualities")
                         .HasForeignKey("MediaId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1097,22 +1144,38 @@ namespace BambaIba.Infrastructure.Migrations
                         .HasConstraintName("fk_video_qualities_videos_media_id");
                 });
 
+            modelBuilder.Entity("BambaIba.Domain.Entities.View", b =>
+                {
+                    b.HasOne("BambaIba.Domain.Entities.MediaAssets.MediaAsset", null)
+                        .WithMany()
+                        .HasForeignKey("VideoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_views_media_assets_video_id");
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.MediaAssets.MediaAsset", b =>
+                {
+                    b.Navigation("Stat")
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BambaIba.Domain.Entities.Playlists.Playlist", b =>
+                {
+                    b.Navigation("Items");
+                });
+
             modelBuilder.Entity("BambaIba.Domain.Entities.Role", b =>
                 {
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.Playlists.Playlist", b =>
-                {
-                    b.Navigation("Items");
-                });
-
-            modelBuilder.Entity("BambaIba.Domain.Users.User", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.Users.User", b =>
                 {
                     b.Navigation("UserRoles");
                 });
 
-            modelBuilder.Entity("BambaIba.Domain.Videos.Video", b =>
+            modelBuilder.Entity("BambaIba.Domain.Entities.Videos.Video", b =>
                 {
                     b.Navigation("Qualities");
                 });

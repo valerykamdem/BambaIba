@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BambaIba.Infrastructure.Repositories;
 public class PlaylistRepository : IPlaylistRepository
 {
-    private readonly BambaIbaDbContext _dbContext;
-    public PlaylistRepository(BambaIbaDbContext context)
+    private readonly BIDbContext _dbContext;
+    public PlaylistRepository(BIDbContext context)
     {
         _dbContext = context;
     }

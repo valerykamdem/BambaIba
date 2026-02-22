@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace BambaIba.Infrastructure.Migrations
 {
-    [DbContext(typeof(BambaIbaDbContext))]
+    [DbContext(typeof(BIDbContext))]
     [Migration("20251119124741_UpdateCommentModel")]
     partial class UpdateCommentModel
     {

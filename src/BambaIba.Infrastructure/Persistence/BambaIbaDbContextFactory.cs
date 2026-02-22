@@ -4,9 +4,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Infrastructure.Persistence;
-public class BambaIbaDbContextFactory : IDesignTimeDbContextFactory<BambaIbaDbContext>
+public class BambaIbaDbContextFactory : IDesignTimeDbContextFactory<BIDbContext>
 {
-    public BambaIbaDbContext CreateDbContext(string[] args)
+    public BIDbContext CreateDbContext(string[] args)
     {
 
         // Charger la config depuis appsettings.Development.json
@@ -19,11 +19,11 @@ public class BambaIbaDbContextFactory : IDesignTimeDbContextFactory<BambaIbaDbCo
 
         string? connectionString = config.GetConnectionString("DefaultConnection");
 
-        var optionsBuilder = new DbContextOptionsBuilder<BambaIbaDbContext>();
+        var optionsBuilder = new DbContextOptionsBuilder<BIDbContext>();
         optionsBuilder.UseNpgsql(connectionString).UseSnakeCaseNamingConvention()
             .EnableSensitiveDataLogging()
            .LogTo(Console.WriteLine, LogLevel.Information);
 
-        return new BambaIbaDbContext(optionsBuilder.Options);
+        return new BIDbContext(optionsBuilder.Options);
     }
 }

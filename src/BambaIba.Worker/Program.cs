@@ -4,7 +4,7 @@ using BambaIba.Worker;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddApplicationServices(builder.Configuration)
+builder.Services.AddApplicationServices()
     .AddInfrastructureServices(builder.Configuration);
 
 builder.Services.AddHostedService<MediaConsumer>();

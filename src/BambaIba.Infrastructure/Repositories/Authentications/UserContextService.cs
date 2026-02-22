@@ -10,8 +10,8 @@ namespace BambaIba.Infrastructure.Repositories.Authentications;
 
 public class UserContextService : IUserContextService
 {
-    private readonly BambaIbaDbContext _db;
-    public UserContextService(BambaIbaDbContext db) => _db = db;
+    private readonly BIDbContext _db;
+    public UserContextService(BIDbContext db) => _db = db;
 
     public async Task<UserContext> GetCurrentContext(HttpContext context)
     {

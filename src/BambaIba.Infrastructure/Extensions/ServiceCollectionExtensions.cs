@@ -1,11 +1,12 @@
-﻿using BambaIba.Application.Abstractions.Caching;
+﻿using Amazon.S3;
+using BambaIba.Application.Abstractions.Caching;
 using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Entities.Comments;
+using BambaIba.Application.Abstractions.Services;
 using BambaIba.Domain.Entities.Likes;
 using BambaIba.Domain.Entities.LiveChatMessages;
 using BambaIba.Domain.Entities.LiveStream;
-using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.Mongo.Comments;
 using BambaIba.Domain.Entities.PlaylistItems;
 using BambaIba.Domain.Entities.Playlists;
 using BambaIba.Domain.Entities.VideoQualities;
@@ -23,10 +24,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
-using Minio;
+using MongoDB.Driver;
 using Npgsql;
 using StackExchange.Redis;
 
@@ -41,7 +43,8 @@ public static class ServiceCollectionExtensions
         .AddServices()
         .AddRedis(configuration)
         .AddPersistence(configuration)
-        .AddMinIo(configuration)
+        .AddMongo(configuration)
+        .AddSeaweed(configuration)
         .Authentication(configuration)
         .AddHealthChecks(configuration);
 
@@ -70,13 +73,13 @@ public static class ServiceCollectionExtensions
     private static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
 
-        string connectionString = configuration.GetConnectionString("DefaultConnection") ??
+        string connectionString = configuration.GetConnectionString("Postgres") ??
                     throw new ArgumentNullException(nameof(configuration));
 
         services.AddSingleton<IDbConnectionFactory>(_ =>
         new DbConnectionFactory(new NpgsqlDataSourceBuilder(connectionString).Build()));
 
-        services.AddDbContext<BambaIbaDbContext>(
+        services.AddDbContext<BIDbContext>(
             options => options
                 .UseNpgsql(connectionString, npgsqlOptions =>
                     npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default)
@@ -86,22 +89,23 @@ public static class ServiceCollectionExtensions
             errorCodesToAdd: null
         )).UseSnakeCaseNamingConvention());
 
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BambaIbaDbContext>());
+        services.AddScoped<IBIDbContext>(
+            sp => sp.GetRequiredService<BIDbContext>());
+
+        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BIDbContext>());
 
         services.AddScoped<ILiveStreamRepository, LiveStreamRepository>();
         services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
-        //services.AddScoped<IAudioRepository, AudioRepository>();
-        //services.AddScoped<IVideoRepository, VideoRepository>();
         services.AddScoped<ICacheService, CacheService>();
         services.AddScoped<IVideoQualityRepository, VideoQualityRepository>();
         services.AddScoped<IUserContextService, UserContextService>();
-        services.AddScoped<ICommentRepository, CommentRepository>();
         services.AddScoped<ILikeRepository, LikeRepository>();
         services.AddScoped<IPlaylistRepository, PlaylistRepository>();
         services.AddScoped<IPlaylistItemRepository, PlaylistVideoRepository>();
-        services.AddScoped<IMediaRepository, MediaRepository>();
-        services.AddScoped<IMediaStorageService, MinIOMediaStorageService>();
+        // Services métiers
+        services.AddScoped<IMediaStorageService, MediaStorageService>();
         services.AddScoped<IMediaProcessingService, FFmpegMediaProcessingService>();
+        services.AddScoped<IMediaStatisticsService, MediaStatisticsService>();
 
         services.AddHttpContextAccessor();
         services.AddHttpClient<IKeycloakAuthService, KeycloakAuthService>();
@@ -111,26 +115,57 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static IServiceCollection AddMinIo(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddMongo(this IServiceCollection services, IConfiguration configuration)
+    {
+        
+        services.Configure<MongoSettings>(
+            configuration.GetSection(MongoSettings.SectionName));
+
+        //// Register AmazonS3Client
+        // 2. Créer le Client Mongo (Singleton)
+        services.AddSingleton<IMongoClient, MongoClient>(sp =>
+        {
+            MongoSettings settings = sp.GetRequiredService<IOptions<MongoSettings>>().Value;
+            return new MongoClient(settings.ConnectionString);
+        });
+
+        // 3. Créer ton Contexte Mongo (qui utilise le client)
+        services.AddSingleton<IBIMongoContext, BIMongoContext>();
+
+        return services;
+    }
+
+    private static IServiceCollection AddSeaweed(this IServiceCollection services, IConfiguration configuration)
     {
         //// Add Minio using the default endpoint
         // 1. Enregistrer la configuration pour l'injection (IOptions)
-        services.Configure<MinIOSettings>(
-            configuration.GetSection(MinIOSettings.SectionName));
+        services.Configure<SeaweedSettings>(
+            configuration.GetSection(SeaweedSettings.SectionName));
 
-        services.AddMinio(client =>
+        //// Register AmazonS3Client
+        services.AddSingleton<IAmazonS3>(sp =>
         {
-            MinIOSettings? settings = configuration
-                .GetSection(MinIOSettings.SectionName)
-                .Get<MinIOSettings>();
+            SeaweedSettings cfg = sp.GetRequiredService<IOptions<SeaweedSettings>>().Value;
 
-            //Console.WriteLine($"MinIO Config: {settings!.Endpoint}, Bucket: {settings.BucketName}");
+            var config = new AmazonS3Config
+            {
+                ServiceURL = cfg.Endpoint,          // http://localhost:8333
+                ForcePathStyle = true,
+                //SignatureVersion = "4",
+                UseHttp = true
+            };
 
-            client.WithEndpoint(settings!.Endpoint)
-                .WithCredentials(settings.AccessKey, settings.SecretKey)
-                .WithSSL(settings.UseSSL)
-                .Build();
+            var credentials = new Amazon.Runtime.BasicAWSCredentials(
+                cfg.AccessKey,
+                cfg.SecretKey
+            );
+
+            return new AmazonS3Client(credentials, config);
         });
+
+
+        services.AddHostedService<S3Initializer>();
+
 
         services.Configure<FFmpegSettings>(
             configuration.GetSection(FFmpegSettings.SectionName));
@@ -189,25 +224,11 @@ public static class ServiceCollectionExtensions
 
     }
 
-    //private static IServiceCollection AddAuthorization(this IServiceCollection services)
-    //{
-    //    services.AddAuthorization();
-
-    //    //services.AddScoped<AuthorizationService>();
-
-    //    //services.AddTransient<IClaimsTransformation, CustomClaimsTransformation>();
-
-    //    //services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
-    //    //services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
-    //    return services;
-    //}
-
     private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
     {
         services
             .AddHealthChecks()
-            .AddNpgSql(configuration.GetConnectionString("DefaultConnection")!) // Use the correct connection string name
+            .AddNpgSql(configuration.GetConnectionString("Postgres")!) // Use the correct connection string name
             .AddRedis(configuration.GetConnectionString("Redis")!);
 
         return services;

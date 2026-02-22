@@ -5,7 +5,7 @@ using BambaIba.SharedKernel;
 using Cortex.Mediator.Commands;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using BambaIba.Domain.Entities.MediaBase;
+using BambaIba.Domain.Entities.MediaAssets;
 using BambaIba.Domain.Entities.PlaylistItems;
 using BambaIba.Domain.Entities.Playlists;
 
@@ -15,7 +15,7 @@ public class AddMediaToPlaylistCommandHandler :
 {
     private readonly IPlaylistRepository _playlistRepository;
     private readonly IPlaylistItemRepository _playlistMediasRepository;
-    private readonly IMediaRepository _mediaRepository;
+    //private readonly IMediaRepository _mediaRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserContextService _userContextService;
     private readonly IHttpContextAccessor _httpContextAccessor;
@@ -24,7 +24,7 @@ public class AddMediaToPlaylistCommandHandler :
     public AddMediaToPlaylistCommandHandler(
         IPlaylistRepository playlistRepository,
         IPlaylistItemRepository playlistMediasRepository,
-        IMediaRepository mediaRepository,
+        //IMediaRepository mediaRepository,
         IUnitOfWork unitOfWork,
         IUserContextService userContextService,
         IHttpContextAccessor httpContextAccessor,
@@ -32,7 +32,7 @@ public class AddMediaToPlaylistCommandHandler :
     {
         _playlistRepository = playlistRepository;
         _playlistMediasRepository = playlistMediasRepository;
-        _mediaRepository = mediaRepository;
+        //_mediaRepository = mediaRepository;
         _unitOfWork = unitOfWork;
         _userContextService = userContextService;
         _httpContextAccessor = httpContextAccessor;
@@ -56,10 +56,10 @@ public class AddMediaToPlaylistCommandHandler :
             if (playlist.UserId != userContext.LocalUserId)
                 return AddMediaToPlaylistResult.Failure("Unauthorized");
 
-            Media media = await _mediaRepository.GetMediaByIdAsync(command.MediaId, cancellationToken);
+            //MediaAsset media = await _mediaRepository.GetMediaByIdAsync(command.MediaId, cancellationToken);
 
-            if (media == null)
-                return AddMediaToPlaylistResult.Failure("media not found");
+            //if (media == null)
+            //    return AddMediaToPlaylistResult.Failure("media not found");
 
             // Vérifier si déjà dans la playlist
             bool exists = playlist.Items.Any(pv => pv.MediaId == command.MediaId);

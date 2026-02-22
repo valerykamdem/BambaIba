@@ -1,14 +1,13 @@
 ﻿using BambaIba.Api.Extensions;
 using BambaIba.Api.Hubs;
+using BambaIba.Application.Abstractions.Services;
 using BambaIba.Application.Extensions;
-using BambaIba.Application.Settings;
 using BambaIba.Infrastructure.Extensions;
 using BambaIba.Infrastructure.Persistence;
 using Carter;
 using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
@@ -24,6 +23,9 @@ builder.Host.UseSerilog((context, loggerConfig) =>
 //// Configurations
 //builder.Services.AddControllers();
 
+builder.Configuration.AddEnvironmentVariables();
+
+
 builder.Services.AddSignalR();
 builder.Services.AddHttpClient();
 
@@ -36,9 +38,9 @@ builder.Services.AddLogging(config =>
     config.AddConsole();
 });
 
-// Enregistre la section RabbitMQ dans RabbitMqOptions
-builder.Services.Configure<RabbitMqOptions>(
-    builder.Configuration.GetSection("RabbitMQ"));
+//// Enregistre la section RabbitMQ dans RabbitMqOptions
+//builder.Services.Configure<RabbitMqOptions>(
+//    builder.Configuration.GetSection("RabbitMQ"));
 
 builder.Services.Configure<RadioLiveOptions>(
     builder.Configuration.GetSection("RadioLive"));
@@ -47,7 +49,7 @@ builder.Services.Configure<RadioLiveOptions>(
 
 // Services
 builder.Services.AddPresentation(builder.Configuration)
-    .AddApplicationServices()
+    .AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration);
 
 // ✅ CORS pour SignalR
@@ -106,77 +108,133 @@ if (builder.Environment.IsDevelopment())
     });
 }
 
-WebApplication app = builder.Build();
+bool isWorker = args.Contains("--worker-mode");
 
-//// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+if (!isWorker)
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.ApplyMigrations();
+    WebApplication app = builder.Build();
+
+    //// Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference();
+        app.UseSwagger();
+        app.UseSwaggerUI();
+        //app.ApplyMigrations();
+    }
+
+    app.UseHttpsRedirection();
+
+    app.MapHealthChecks("health", new HealthCheckOptions
+    {
+        ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+    });
+
+    app.UseCors("AllowAll");
+    //app.MapEndpoints();
+    app.MapCarter();
+    app.UseGlobalExceptionHandler();
+    app.UseSerilogRequestLogging();
+    app.UseRequestContextLogging();
+    app.UseExceptionHandler();
+
+
+    ////app.UseCors("AllowAngularOrigins");
+    //app.UseCors(options =>
+    //{
+    //    options.AllowAnyHeader();
+    //    options.AllowAnyMethod();
+    //    options.AllowAnyOrigin();
+    //});
+
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
+
+    // ✅ Mapper le Hub
+    app.MapHub<LiveHub>("/Hubs/LiveHub");
+
+    //app.MapGet("/debug/s3", async () =>
+    //{
+    //    var config = new AmazonS3Config
+    //    {
+    //        ServiceURL = "http://localhost:8333",
+    //        ForcePathStyle = true
+    //    };
+
+    //    var client = new AmazonS3Client(
+    //        "BAMBAIBA_DEV_01",
+    //        "9f8d7c6b5a4e3d2c1b0",
+    //        config
+    //    );
+
+    //    ListBucketsResponse result = await client.ListBucketsAsync();
+
+    //    if (result.Buckets == null || result.Buckets.Count == 0)
+    //        return Results.Ok("Aucun bucket trouvé (auth OK)");
+
+    //    return Results.Ok(
+    //        result.Buckets.Select(b => b.BucketName)
+    //    );
+    //});
+
+    //_ = app.MapPost("/debug/s3/create", async () =>
+    //{
+    //    var config = new AmazonS3Config
+    //    {
+    //        ServiceURL = "http://localhost:8333",
+    //        ForcePathStyle = true
+    //    };
+
+    //    var client = new AmazonS3Client(
+    //        "BAMBAIBA_DEV_01",
+    //        "9f8d7c6b5a4e3d2c1b0",
+    //        config
+    //    );
+
+    //    await client.PutBucketAsync("bambaiba-videos");
+    //    await client.PutBucketAsync("bambaiba-audios");
+    //    await client.PutBucketAsync("bambaiba-images");
+
+    //    return Results.Ok("Buckets créés");
+    //});
+
+
+
+    app.Use(async (context, next) =>
+    {
+        using IServiceScope scope = context.RequestServices.CreateScope();
+        IServiceProvider services = scope.ServiceProvider;
+        IWebHostEnvironment env = services.GetRequiredService<IWebHostEnvironment>();
+
+        if (env.IsDevelopment())
+        {
+            BIDbContext db = services.GetRequiredService<BIDbContext>();
+            // Force la création des tables si elles n’existent pas encore
+            await db.Database.EnsureCreatedAsync();
+            db.Database.Migrate();
+            SeedData.Initialize(services);
+        }
+
+        await next();
+    });
+
+    await app.RunAsync();
 }
-
-app.UseHttpsRedirection();
-
-app.MapHealthChecks("health", new HealthCheckOptions
+else
 {
-    ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
-});
+    // --- MODE WORKER ---
+    // On construit le Host mais sans app.Run() (qui lance Kestrel/HTTP)
 
-app.UseCors("AllowAll");
-//app.MapEndpoints();
-app.MapCarter();
-app.UseGlobalExceptionHandler();
-app.UseSerilogRequestLogging();
-app.UseRequestContextLogging();
-app.UseExceptionHandler();
+    // On enregistre notre WorkerService
+    builder.Services.AddHostedService<WorkerService>();
 
+    WebApplication host = builder.Build();
 
-////app.UseCors("AllowAngularOrigins");
-//app.UseCors(options =>
-//{
-//    options.AllowAnyHeader();
-//    options.AllowAnyMethod();
-//    options.AllowAnyOrigin();
-//});
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
-
-// ✅ Mapper le Hub
-app.MapHub<LiveHub>("/Hubs/LiveHub");
-
-app.Use(async (context, next) =>
-{
-    using IServiceScope scope = context.RequestServices.CreateScope();
-    IServiceProvider services = scope.ServiceProvider;
-    IWebHostEnvironment env = services.GetRequiredService<IWebHostEnvironment>();
-
-    if (env.IsDevelopment())
-    {
-        BambaIbaDbContext db = services.GetRequiredService<BambaIbaDbContext>();
-        // Force la création des tables si elles n’existent pas encore
-        await db.Database.EnsureCreatedAsync();
-        db.Database.Migrate();
-        SeedData.Initialize(services);
-    }
-
-    await next();
-});
-
-app.Use(async (context, next) =>
-{
-    IHttpMaxRequestBodySizeFeature? maxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
-    if (maxRequestBodySizeFeature != null && !context.Request.Path.StartsWithSegments("/upload"))
-    {
-        maxRequestBodySizeFeature.MaxRequestBodySize = null; // désactive la limite
-    }
-
-    await next();
-});
-
-await app.RunAsync();
+    // Ici, on lance juste le Host.
+    // Le Host va démarrer Wolverine, qui va se connecter à Postgres.
+    // Le Host va aussi lancer WorkerService.
+    await host.RunAsync();
+}

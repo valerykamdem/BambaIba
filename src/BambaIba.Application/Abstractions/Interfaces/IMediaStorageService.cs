@@ -7,6 +7,7 @@ public interface IMediaStorageService
 {
     // Vidéos
     Task<string> UploadVideoAsync(Guid id, Stream stream, string fileName, string contentType, CancellationToken ct = default);
+    //Task UploadMultipartAsync(string bucket, string key, Stream stream, string contentType, CancellationToken ct);
     Task<string> DownloadVideoAsync(string path, CancellationToken ct = default);
 
     // Audios
@@ -17,11 +18,11 @@ public interface IMediaStorageService
     Task<string> UploadImageAsync(Guid id, Stream stream, string fileName, MediaType type, CancellationToken ct = default);
 
     // Commun
-    Task<string> GetPresignedUrlAsync(string path, int expirySeconds = 3600);
-    Task DeleteAsync(string path);
-    Task<long> GetFileSizeAsync(string path);
+    Task<string> GetPresignedUrlAsync(string path, string key, int expirySeconds = 3600);
+    Task DeleteAsync(string path, string key);
+    Task<long> GetFileSizeAsync(string path, string key, CancellationToken ct);
 
-    Task<string> GetVideoUrlAsync(string storagePath, bool isPublic);
+    //Task<string> GetVideoUrlAsync(string storagePath, bool isPublic);
     string GetPublicUrl(BucketType bucketType, string storagePath);
 }
 

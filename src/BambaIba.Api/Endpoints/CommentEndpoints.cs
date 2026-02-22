@@ -3,17 +3,16 @@ using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Extensions;
-using BambaIba.Application.Features.Comments.CreateComment;
+using BambaIba.Application.Features.Comments.AddComment;
+using BambaIba.Application.Features.Comments.AddReactionToComment;
 using BambaIba.Application.Features.Comments.DeleteComment;
+using BambaIba.Application.Features.Comments.EditComment;
 using BambaIba.Application.Features.Comments.GetComments;
 using BambaIba.Application.Features.Comments.GetReplies;
-using BambaIba.Application.Features.Comments.UpdateComment;
 using BambaIba.SharedKernel;
-using BambaIba.SharedKernel.Comments;
 using Carter;
-using Cortex.Mediator;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Wolverine;
 
 namespace BambaIba.Api.Endpoints;
 
@@ -25,38 +24,41 @@ public class CommentEndpoints : ICarterModule
             .WithTags("Comments");
 
 
-        group.MapPost("/", CreateComment)
+        group.MapPost("/{mediaId:guid}/comments", AddComment)
             .RequireAuthorization()
-            .Produces<CreateCommentResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .WithValidation<CreateCommentRequest>()
+            .WithValidation<AddCommentCommand>()
             .WithName("CreateComment");
 
-        group.MapGet("/{mediaId:guid}", GetComments)
-            .Produces<PagedResult<CommentDto>>(StatusCodes.Status200OK)
+        group.MapGet("/{mediaId:guid}/comments", GetComments)
+            .Produces<CursorPagedResult<CommentDto>>(StatusCodes.Status200OK)
             .WithName("GetComments");
 
-        group.MapPut("/", UpdateComment)
+        group.MapPut("/{commentId}", UpdateComment)
             //group.MapPut("/{commentId:guid}", UpdateComment)
             .RequireAuthorization()
             .Produces(StatusCodes.Status204NoContent)
             .WithName("UpdateComment");
 
-        group.MapDelete("/", DeleteComment)
+        group.MapDelete("/{commentId}", DeleteComment)
             //group.MapDelete("/{commentId:guid}", DeleteComment)
             .RequireAuthorization()
             .Produces(StatusCodes.Status204NoContent)
             .WithName("DeleteComment");
 
         group.MapGet("/{commentId:guid}/replies", GetReplies)
+            .Produces<CursorPagedResult<CommentDto>>(StatusCodes.Status200OK)
+            .WithName("GetReplies");
+
+        group.MapPost("/{commentId}/reaction", AddReaction)
             .Produces<PagedResult<CommentDto>>(StatusCodes.Status200OK)
             .WithName("GetReplies");
     }
 
-    private static async Task<IResult> CreateComment(
-        //Guid videoId,
-        [FromBody] CreateCommentRequest request,
-        IMediator mediator,
+    private static async Task<IResult> AddComment(
+        Guid mediaId,
+        [FromBody] AddCommentCommand command,
+        IMessageBus bus,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
     {
@@ -66,97 +68,98 @@ public class CommentEndpoints : ICarterModule
         if (string.IsNullOrEmpty(userId))
             return Results.Unauthorized();
 
-        var command = new CreateCommentCommand
-        {
-            MediaId = request.MediaId,
-            //UserId = userId,
-            Content = request.Content,
-            ParentCommentId = request.ParentCommentId
-        };
+        AddCommentCommand cmdWithId = command with { MediaId = mediaId };
 
-        Result<CreateCommentResult> result =
-            await mediator.SendCommandAsync<CreateCommentCommand, Result<CreateCommentResult>>(
-            command,
-            cancellationToken);
+        Result<string> result =
+            await bus.InvokeAsync<Result<string>>(
+            cmdWithId, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }
 
     private static async Task<IResult> GetComments(
-        Guid mediaId,
-        //[AsParameters] GetCommentsRequest request,
-        IMediator mediator,
-        CancellationToken cancellationToken)
+        [AsParameters] GetCommentsQuery query,
+        IMessageBus bus, CancellationToken cancellationToken)
     {
-        var query = new GetCommentsQuery
-        {
-            MediaId = mediaId,
-            Page = 10, //request.Page,
-            PageSize = 100// request.PageSize
-        };
-
-        Result<PagedResult<CommentDto>> result =
-            await mediator.SendQueryAsync<GetCommentsQuery, Result<PagedResult<CommentDto>>>(
-            query, cancellationToken);
+        Result<CursorPagedResult<CommentDto>> result =
+             await bus.InvokeAsync<Result<CursorPagedResult<CommentDto>>>(
+             query, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }
 
     private static async Task<IResult> UpdateComment(
-        [FromBody] UpdateCommentRequest request,
-        IMediator mediator,
+        string commentId,
+        [FromBody] EditCommentCommand command,
+        IMessageBus bus,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
     {
         string userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
                   ?? user.FindFirstValue("sub");
 
-        var command = new UpdateCommentCommand(
-            request.MediaId,
-            request.CommentId,
-            request.Content);
+        EditCommentCommand cmd = command with { CommentId = commentId };
 
-        Result<UpdateCommentResult> result = await mediator
-            .SendCommandAsync<UpdateCommentCommand, Result<UpdateCommentResult>>(
-            command,
-            cancellationToken);
+        Result<Result> result =
+            await bus.InvokeAsync<Result>(command, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }
 
     private static async Task<IResult> DeleteComment(
-        [FromBody] DeleteCommentRequest request,
-        IMediator mediator,
+        string commentId,
+        IMessageBus bus,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
     {
         string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
                   ?? user.FindFirstValue("sub");
 
-        var command = new DeleteCommentCommand(
-            request.CommentId, request.VideoId);
-
-        Result<DeleteCommentResult> result = await mediator
-            .SendCommandAsync<DeleteCommentCommand, Result<DeleteCommentResult>>(
-            command, cancellationToken);
+        Result<Result> result = await bus.InvokeAsync<Result>(new DeleteCommentCommand(commentId), cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }
 
     private static async Task<IResult> GetReplies(
-        Guid videoId, Guid commentId,
-        IMediator mediator, 
-        CancellationToken cancellationToken)
+        string commentId,
+        string? cursor,
+        IMessageBus bus,
+        CancellationToken cancellationToken,
+        int pageSize = 25)
     {
         var query = new GetRepliesQuery
-        {
-            VideoId = videoId,
-            ParentCommentId = commentId
-        };
+        (
+            Guid.Parse(commentId),
+            cursor,
+            pageSize,
+            CurrentUserId: null
+        );
 
-        Result<PagedResult<CommentDto>> result = await mediator.
-            SendQueryAsync<GetRepliesQuery, Result<PagedResult<CommentDto>>>(
+        Result<CursorPagedResult<CommentDto>> result =
+            await bus.InvokeAsync<Result<CursorPagedResult<CommentDto>>>(
             query, cancellationToken);
+
+        return result.Match(Results.Ok, CustomResults.Problem);
+    }
+
+    private static async Task<IResult> AddReaction(
+        string commentId,
+        [FromBody] AddReactionToCommentCommand command,
+        IMessageBus bus,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+    {
+        string userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? user.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userId))
+            return Results.Unauthorized();
+
+        AddReactionToCommentCommand cmdWithId = command with { CommentId = commentId };
+
+        Result<Result> result =
+            await bus.InvokeAsync<Result>(
+            cmdWithId, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }

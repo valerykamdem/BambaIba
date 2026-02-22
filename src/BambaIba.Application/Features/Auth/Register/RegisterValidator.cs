@@ -7,16 +7,16 @@ public class RegisterValidator : AbstractValidator<RegisterCommand>
     public RegisterValidator()
     {
         // ✅ Email valide
-        RuleFor(x => x.Email).EmailAddress().WithMessage("Email invalide");
+        RuleFor(x => x.Email).EmailAddress().WithMessage("Invalid email address");
 
         // ✅ Mot de passe ≥ 6 caractères
-        RuleFor(x => x.Password).MinimumLength(6).WithMessage("Mot de passe trop court");
+        RuleFor(x => x.Password).MinimumLength(6).WithMessage("Password too short");
 
         // ✅ Prénom obligatoire
-        RuleFor(x => x.FirstName).NotEmpty().WithMessage("Prénom requis");
+        RuleFor(x => x.FirstName).NotEmpty().WithMessage("First name required");
 
         // ✅ Nom de famille obligatoire
-        RuleFor(x => x.LastName).NotEmpty().WithMessage("Nom requis");
+        RuleFor(x => x.LastName).NotEmpty().WithMessage("Last name required");
 
         //// ✅ Genre valide – ex: "male", "female", "other"
         //RuleFor(x => x.CivilStatus).Must(g =>
