@@ -329,6 +329,31 @@ services:
       timeout: 5s 
       retries: 5
 
+# ElasticSearch
+  elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+      container_name: bambaiba_elastic
+      environment:
+        - discovery.type=single-node
+        - xpack.security.enabled=false # Désactive la sécurité pour le dev local (à activer en prod)
+        - "ES_JAVA_OPTS=-Xms512m -Xmx512m" # Limite la RAM pour le dev
+      ports:
+        - "9200:9200"
+      volumes:
+        - elastic_data:/usr/share/elasticsearch/data
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.0
+    container_name: bambaiba_kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+
+
 volumes:
   keycloak_pg_data:
   pg_data:
@@ -339,6 +364,7 @@ volumes:
   master_data:
   volume_data:
   filer_data:
+  elastic_data:
 
 networks:
   bambaiba_network:

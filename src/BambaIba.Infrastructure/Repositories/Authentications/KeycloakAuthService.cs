@@ -8,6 +8,7 @@ using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Features.Auth.Register;
 using BambaIba.Domain.Entities;
+using BambaIba.Domain.Entities.Roles;
 using BambaIba.Domain.Entities.Users;
 using BambaIba.Infrastructure.Persistence;
 using BambaIba.Infrastructure.Settings;
@@ -251,7 +252,7 @@ public class KeycloakAuthService : IKeycloakAuthService
             await _db.UserRoles.AddAsync(new UserRole
             {
                 UserId = user.Id,
-                RoleId = (await _db.Roles.FirstAsync(r => r.Name == "User")).Id
+                RoleId = (await _db.Roles.FirstAsync(r => r.Name == RoleNames.Viewer)).Id
             });
 
             await _unitOfWork.SaveChangesAsync();

@@ -1,15 +1,15 @@
 ﻿// BambaIba.Api/Endpoints/PlaylistEndpoints.cs
 using System.Security.Claims;
-using BambaIba.Api.Extensions;
-using BambaIba.Api.Infrastructure;
-using BambaIba.Application.Features.Playlists.AddMediaToPlaylist;
+using BambaIba.Application.Abstractions.Dtos;
+using BambaIba.Application.Features.Playlists.AddMediaToPlaylists;
 using BambaIba.Application.Features.Playlists.CreatePlaylist;
-using BambaIba.Application.Features.Playlists.GetPlaylistById;
+using BambaIba.Application.Features.Playlists.GetPlaylistDetails;
+using BambaIba.Application.Features.Playlists.GetUserPlaylist;
+using BambaIba.Application.Features.Playlists.RemoveFromPlaylists;
 using BambaIba.SharedKernel;
-using BambaIba.SharedKernel.Playlists;
 using Carter;
-using Cortex.Mediator;
 using Microsoft.AspNetCore.Mvc;
+using Wolverine;
 
 
 namespace BambaIba.Api.Endpoints;
@@ -23,27 +23,35 @@ public class PlaylistEndpoints : ICarterModule
 
         group.MapPost("/", CreatePlaylist)
             .RequireAuthorization()
-            .Produces<CreatePlaylistResult>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .WithName("CreatePlaylist");
 
-        group.MapGet("/{id:guid}", GetPlaylist)
-            .Produces<PlaylistDetailResult>(StatusCodes.Status200OK)
+        group.MapGet("/", GetPlaylist)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
             .WithName("GetPlaylist");
 
-        group.MapPost("/{id:guid}/videos", AddVideo)
+        group.MapGet("/{id:guid}", GetPlaylistDetail)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .WithName("GetPlaylistDetails");
+
+        group.MapPost("/{id:guid}/items", AddMediaToPlaylist)
             .RequireAuthorization()
             .Produces(StatusCodes.Status204NoContent)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
-            .WithName("AddVideoToPlaylist");
+            .WithName("AddMediaToPlaylist");
+
+        group.MapDelete("/{id:guid}/items/{mediaId}", DeletePlaylist)
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status204NoContent)
+            .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .WithName("DeletePlaylist");
 
         // Autres routes...
     }
 
     private static async Task<IResult> CreatePlaylist(
-        CreatePlaylistRequest request,
-        IMediator mediator,
+        CreatePlaylistCommand command,
+        IMessageBus bus,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
     {
@@ -53,63 +61,83 @@ public class PlaylistEndpoints : ICarterModule
         if (string.IsNullOrEmpty(userId))
             return Results.Unauthorized();
 
-        var command = new CreatePlaylistCommand
-        {
-            //UserId = userId,
-            Name = request.Name,
-            Description = request.Description,
-            IsPublic = request.IsPublic
-        };
-
-        Result<CreatePlaylistResult> result = await mediator.SendCommandAsync<CreatePlaylistCommand, Result<CreatePlaylistResult>>(
-            command, cancellationToken);
-
-        return result.Match(Results.Ok, CustomResults.Problem);
+        Result<Guid> result = await bus.InvokeAsync<Result<Guid>>(command, cancellationToken);
+        return result.IsSuccess
+            ? Results.Ok(new { PlaylistId = result.Value })
+            : Results.BadRequest(result.Error);
     }
 
     private static async Task<IResult> GetPlaylist(
-        Guid id,
-        IMediator mediator,
+        IMessageBus bus,
         ClaimsPrincipal user,
         CancellationToken cancellationToken)
     {
         string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
                   ?? user.FindFirstValue("sub");
 
-        var query = new GetPlaylistByIdQuery
+        if (string.IsNullOrEmpty(userId))
+            return Results.Unauthorized();
+
+        var query = new GetUserPlaylistsQuery();
+
+        Result<List<PlaylistDto>> result = 
+            await bus.InvokeAsync<Result<List<PlaylistDto>>>(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.NotFound();
+    }
+
+    private static async Task<IResult> GetPlaylistDetail(
+        Guid id,
+        IMessageBus bus,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+    {
+        string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? user.FindFirstValue("sub");
+
+        var query = new GetPlaylistDetailsQuery(id);
+
+        Result<PlaylistDetailsDto> result = 
+            await bus.InvokeAsync<Result<PlaylistDetailsDto>>(query, cancellationToken);
+
+        return result.IsSuccess
+            ? Results.Ok(result.Value)
+            : Results.NotFound();
+    }
+
+    // 4. Add Media to Playlist
+    private static async Task<IResult> AddMediaToPlaylist(
+        Guid id, // PlaylistId
+        AddMediaToPlaylistCommand command, // Contient le MediaId
+        IMessageBus bus,
+        CancellationToken cancellationToken)
+    {
+        AddMediaToPlaylistCommand cmdWithId = command with { PlaylistId = id };
+
+        SharedKernel.Result result = 
+            await bus.InvokeAsync<SharedKernel.Result>(cmdWithId, cancellationToken);
+
+        return result.IsSuccess 
+            ? Results.Ok() 
+            : Results.BadRequest(result.Error);
+    }
+
+    // 5. Remove Media from Playlist
+    private static async Task<IResult> DeletePlaylist(
+         Guid id, // PlaylistId
+         Guid mediaId,
+         IMessageBus bus,
+         CancellationToken cancellationToken)
         {
-            PlaylistId = id,
-            //CurrentUserId = userId
-        };
+            var cmd = new RemoveFromPlaylistCommand(id, mediaId);
 
-        Result<PlaylistDetailResult?>? result = await mediator
-            .SendQueryAsync<GetPlaylistByIdQuery, Result<PlaylistDetailResult?>>(
-            query, cancellationToken);
+        SharedKernel.Result result = 
+            await bus.InvokeAsync<SharedKernel.Result>(cmd, cancellationToken);
 
-        return result.Match(Results.Ok, CustomResults.Problem);
-    }
-
-    private static async Task<IResult> AddVideo(
-        Guid id,
-        AddMediaToPlaylistCommand command,
-        IMediator mediator,
-        ClaimsPrincipal user,
-        CancellationToken cancellationToken)
-    {
-        string? userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
-                  ?? user.FindFirstValue("sub");
-
-        //var command = new AddVideoToPlaylistCommand
-        //{
-        //    PlaylistId = id,
-        //    VideoId = request.VideoId,
-        //    //UserId = userId!
-        //};
-
-        Result<AddMediaToPlaylistResult> result = await mediator
-            .SendCommandAsync<AddMediaToPlaylistCommand, Result<AddMediaToPlaylistResult>>(
-            command, cancellationToken);
-
-        return result.Match(Results.Ok, CustomResults.Problem);
-    }
+            return result.IsSuccess
+            ? Results.NoContent() 
+            : Results.NotFound();
+        }
 }

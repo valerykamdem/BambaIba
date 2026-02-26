@@ -69,4 +69,24 @@ public class MediaStatisticsService : IMediaStatisticsService
                .SetProperty(m => m.Stat.LikeCount, m => m.Stat.LikeCount - 1),
            ct);
     }
+
+    public async Task IncrementDislikeCountAsync(Guid mediaId, CancellationToken ct)
+    {
+        await _db.MediaAssets
+            .Where(m => m.Id == mediaId)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(m => m.Stat.DislikeCount, m => m.Stat.DislikeCount + 1)
+                .SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
+            ct);
+    }
+
+    public async Task DecrementDislikeCountAsync(Guid mediaId, CancellationToken ct)
+    {
+        await _db.MediaAssets
+            .Where(m => m.Id == mediaId && m.Stat.DislikeCount > 0)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(m => m.Stat.DislikeCount, m => m.Stat.DislikeCount - 1)
+                .SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
+            ct);
+    }
 }

@@ -1,6 +1,8 @@
 ﻿using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Entities.Mongo.Comments;
+using BambaIba.Domain.Entities.Mongo.LiveChatMessages;
+using BambaIba.Domain.Entities.Mongo.MediaProgresses;
 using BambaIba.Infrastructure.Settings;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
@@ -17,7 +19,10 @@ public class BIMongoContext : IBIMongoContext
 
     // On expose directement les collections comme des propriétés publiques
     public IMongoCollection<Comment> Comments => _database.GetCollection<Comment>("comments");
-    public IMongoCollection<CommentReaction> CommentReactions => _database.GetCollection<CommentReaction>("commentReactions");
+    public IMongoCollection<CommentReaction> CommentReactions => _database.GetCollection<CommentReaction>("comment_reactions");
+    public IMongoCollection<MediaProgress> MediaProgresses => _database.GetCollection<MediaProgress>("media_progress");
+    public IMongoCollection<LiveChatMessage> LiveChatMessages => _database.GetCollection<LiveChatMessage>("live_chat_messages");
+
 
     public BIMongoContext(IOptions<MongoSettings> settings, IMongoClient mongoClient)
     {
@@ -54,6 +59,14 @@ public class BIMongoContext : IBIMongoContext
                 .Ascending(x => x.UserId),
             new CreateIndexOptions { Unique = true } // Garantit l'unicité (Sécurité DB)
         ));
+
+        //// Media Reaction
+        //await MediaReactions.Indexes.CreateOneAsync(new CreateIndexModel<MediaReaction>(
+        //Builders<MediaReaction>.IndexKeys
+        //    .Ascending(x => x.MediaId)
+        //    .Ascending(x => x.UserId),
+        //new CreateIndexOptions { Unique = true } // Empêche le double vote
+        //));
     }
 
 
@@ -180,7 +193,7 @@ public class BIMongoContext : IBIMongoContext
         (
             resultItems,
             nextCursor,
-            hasNextPage            
+            hasNextPage
         );
     }
 }

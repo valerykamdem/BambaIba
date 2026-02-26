@@ -2,6 +2,7 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Domain.Enums;
 using BambaIba.Infrastructure.Settings;
 using BambaIba.SharedKernel.Videos;
 using Microsoft.Extensions.Logging;

@@ -1,8 +1,6 @@
-﻿using Cortex.Mediator.Queries;
+﻿namespace BambaIba.Application.Abstractions.Caching;
 
-namespace BambaIba.Application.Abstractions.Caching;
-
-public interface ICachedQuery<TResponse> : IQuery<TResponse>, ICachedQuery;
+public interface ICachedQuery<TResponse>;//: IQuery<TResponse>, ICachedQuery;
 
 public interface ICachedQuery
 {

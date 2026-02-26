@@ -1,6 +1,5 @@
 ﻿using System.Data.Common;
 using System.Reflection;
-using Cortex.Mediator.DependencyInjection;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,9 +57,9 @@ public static class ServiceCollectionExtensions
         });
 
 
-        services.AddCortexMediator(
-            [typeof(ServiceCollectionExtensions)], // Scanne l'assembly pour trouver les handlers
-           options => options.AddDefaultBehaviors());
+        //services.AddCortexMediator(
+        //    [typeof(ServiceCollectionExtensions)], // Scanne l'assembly pour trouver les handlers
+        //   options => options.AddDefaultBehaviors());
 
         return services;
     }

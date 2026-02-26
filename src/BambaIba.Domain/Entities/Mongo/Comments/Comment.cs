@@ -2,19 +2,6 @@
 using MongoDB.Bson;
 
 namespace BambaIba.Domain.Entities.Mongo.Comments;
-//public sealed class Comment : Entity<Guid>, ISoftDeletable
-//{
-//    public Guid MediaId { get; set; }
-//    public MediaAsset Media {get; set; }
-//    public Guid UserId { get; set; }
-//    public string Content { get; set; } = string.Empty;
-//    public Guid? ParentCommentId { get; set; }
-//    public Comment? ParentComment { get; set; }
-//    public ICollection<Comment> Replies { get; set; } = [];
-//    public int LikeCount { get; set; }
-//    public int DislikeCount { get; set; }
-//    public bool IsEdited { get; set; }
-//}
 
 public class Comment
 {

@@ -3,7 +3,6 @@ using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Entities.Mongo.Comments;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
@@ -16,16 +15,15 @@ public sealed record AddReactionToCommentCommand(
 
 public sealed class AddReactionToCommentHandler(
     IUserContextService userContextService,
-    IHttpContextAccessor httpContextAccessor,
     IBIMongoContext mongoContext,
-    IMongoClient mongoClient,
-    ILogger<AddReactionToCommentHandler> logger)
+    IMongoClient mongoClient
+    /*ILogger<AddReactionToCommentHandler> logger*/)
 {
 
     public async Task<Result> Handle(AddReactionToCommentCommand command, CancellationToken cancellationToken)
     {
         UserContext userContext = await userContextService
-                .GetCurrentContext(httpContextAccessor.HttpContext);
+                .GetCurrentContext();
 
         IClientSessionHandle session = await mongoClient.StartSessionAsync(cancellationToken: cancellationToken);
 

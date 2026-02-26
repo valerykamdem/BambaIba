@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Settings;
+using BambaIba.Domain.Enums;
 using BambaIba.Infrastructure.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

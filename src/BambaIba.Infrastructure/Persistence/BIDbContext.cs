@@ -1,25 +1,23 @@
 ﻿using System.Data;
-using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Domain.Entities;
 using BambaIba.Domain.Entities.Audios;
-using BambaIba.Domain.Entities.Likes;
-using BambaIba.Domain.Entities.LiveChatMessages;
-using BambaIba.Domain.Entities.LiveStream;
 using BambaIba.Domain.Entities.MediaAssets;
+using BambaIba.Domain.Entities.MediaChannels;
+using BambaIba.Domain.Entities.MediaReactions;
 using BambaIba.Domain.Entities.MediaStats;
 using BambaIba.Domain.Entities.PlaylistItems;
 using BambaIba.Domain.Entities.Playlists;
+using BambaIba.Domain.Entities.Roles;
 using BambaIba.Domain.Entities.Users;
+using BambaIba.Domain.Entities.UserSubscriptions;
 using BambaIba.Domain.Entities.VideoQualities;
 using BambaIba.Domain.Entities.Videos;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace BambaIba.Infrastructure.Persistence;
 
-public sealed class BIDbContext : DbContext, IUnitOfWork, IBIDbContext
+public sealed class BIDbContext : DbContext, IBIDbContext
 {
     public BIDbContext(DbContextOptions<BIDbContext> options) : base(options)
     {
@@ -27,19 +25,15 @@ public sealed class BIDbContext : DbContext, IUnitOfWork, IBIDbContext
 
     public DbSet<MediaAsset> MediaAssets => Set<MediaAsset>();
     public DbSet<Video> Videos => Set<Video>();
-    //public DbSet<Comment> Comments => Set<Comment>();
-    public DbSet<Like> Likes => Set<Like>();
+    public DbSet<MediaReaction> MediaReactions => Set<MediaReaction>();
     public DbSet<User> Users => Set<User>();
-    public DbSet<View> Views => Set<View>();
-    public DbSet<Subscription> Subscriptions => Set<Subscription>();
+    public DbSet<MediaChannel> MediaChannels => Set<MediaChannel>();
+    public DbSet<UserSubscription> UserSubscriptions => Set<UserSubscription>();
     public DbSet<Playlist> Playlists => Set<Playlist>();
     public DbSet<PlaylistItem> PlaylistItems => Set<PlaylistItem>();
     public DbSet<VideoQuality> VideoQualities => Set<VideoQuality>();
-    public DbSet<TranscodeJob> TranscodeJobs => Set<TranscodeJob>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
-    public DbSet<LiveStream> LiveStreams => Set<LiveStream>();
-    public DbSet<LiveChatMessage> LiveChatMessages => Set<LiveChatMessage>();
     public DbSet<Audio> Audios => Set<Audio>();
     public DbSet<MediaStat> MediaStats => Set<MediaStat>();
 
@@ -52,21 +46,8 @@ public sealed class BIDbContext : DbContext, IUnitOfWork, IBIDbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        //// Configuration Comment
-        //modelBuilder.Entity<Comment>(entity =>
-        //{
-        //    entity.HasKey(e => e.Id);
-        //    entity.Property(e => e.Content).IsRequired().HasMaxLength(1000);
-        //    entity.HasOne<MediaAsset>()
-        //        .WithMany()
-        //        .HasForeignKey(e => e.MediaId)
-        //        .OnDelete(DeleteBehavior.Cascade);
-        //    entity.HasIndex(e => e.MediaId);
-        //    entity.HasIndex(e => e.ParentCommentId);
-        //});
-
-        // Configuration Like
-        modelBuilder.Entity<Like>(entity =>
+        // Configuration MediaReaction
+        modelBuilder.Entity<MediaReaction>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.HasOne<MediaAsset>()
@@ -76,58 +57,17 @@ public sealed class BIDbContext : DbContext, IUnitOfWork, IBIDbContext
             entity.HasIndex(e => new { e.MediaId, e.UserId }).IsUnique();
         });
 
-        // Configuration View
-        modelBuilder.Entity<View>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne<MediaAsset>()
-                .WithMany()
-                .HasForeignKey(e => e.VideoId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => e.VideoId);
-            entity.HasIndex(e => e.ViewedAt);
-        });
-
-        // Configuration Subscription
-        modelBuilder.Entity<Subscription>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => new { e.SubscriberId, e.ChannelId }).IsUnique();
-        });
-
-        // Configuration Playlist
-        modelBuilder.Entity<Playlist>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.HasIndex(e => e.UserId);
-        });
-
-        // Configuration PlaylistVideo
-        modelBuilder.Entity<PlaylistItem>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne(e => e.Playlist)
-                .WithMany(p => p.Items)
-                .HasForeignKey(e => e.PlaylistId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.Media)
-                .WithMany()
-                .HasForeignKey(e => e.MediaId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasIndex(e => new { e.PlaylistId, e.MediaId }).IsUnique();
-        });
-
-        // Configuration VideoQuality
-        modelBuilder.Entity<TranscodeJob>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.HasOne<MediaAsset>()
-                .WithMany()
-                .HasForeignKey(e => e.VideoId)
-                .OnDelete(DeleteBehavior.Cascade);
-            //entity.HasIndex(e => new { e.VideoId, e.Quality }).IsUnique();
-        });
+        //// Configuration View
+        //modelBuilder.Entity<View>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id);
+        //    entity.HasOne<MediaAsset>()
+        //        .WithMany()
+        //        .HasForeignKey(e => e.VideoId)
+        //        .OnDelete(DeleteBehavior.Cascade);
+        //    entity.HasIndex(e => e.VideoId);
+        //    entity.HasIndex(e => e.ViewedAt);
+        //});       
 
         // Configurer la relation User - Role
         modelBuilder.Entity<UserRole>()
@@ -143,62 +83,26 @@ public sealed class BIDbContext : DbContext, IUnitOfWork, IBIDbContext
             .WithMany(r => r.UserRoles)
             .HasForeignKey(ur => ur.RoleId);
 
-        // LiveStream
-        modelBuilder.Entity<LiveStream>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.StreamKey).IsRequired().HasMaxLength(50);
-            entity.HasIndex(e => e.StreamKey).IsUnique();
-            entity.HasIndex(e => e.Status);
-            entity.HasIndex(e => e.StreamerId);
-        });
+        //// LiveStream
+        //modelBuilder.Entity<LiveSession>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id);
+        //    entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+        //    entity.Property(e => e.RoomId).IsRequired().HasMaxLength(50);
+        //    //entity.HasIndex(e => e.StreamKey).IsUnique();
+        //    //entity.HasIndex(e => e.Status);
+        //    //entity.HasIndex(e => e.StreamerId);
+        //});
 
-        // LiveChatMessage
-        modelBuilder.Entity<LiveChatMessage>(entity =>
-        {
-            entity.HasKey(e => e.Id);
-            entity.Property(e => e.Message).IsRequired().HasMaxLength(500);
-            entity.HasIndex(e => e.LiveStreamId);
-            entity.HasIndex(e => e.SentAt);
-        });
+        //// LiveChatMessage
+        //modelBuilder.Entity<LiveChatMessage>(entity =>
+        //{
+        //    entity.HasKey(e => e.Id);
+        //    entity.Property(e => e.Message).IsRequired().HasMaxLength(500);
+        //    entity.HasIndex(e => e.LiveStreamId);
+        //    entity.HasIndex(e => e.SentAt);
+        //});
 
-        // Table commune MediaBase
-        modelBuilder.Entity<MediaAsset>(entity =>
-        {
-            //entity.ToTable("Media");
-            entity.HasKey(m => m.Id);
-
-            entity.Property(m => m.Title).IsRequired().HasMaxLength(255);
-            entity.Property(m => m.Description).HasMaxLength(2000);
-            entity.Property(m => m.UserId).IsRequired();
-
-            // Fichier
-            entity.Property(m => m.ThumbnailPath).HasMaxLength(500);
-            entity.Property(m => m.StoragePath).HasMaxLength(500);
-            entity.Property(m => m.FileName).HasMaxLength(255);
-            entity.Property(m => m.FileSize).IsRequired();
-
-            // Métadonnées
-            entity.Property(m => m.Status).IsRequired();
-            entity.Property(m => m.Duration).IsRequired();
-            entity.Property(m => m.IsPublic).HasDefaultValue(true);
-            entity.Property(m => m.PublishedAt);
-
-            // Tags (conversion + comparer)
-            entity.Property(m => m.Tags)
-                  .HasConversion(
-                      v => string.Join(',', v),
-                      v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
-                  )
-                  .Metadata.SetValueComparer(
-                      new ValueComparer<List<string>>(
-                          (c1, c2) => c1.SequenceEqual(c2),
-                          c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
-                          c => c.ToList()
-                      )
-                  );
-        });
 
         // Configuration Video (hérite de MediaBase)
         modelBuilder.Entity<Video>(entity =>
@@ -232,7 +136,6 @@ public sealed class BIDbContext : DbContext, IUnitOfWork, IBIDbContext
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.MediaId, e.Quality }).IsUnique();
         });
-
 
     }
 }

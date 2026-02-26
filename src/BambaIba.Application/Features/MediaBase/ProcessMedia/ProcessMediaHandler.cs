@@ -1,4 +1,5 @@
 ﻿using BambaIba.Application.Abstractions.Interfaces;
+using BambaIba.Application.Features.Search;
 using BambaIba.Application.Settings;
 using BambaIba.Domain.Entities.Audios;
 using BambaIba.Domain.Entities.MediaAssets;
@@ -7,6 +8,7 @@ using BambaIba.Domain.Entities.Videos;
 using BambaIba.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Wolverine;
 
 namespace BambaIba.Application.Features.MediaBase.ProcessMedia;
 
@@ -16,6 +18,7 @@ public sealed class ProcessMediaHandler(
         IBIDbContext dbContext,
         IMediaStorageService storageService,
         IMediaProcessingService processingService,
+        IMessageBus bus,
         ILogger<ProcessMediaHandler> logger)
 {
 
@@ -48,6 +51,9 @@ public sealed class ProcessMediaHandler(
             media.UpdatedAt = DateTime.UtcNow;
 
             await dbContext.SaveChangesAsync(CancellationToken.None);
+
+            // on lance l'indexation !
+            await bus.PublishAsync(new IndexMediaCommand(media.Id));
 
             logger.LogInformation("Media {Id} done", media.Id);
         }

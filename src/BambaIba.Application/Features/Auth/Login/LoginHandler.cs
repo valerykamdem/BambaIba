@@ -16,7 +16,7 @@ public sealed class LoginHandler(IKeycloakAuthService keycloakAuth)
         // Appel à Keycloak pour obtenir le token
         TokenResponseDto? tokenResponse = await keycloakAuth.ExchangeCredentialsForTokenAsync(command.Email, command.Password);
         if (tokenResponse == null)
-            return Result.Failure<AuthResultDto>(Error.Problem("400", "Connection failed"));
+            return Result.Failure<AuthResultDto>(Error.Failure("400", "Connection failed"));
 
         // Créer ou récupérer l'utilisateur dans ton app
         User user = await keycloakAuth.GetUserFromTokenAsync(tokenResponse.UserId, tokenResponse.Access_Token, string.Empty);

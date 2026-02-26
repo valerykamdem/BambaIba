@@ -3,6 +3,8 @@ using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Features.MediaBase.ProcessMedia;
 using BambaIba.Domain.Entities.Audios;
 using BambaIba.Domain.Entities.MediaAssets;
+using BambaIba.Domain.Entities.Roles;
+using BambaIba.Domain.Entities.Users;
 using BambaIba.Domain.Entities.Videos;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
@@ -50,7 +52,7 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
         IMessageBus bus,
         ILogger<UploadMediaHandler> logger,
         IUserContextService userContextService,
-        IHttpContextAccessor httpContextAccessor,
+        //IHttpContextAccessor httpContextAccessor,
         IMediaStorageService storageService)
 {
 
@@ -59,11 +61,19 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
         CancellationToken cancellationToken)
     {
 
-        UserContext userContext = await userContextService.GetCurrentContext(httpContextAccessor.HttpContext);
+        UserContext userContext = await userContextService.GetCurrentContext();
         var mediaId = Guid.CreateVersion7();
 
         try
         {
+            // 1. Verify Role
+            if (userContext.Role != RoleNames.Creator && userContext.Role != RoleNames.Admin)
+            {
+                return Result.Failure<UploadMediaResult>(
+                    Error.Forbidden("Access.Denied", "Access Denied: Only Creators can upload content.")
+                );
+            }
+
             // 1. Déduire type + métadonnées
             string contentType = command.MediaContentType;
             long fileSize = command.MediaStream.Length;

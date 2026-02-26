@@ -18,7 +18,7 @@ public sealed record GetRepliesQuery(
 public sealed class GetRepliesHandler(
     IBIMongoContext mongoContext,
     IUserContextService userContextService,
-    IHttpContextAccessor httpContextAccessor,
+    //IHttpContextAccessor httpContextAccessor,
     ILogger<GetRepliesHandler> logger
     )
 {
@@ -28,7 +28,7 @@ public sealed class GetRepliesHandler(
         try
         {
             UserContext userContext = await userContextService
-                .GetCurrentContext(httpContextAccessor.HttpContext);
+                .GetCurrentContext();
 
             CursorPagedResult<CommentDto> result = await mongoContext.GetRepliesAsync(
             query.ParentId.ToString(),

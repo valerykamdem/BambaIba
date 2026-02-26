@@ -25,11 +25,3 @@ public interface IMediaStorageService
     //Task<string> GetVideoUrlAsync(string storagePath, bool isPublic);
     string GetPublicUrl(BucketType bucketType, string storagePath);
 }
-
-public enum MediaType
-{
-    Video,
-    Audio,
-    VideoThumbnail,
-    AudioCover
-}

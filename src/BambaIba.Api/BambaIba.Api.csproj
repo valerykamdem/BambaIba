@@ -30,9 +30,8 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="5.0.0" />
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.0.0" />
 
-		<PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+		<PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
 		<PackageReference Include="Carter" Version="10.0.0" />
-		<PackageReference Include="Cortex.Mediator" Version="3.1.2" />
 
 		<PackageReference Include="FluentValidation" Version="12.1.1" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
@@ -59,13 +58,13 @@
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />
 
 		<PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-		<PackageReference Include="Scalar.AspNetCore" Version="2.12.40" />
+		<PackageReference Include="Scalar.AspNetCore" Version="2.12.47" />
 
 		<PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
 		<PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
 
-		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.2" />
-		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.2" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.1.4" />
+		<PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="10.1.4" />
 	</ItemGroup>
 
 	<ItemGroup>

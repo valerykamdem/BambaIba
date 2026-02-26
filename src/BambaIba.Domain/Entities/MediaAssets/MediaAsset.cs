@@ -1,4 +1,6 @@
-﻿using BambaIba.Domain.Entities.MediaStats;
+﻿using BambaIba.Domain.Entities.MediaChannels;
+using BambaIba.Domain.Entities.MediaReactions;
+using BambaIba.Domain.Entities.MediaStats;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
 
@@ -27,5 +29,10 @@ public abstract class MediaAsset : Entity<Guid>, ISoftDeletable
     public DateTime? PublishedAt { get; set; }
     public List<string> Tags { get; set; } = [];
 
+    // NEW: Link to Channel
+    public Guid ChannelId { get; set; }
+    public MediaChannel Channel { get; set; } // Navigation
     public MediaStat Stat { get; set; } = default!;
+
+    public virtual ICollection<MediaReaction> Reactions { get; set; } = [];
 }

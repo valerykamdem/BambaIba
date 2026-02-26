@@ -3,8 +3,6 @@ using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Abstractions.Services;
 using BambaIba.Domain.Entities.Mongo.Comments;
 using BambaIba.SharedKernel;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 
 namespace BambaIba.Application.Features.Comments.DeleteComment;
@@ -14,16 +12,15 @@ public sealed record DeleteCommentCommand(string CommentId);
 public sealed class DeleteCommentCommandHandler(
     IBIMongoContext mongoContext,
     IUserContextService userContextService,
-    IHttpContextAccessor httpContextAccessor,
     IMediaStatisticsService statsService,
-    IMongoClient mongoClient,
-    ILogger<DeleteCommentCommandHandler> logger)
+    IMongoClient mongoClient
+    /*ILogger<DeleteCommentCommandHandler> logger*/)
 {
 
     public async Task<Result> Handle(DeleteCommentCommand command, CancellationToken cancellationToken)
     {
         UserContext userContext = await userContextService
-                .GetCurrentContext(httpContextAccessor.HttpContext);
+                .GetCurrentContext();
 
         IClientSessionHandle session = mongoClient.StartSession(cancellationToken: cancellationToken);
 

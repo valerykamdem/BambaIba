@@ -1,4 +1,4 @@
-﻿using BambaIba.Domain.Entities;
+﻿using BambaIba.Domain.Entities.Roles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -14,8 +14,10 @@ public static class SeedData
         if (context.Roles.Any())
             return;
 
-        context.Roles.Add(new Role { Id = Guid.CreateVersion7(), Name = "User" });
-        context.Roles.Add(new Role { Id = Guid.CreateVersion7(), Name = "Admin" });
+        context.Roles.Add(new Role { Id = Guid.CreateVersion7(), Name = RoleNames.Viewer });
+        context.Roles.Add(new Role { Id = Guid.CreateVersion7(), Name = RoleNames.Creator });
+        context.Roles.Add(new Role { Id = Guid.CreateVersion7(), Name = RoleNames.Admin });
+        context.Roles.Add(new Role { Id = Guid.CreateVersion7(), Name = RoleNames.SuperAdmin });
 
         context.SaveChanges();
     }

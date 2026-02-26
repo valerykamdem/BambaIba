@@ -4,7 +4,6 @@ using BambaIba.Domain.Entities.MediaAssets;
 using BambaIba.Domain.Entities.Users;
 using BambaIba.Domain.Entities.Videos;
 using BambaIba.SharedKernel;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace BambaIba.Application.Features.MediaBase.DeleteMedia;
@@ -18,21 +17,23 @@ public sealed class DeleteMediaHandler
         IBIDbContext dbContext,
         IMediaStorageService storageService,
         IUserContextService userContextService,
-        IHttpContextAccessor httpContextAccessor,
         ILogger<DeleteMediaHandler> logger,
         CancellationToken cancellationToken)
     {
         try
         {
-            UserContext userContext = await userContextService.GetCurrentContext(httpContextAccessor.HttpContext);
+            UserContext userContext = await userContextService.GetCurrentContext();
 
-            MediaAsset media = await dbContext.MediaAssets.FindAsync(command.MediaId, cancellationToken);
+            if (userContext == null)
+                return Result.Failure<DeleteMediaResult>(Error.Unauthorized("401", "User not authenticated"));
+
+            MediaAsset media = await dbContext.MediaAssets.FindAsync([command.MediaId, cancellationToken], cancellationToken: cancellationToken);
 
             if (media == null)
                 return Result.Failure<DeleteMediaResult>(VideoErrors.NotFound(command.MediaId));
 
            if(media.UserId != userContext.LocalUserId)
-                return Result.Failure<DeleteMediaResult>(UserErrors.NotFound(command.MediaId));
+                return Result.Failure<DeleteMediaResult>(Error.Forbidden("Forbidden","Not Allow"));
 
             // Supprimer les fichiers associés de stockage
             await storageService.DeleteAsync(media.Id.ToString(), media.StoragePath);

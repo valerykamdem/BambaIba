@@ -17,7 +17,7 @@ public sealed record EditCommentCommand(
 
 public sealed class EditCommentHandler(
     IUserContextService userContextService,
-    IHttpContextAccessor httpContextAccessor,
+    //IHttpContextAccessor httpContextAccessor,
     IBIMongoContext mongoContext,
     ILogger<EditCommentHandler> logger)
 {
@@ -27,7 +27,7 @@ public sealed class EditCommentHandler(
         try
         {
             UserContext userContext = await userContextService
-                .GetCurrentContext(httpContextAccessor.HttpContext);     
+                .GetCurrentContext();     
 
             // 1. Vérification : Le commentaire appartient-il à l'utilisateur ?
             FilterDefinition<Comment> filter = Builders<Comment>.Filter.And(

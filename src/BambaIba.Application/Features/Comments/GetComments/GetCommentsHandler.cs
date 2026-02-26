@@ -17,7 +17,6 @@ public sealed record GetCommentsQuery(
 
 public sealed class GetCommentsHandler(
     IUserContextService userContextService,
-    IHttpContextAccessor httpContextAccessor,
     IBIMongoContext mongoContext,
     ILogger<GetCommentsHandler> logger)
 {
@@ -31,7 +30,7 @@ public sealed class GetCommentsHandler(
 
             // 1. Récupération de l'utilisateur courant
             UserContext userContext = await userContextService
-                .GetCurrentContext(httpContextAccessor.HttpContext);
+                .GetCurrentContext();
             string? currentUserId = userContext?.LocalUserId.ToString();
 
             // 2. Filtre : Commentaires Racines

@@ -1,5 +1,8 @@
 ﻿using BambaIba.Api.Extensions;
 using BambaIba.Api.Hubs;
+using BambaIba.Api.Services;
+using BambaIba.ApI.Hubs;
+using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Abstractions.Services;
 using BambaIba.Application.Extensions;
 using BambaIba.Infrastructure.Extensions;
@@ -31,6 +34,8 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddSingleton<IAzuraCastPollingService, AzuraCastPollingService>();
 builder.Services.AddHostedService<AzuraCastPollingService>();
+
+builder.Services.AddScoped<INotificationService, SignalRNotificationService>();
 
 // 👉 Logger
 builder.Services.AddLogging(config =>
@@ -154,53 +159,8 @@ if (!isWorker)
     app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 
     // ✅ Mapper le Hub
-    app.MapHub<LiveHub>("/Hubs/LiveHub");
-
-    //app.MapGet("/debug/s3", async () =>
-    //{
-    //    var config = new AmazonS3Config
-    //    {
-    //        ServiceURL = "http://localhost:8333",
-    //        ForcePathStyle = true
-    //    };
-
-    //    var client = new AmazonS3Client(
-    //        "BAMBAIBA_DEV_01",
-    //        "9f8d7c6b5a4e3d2c1b0",
-    //        config
-    //    );
-
-    //    ListBucketsResponse result = await client.ListBucketsAsync();
-
-    //    if (result.Buckets == null || result.Buckets.Count == 0)
-    //        return Results.Ok("Aucun bucket trouvé (auth OK)");
-
-    //    return Results.Ok(
-    //        result.Buckets.Select(b => b.BucketName)
-    //    );
-    //});
-
-    //_ = app.MapPost("/debug/s3/create", async () =>
-    //{
-    //    var config = new AmazonS3Config
-    //    {
-    //        ServiceURL = "http://localhost:8333",
-    //        ForcePathStyle = true
-    //    };
-
-    //    var client = new AmazonS3Client(
-    //        "BAMBAIBA_DEV_01",
-    //        "9f8d7c6b5a4e3d2c1b0",
-    //        config
-    //    );
-
-    //    await client.PutBucketAsync("bambaiba-videos");
-    //    await client.PutBucketAsync("bambaiba-audios");
-    //    await client.PutBucketAsync("bambaiba-images");
-
-    //    return Results.Ok("Buckets créés");
-    //});
-
+    app.MapHub<LiveChatHub>("/Hubs/LiveChatHub");
+    app.MapHub<NotificationHub>("/Hubs/NotificationHub");
 
 
     app.Use(async (context, next) =>

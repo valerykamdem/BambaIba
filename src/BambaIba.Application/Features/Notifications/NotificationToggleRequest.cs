@@ -1,4 +1,4 @@
-﻿namespace BambaIba.Api.Features.Notifications;
+﻿namespace BambaIba.Application.Features.Notifications;
 
 public record NotificationToggleRequest
 {

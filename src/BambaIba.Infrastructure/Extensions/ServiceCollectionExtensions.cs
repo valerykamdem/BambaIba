@@ -3,22 +3,15 @@ using BambaIba.Application.Abstractions.Caching;
 using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Abstractions.Services;
-using BambaIba.Domain.Entities.Likes;
-using BambaIba.Domain.Entities.LiveChatMessages;
-using BambaIba.Domain.Entities.LiveStream;
-using BambaIba.Domain.Entities.Mongo.Comments;
-using BambaIba.Domain.Entities.PlaylistItems;
-using BambaIba.Domain.Entities.Playlists;
-using BambaIba.Domain.Entities.VideoQualities;
 using BambaIba.Infrastructure.Caching;
 using BambaIba.Infrastructure.Persistence;
-using BambaIba.Infrastructure.Repositories;
 using BambaIba.Infrastructure.Repositories.Authentications;
 using BambaIba.Infrastructure.Services;
 using BambaIba.Infrastructure.Settings;
 using BambaIba.Infrastructure.Time;
 using BambaIba.SharedKernel;
 using Dapper;
+using Elastic.Clients.Elasticsearch;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
@@ -46,7 +39,8 @@ public static class ServiceCollectionExtensions
         .AddMongo(configuration)
         .AddSeaweed(configuration)
         .Authentication(configuration)
-        .AddHealthChecks(configuration);
+        .AddHealthChecks(configuration)
+        .AddElasticSearch(configuration);
 
     //Assembly assembly = typeof(ServiceCollectionExtensions).Assembly;
 
@@ -92,16 +86,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBIDbContext>(
             sp => sp.GetRequiredService<BIDbContext>());
 
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BIDbContext>());
+        //services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<BIDbContext>());
 
-        services.AddScoped<ILiveStreamRepository, LiveStreamRepository>();
-        services.AddScoped<IChatMessageRepository, ChatMessageRepository>();
         services.AddScoped<ICacheService, CacheService>();
-        services.AddScoped<IVideoQualityRepository, VideoQualityRepository>();
         services.AddScoped<IUserContextService, UserContextService>();
-        services.AddScoped<ILikeRepository, LikeRepository>();
-        services.AddScoped<IPlaylistRepository, PlaylistRepository>();
-        services.AddScoped<IPlaylistItemRepository, PlaylistVideoRepository>();
         // Services métiers
         services.AddScoped<IMediaStorageService, MediaStorageService>();
         services.AddScoped<IMediaProcessingService, FFmpegMediaProcessingService>();
@@ -230,6 +218,19 @@ public static class ServiceCollectionExtensions
             .AddHealthChecks()
             .AddNpgSql(configuration.GetConnectionString("Postgres")!) // Use the correct connection string name
             .AddRedis(configuration.GetConnectionString("Redis")!);
+
+        return services;
+    }
+
+    private static IServiceCollection AddElasticSearch(this IServiceCollection services, IConfiguration configuration)
+    {
+        string elasticUrl = configuration["ElasticSearch:Url"];
+        ElasticsearchClientSettings settings = new ElasticsearchClientSettings(new Uri(elasticUrl))
+            .DefaultIndex("media_index"); // Nom de ton index par défaut
+
+        var client = new ElasticsearchClient(settings);
+
+        services.AddSingleton<ElasticsearchClient>(client);
 
         return services;
     }

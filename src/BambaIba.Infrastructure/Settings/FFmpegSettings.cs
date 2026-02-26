@@ -37,10 +37,3 @@ public sealed class FFmpegSettings
 
 }
 
-//public class VideoQualityConfig
-//{
-//    public int Width { get; set; }
-//    public int Height { get; set; }
-//    public string Bitrate { get; set; } = string.Empty;
-//}
-

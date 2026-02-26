@@ -51,8 +51,9 @@ public class CommentEndpoints : ICarterModule
             .WithName("GetReplies");
 
         group.MapPost("/{commentId}/reaction", AddReaction)
-            .Produces<PagedResult<CommentDto>>(StatusCodes.Status200OK)
-            .WithName("GetReplies");
+            .RequireAuthorization()
+            .Produces<CursorPagedResult<CommentDto>>(StatusCodes.Status200OK)
+            .WithName("AddReaction");
     }
 
     private static async Task<IResult> AddComment(

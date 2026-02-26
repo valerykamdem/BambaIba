@@ -1,4 +1,6 @@
 ﻿
+using BambaIba.Application.Abstractions.Interfaces;
+
 namespace BambaIba.Application.Abstractions.Dtos;
 
 public sealed record MediaDto
@@ -24,4 +26,9 @@ public sealed record MediaDto
     public DateTime? UpdatedAt { get; init; }
     public string Speaker { get; init; } = string.Empty;
     public string Language { get; init; } = string.Empty;
+    public bool IsLiked { get; init; }
+    public bool IsDisliked { get; init; }
+    // --- NEW: Channel Information ---
+    public string ChannelName { get; init; }      // "Bamba Iba Official"
+    public string? ChannelAvatarUrl { get; init; } // URL de la photo de profil de la chaîne
 }
