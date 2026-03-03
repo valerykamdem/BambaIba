@@ -317,13 +317,30 @@ public class MediaStorageService : IMediaStorageService
 
 
     // ---------------------- SIZE ----------------------
-    public async Task<long> GetFileSizeAsync(string bucket, string key, CancellationToken ct)
-    {
-        GetObjectMetadataResponse meta =
-            await _s3Client.GetObjectMetadataAsync(
-                bucket, key, ct);
+    //public async Task<long> GetFileSizeAsync(string bucket, string key, CancellationToken ct)
+    //{
+    //    GetObjectMetadataResponse meta =
+    //        await _s3Client.GetObjectMetadataAsync(
+    //            bucket, key, ct);
 
-        return meta.ContentLength;
+    //    return meta.ContentLength;
+    //}
+
+    public async Task<long> GetFileSizeAsync(string key, CancellationToken ct)
+    {
+        // LOG CRITIQUE pour comprendre l'erreur
+        Console.WriteLine($"[DEBUG S3] Checking size -> Bucket: '', Key: '{key}'");
+
+        try
+        {
+            GetObjectMetadataResponse meta = await _s3Client.GetObjectMetadataAsync(Buckets.VideoBucket, key, ct);
+            return meta.ContentLength;
+        }
+        catch (AmazonS3Exception ex)
+        {
+            Console.WriteLine($"[DEBUG S3] ERREUR: {ex.Message}");
+            throw;
+        }
     }
 
 }

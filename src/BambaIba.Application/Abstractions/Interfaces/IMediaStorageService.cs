@@ -20,7 +20,7 @@ public interface IMediaStorageService
     // Commun
     Task<string> GetPresignedUrlAsync(string path, string key, int expirySeconds = 3600);
     Task DeleteAsync(string path, string key);
-    Task<long> GetFileSizeAsync(string path, string key, CancellationToken ct);
+    Task<long> GetFileSizeAsync(string key, CancellationToken ct);
 
     //Task<string> GetVideoUrlAsync(string storagePath, bool isPublic);
     string GetPublicUrl(BucketType bucketType, string storagePath);

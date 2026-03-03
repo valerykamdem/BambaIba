@@ -76,18 +76,18 @@ public sealed class ProcessMediaHandler(
 
     private async Task ProcessVideoAsync(Video video, CancellationToken ct)
     {
-        string localPath =
+        string localSourcePath =
             await storageService.DownloadVideoAsync(video.StoragePath, ct);
 
         try
         {
             video.Duration =
-                await processingService.GetDurationAsync(localPath);
+                await processingService.GetDurationAsync(localSourcePath);
 
             if (string.IsNullOrEmpty(video.ThumbnailPath))
             {
                 video.ThumbnailPath =
-                    await processingService.GenerateThumbnailAsync(video.Id, localPath);
+                    await processingService.GenerateThumbnailAsync(video.Id, localSourcePath);
             }
 
             foreach (string quality in VideoQualitySetting.All)
@@ -95,12 +95,12 @@ public sealed class ProcessMediaHandler(
                 string path =
                     await processingService.TranscodeVideoAsync(
                         video.Id,
-                        video.StoragePath,
+                        localSourcePath, //video.StoragePath,
                         quality,
                         ct);
 
                 long size =
-                    await storageService.GetFileSizeAsync(path, video.Topic, ct);
+                    await storageService.GetFileSizeAsync(path, ct);
 
                 dbContext.VideoQualities.Add(new VideoQuality
                 {
@@ -115,8 +115,8 @@ public sealed class ProcessMediaHandler(
         }
         finally
         {
-            if (File.Exists(localPath))
-                File.Delete(localPath);
+            if (File.Exists(localSourcePath))
+                File.Delete(localSourcePath);
         }
     }
 

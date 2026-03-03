@@ -123,9 +123,9 @@ public class FFmpegMediaProcessingService : IMediaProcessingService
     /// <param name="localPath"></param>
     /// <returns></returns>
     public async Task<string> TranscodeVideoAsync(Guid videoId, 
-        string inputPath, string quality, CancellationToken cancellationToken)
+        string localInputPath, string quality, CancellationToken cancellationToken)
     {
-        string localInputPath = await _storageService.DownloadVideoAsync(inputPath, cancellationToken);
+        //string localInputPath = await _storageService.DownloadVideoAsync(inputPath, cancellationToken);
         string outputFileName = $"{videoId}_{quality}.mp4";
         string localOutputPath = Path.Combine(_tempPath, outputFileName);
 
@@ -175,16 +175,17 @@ public class FFmpegMediaProcessingService : IMediaProcessingService
         if (File.Exists(localOutputPath))
         {
             using FileStream stream = File.OpenRead(localOutputPath);
-            string toStoragePath = $"{quality}/{outputFileName}";
-            string storagePath = await _storageService.UploadVideoAsync(videoId, stream, toStoragePath, "video/mp4", cancellationToken);
+            //string toStoragePath = $"{quality}/{outputFileName}";
+            string storageKey = $"{videoId}/{quality}/{outputFileName}";
+            string storagePath = await _storageService.UploadVideoAsync(videoId, stream, storageKey, "video/mp4", cancellationToken);
 
-            CleanupFile(localInputPath);
+            //CleanupFile(localInputPath);
             CleanupFile(localOutputPath);
 
             return storagePath;
         }
 
-        CleanupFile(localInputPath);
+        //CleanupFile(localInputPath);
         throw new Exception($"Failed to transcode video to {quality}");
     }
 
