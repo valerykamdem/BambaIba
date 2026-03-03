@@ -1,17 +1,18 @@
-﻿using BambaIba.Application.Abstractions.Dtos;
+﻿using System.Threading.Channels;
+using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Features.MediaBase.ProcessMedia;
 using BambaIba.Domain.Entities.Audios;
 using BambaIba.Domain.Entities.MediaAssets;
+using BambaIba.Domain.Entities.MediaChannels;
 using BambaIba.Domain.Entities.Roles;
-using BambaIba.Domain.Entities.Users;
 using BambaIba.Domain.Entities.Videos;
 using BambaIba.Domain.Enums;
 using BambaIba.SharedKernel;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Wolverine;
-using Wolverine.Runtime;
 
 
 namespace BambaIba.Application.Features.MediaBase.UploadMedia;
@@ -67,10 +68,10 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
         try
         {
             // 1. Verify Role
-            if (userContext.Role != RoleNames.Creator && userContext.Role != RoleNames.Admin)
+            if (userContext.Role is not (RoleNames.Creator or RoleNames.Admin))
             {
                 return Result.Failure<UploadMediaResult>(
-                    Error.Forbidden("Access.Denied", "Access Denied: Only Creators can upload content.")
+                    Error.Unauthorized("Access.Denied", "Access Denied: Only Creators can upload content.")
                 );
             }
 
@@ -88,7 +89,7 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
             string storagePath;
             string? thumbnailPath = string.Empty;
 
-            if (mediaType.Equals("video", StringComparison.OrdinalIgnoreCase))//if (command.Type.Equals("video", StringComparison.OrdinalIgnoreCase))
+            if (mediaType.Equals("video", StringComparison.OrdinalIgnoreCase))
             {
                 storagePath = await storageService.UploadVideoAsync(mediaId, command.MediaStream,
                     command.MediaFileName, contentType, cancellationToken);
@@ -117,6 +118,28 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
             // Nettoyage du nom de fichier pour le titre (remplacer _ par des espaces, etc.)
             autoTitle = System.Text.RegularExpressions.Regex.Replace(autoTitle, "[_-]", " ");
 
+            MediaChannel? channel = await dbContext.MediaChannels
+                .FirstOrDefaultAsync(c => c.UserId == userContext.LocalUserId, cancellationToken);
+
+            if (channel == null)
+            {
+                channel = new MediaChannel
+                {
+                    Id = Guid.CreateVersion7(),
+                    UserId = userContext.LocalUserId,
+                    Name = $"{userContext.Username}'s Channel",
+                    Handle = userContext.Username,
+                    Description = "Default channel",
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                dbContext.MediaChannels.Add(channel);
+                await dbContext.SaveChangesAsync(cancellationToken);
+                //return Result.Failure<UploadMediaResult>(
+                //    Error.Failure("Channel.NotFound", "You must create a channel before uploading media."));
+            }
+
+
             // 3. Création de l'entité
             MediaAsset media = mediaType == "video" //command.Type.Equals("video", StringComparison.OrdinalIgnoreCase)
                 ? new Video
@@ -125,6 +148,7 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
                     Title = autoTitle,
                     Description = "No description provided", //command.Description,
                     UserId = userContext.LocalUserId,
+                    ChannelId = channel.Id,
                     FileName = command.MediaFileName,
                     FileSize = fileSize,
                     StoragePath = storagePath,
@@ -142,6 +166,7 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
                     Title = autoTitle,
                     Description = "No description provided",  //command.Description,
                     UserId = userContext.LocalUserId,
+                    ChannelId = channel.Id,
                     FileName = command.MediaFileName,
                     FileSize = fileSize,
                     StoragePath = storagePath,

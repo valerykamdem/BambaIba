@@ -15,6 +15,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Serilog;
+using Wolverine;
+using Wolverine.Postgresql;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +58,25 @@ builder.Services.Configure<RadioLiveOptions>(
 builder.Services.AddPresentation(builder.Configuration)
     .AddApplicationServices(builder.Configuration)
     .AddInfrastructureServices(builder.Configuration);
+
+//builder.Host.UseWolverine(opts =>
+//{
+//    // 1. CONFIGURATION DE LA DECOUVERTE (Remplace DisableConventionalDiscovery)
+//    opts.Discovery
+//        // On désactive le scan automatique de TOUTES les assemblies chargées
+//        .DisableAssemblyScanning()
+//        // On ajoute MANUELLEMENT l'assembly qui contient tes Handlers (ton projet Application)
+//        .IncludeAssembly(typeof(BambaIba.Application.AssemblyMarker).Assembly);
+//    // Note: Si tu n'as pas de classe AssemblyMarker, tu peux utiliser n'importe quelle classe publique 
+//    // de ton projet Application, ex: typeof(AddCommentHandler).Assembly
+
+//    // 2. Configuration de l'Outbox (Postgres)
+//    opts.PersistMessagesWithPostgres(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+//    // 3. Optimisation du CodeGen (mode dynamique pour le dev, ou "Typed" pour la prod)
+//    opts.CodeGeneration.TypeLoadMode = JasperFx.CodeGeneration.TypeLoadMode.Dynamic;
+//});
+
 
 // ✅ CORS pour SignalR
 builder.Services.AddCors(options =>

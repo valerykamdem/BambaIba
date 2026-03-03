@@ -53,7 +53,7 @@ public class CommentEndpoints : ICarterModule
         group.MapPost("/{commentId}/reaction", AddReaction)
             .RequireAuthorization()
             .Produces<CursorPagedResult<CommentDto>>(StatusCodes.Status200OK)
-            .WithName("AddReaction");
+            .WithName("AddReactionToComment");
     }
 
     private static async Task<IResult> AddComment(

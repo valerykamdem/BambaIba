@@ -25,18 +25,15 @@ public class KeycloakAuthService : IKeycloakAuthService
     private readonly HttpClient _client;
     private readonly KeycloakSettings _settings;
     private readonly BIDbContext _db;
-    private readonly IUnitOfWork _unitOfWork;
 
     public KeycloakAuthService(
         HttpClient client,
         IOptions<KeycloakSettings> keycloakSettings,
-        BIDbContext db,
-        IUnitOfWork unitOfWork)
+        BIDbContext db)
     {
         _client = client;
         _settings = keycloakSettings.Value;
         _db = db;
-        _unitOfWork = unitOfWork;
     }
 
     /// <summary>
@@ -255,7 +252,7 @@ public class KeycloakAuthService : IKeycloakAuthService
                 RoleId = (await _db.Roles.FirstAsync(r => r.Name == RoleNames.Viewer)).Id
             });
 
-            await _unitOfWork.SaveChangesAsync();
+            await _db.SaveChangesAsync();
         }
 
         return user;

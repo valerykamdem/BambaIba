@@ -26,6 +26,7 @@ public static class CustomResults
                 ErrorType.NotFound => error.Code,
                 ErrorType.Conflict => error.Code,
                 ErrorType.Unexpected => error.Code,
+                ErrorType.Unauthorized => error.Code,
                 _ => "Server failure"
             };
 
@@ -36,7 +37,8 @@ public static class CustomResults
                 ErrorType.Problem => error.Description,
                 ErrorType.NotFound => error.Description,
                 ErrorType.Conflict => error.Description,
-                ErrorType.Unexpected => error.Code,
+                ErrorType.Unauthorized => error.Description,
+                ErrorType.Unexpected => error.Description,
                 _ => "An unexpected error occurred"
             };
 
@@ -48,6 +50,7 @@ public static class CustomResults
                 ErrorType.NotFound => "https://tools.ietf.org/html/rfc7231#section-6.5.4",
                 ErrorType.Conflict => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
                 ErrorType.Unexpected => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
+                ErrorType.Unauthorized => "https://tools.ietf.org/html/rfc7231#section-6.5.8",
                 _ => "https://tools.ietf.org/html/rfc7231#section-6.6.1"
             };
 
@@ -58,6 +61,7 @@ public static class CustomResults
                 ErrorType.NotFound => StatusCodes.Status404NotFound,
                 ErrorType.Conflict => StatusCodes.Status409Conflict,
                 ErrorType.Unexpected => StatusCodes.Status510NotExtended,
+                ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
                 _ => StatusCodes.Status500InternalServerError
             };
 

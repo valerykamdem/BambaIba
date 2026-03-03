@@ -21,28 +21,37 @@ public class S3Initializer : IHostedService
 
     public async Task StartAsync(CancellationToken ct)
     {
-        string[] buckets =
+        try
+        {
+            _logger.LogInformation("Checking S3 storage connection...");
+
+            string[] buckets =
         {
             Buckets.VideoBucket,
             Buckets.AudioBucket,
             Buckets.ImageBucket
         };
 
-        ListBucketsResponse existing = await _s3.ListBucketsAsync(ct);
+            ListBucketsResponse existing = await _s3.ListBucketsAsync(ct);
 
-        foreach (string bucket in buckets)
-        {
-            if (!existing.Buckets.Any(b => b.BucketName == bucket))
+            foreach (string bucket in buckets)
             {
-                _logger.LogInformation("Creating bucket {B}", bucket);
+                if (!existing.Buckets.Any(b => b.BucketName == bucket))
+                {
+                    _logger.LogInformation("Creating bucket {B}", bucket);
 
-                await _s3.PutBucketAsync(bucket, ct);
+                    await _s3.PutBucketAsync(bucket, ct);
+                }
             }
+
+            _logger.LogInformation("S3 initialization done");
         }
-
-        _logger.LogInformation("S3 initialization done");
+        catch (Exception ex)
+        {
+            // On log l'erreur mais on ne propage pas l'exception pour ne pas tuer l'API
+            _logger.LogError(ex, "Failed to connect to S3 Storage on startup. It will be retried during operations.");
+        }
     }
-
     public Task StopAsync(CancellationToken ct)
         => Task.CompletedTask;
 }

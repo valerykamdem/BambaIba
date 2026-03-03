@@ -55,8 +55,8 @@ public class AuthEndpoint : ICarterModule
     {
 
         // Appel à Keycloak pour obtenir le token
-        Result<TokenResponseDto> result = 
-            await bus.InvokeAsync<Result<TokenResponseDto>>(command, cancellationToken);
+        Result<AuthResultDto> result = 
+            await bus.InvokeAsync<Result<AuthResultDto>>(command, cancellationToken);
         
         return result.Match(Results.Ok, CustomResults.Problem);
         //return Results.Ok(result);

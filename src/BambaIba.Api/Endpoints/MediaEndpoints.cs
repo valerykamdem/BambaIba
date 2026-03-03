@@ -57,7 +57,7 @@ public class MediaEndpoints : ICarterModule
         group.MapPost("/{mediaId}/reaction", AddReaction)
             .RequireAuthorization()
             .Produces<CursorPagedResult<MediaDto>>(StatusCodes.Status200OK)
-            .WithName("AddReaction");
+            .WithName("AddReactionToMedia");
 
         // Media Progress
         group.MapPost("/{mediaId}/progress", AddProgress)
@@ -86,8 +86,12 @@ public class MediaEndpoints : ICarterModule
         if (request.MediaFile == null || request.MediaFile.Length == 0)
             return Results.BadRequest("Media file is required");
 
+        string title = request.Title;
+        if (string.IsNullOrEmpty(title) || title is "string")
+            title = request.MediaFile.FileName.ToString();
+
         var command = new UploadMediaCommand(
-            request.Title,
+            title,
             request.Description,
 
             request.Speaker,
@@ -109,6 +113,7 @@ public class MediaEndpoints : ICarterModule
             await bus.InvokeAsync<Result<UploadMediaResult>>(command, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
+        //return Results.Ok(result.Value);
     }
 
     // Handler pour Getmedia (avec Request object pour query params)
