@@ -24,7 +24,7 @@ public sealed class UploadMediaRequest
     public string? Speaker { get; set; }
     public string? Category { get; set; }
     public string? Topic { get; set; }
-    public List<string>? Tags { get; set; } = new List<string>();
+    public List<string>? Tags { get; set; } = [];
     public IFormFile MediaFile { get; set; } = default!;
     public IFormFile? ThumbnailFile { get; set; }
 }
