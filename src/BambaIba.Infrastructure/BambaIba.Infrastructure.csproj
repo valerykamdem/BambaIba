@@ -12,7 +12,6 @@
 
 		<PackageReference Include="Dapper" Version="2.1.66" />
 		<PackageReference Include="EFCore.NamingConventions" Version="10.0.1" />
-		<PackageReference Include="Elastic.Clients.Elasticsearch" Version="9.3.0" />
 
 		<PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
 		<PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.9" />
@@ -53,8 +52,7 @@
 		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="5.0.0" />
 
 		<!-- Minio -->
-		<PackageReference Include="Minio" Version="7.0.0" />
-		<PackageReference Include="MongoDB.Driver" Version="3.6.0" />
+		<PackageReference Include="MongoDB.Driver" Version="3.7.0" />
 
 		<!-- PostgreSQL -->
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.0" />

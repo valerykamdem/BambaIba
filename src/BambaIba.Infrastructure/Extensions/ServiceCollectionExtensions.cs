@@ -105,7 +105,7 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddMongo(this IServiceCollection services, IConfiguration configuration)
     {
-        
+
         services.Configure<MongoSettings>(
             configuration.GetSection(MongoSettings.SectionName));
 
@@ -177,7 +177,11 @@ public static class ServiceCollectionExtensions
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = $"{keycloakUrl}/realms/{realm}",
+            //ValidIssuer = $"{keycloakUrl}/realms/{realm}",
+            ValidIssuers = [
+                $"{keycloakUrl}/realms/{realm}",
+                "http://keycloak_docker_name:8080/realms/votre-realm"
+        ],
             ValidateAudience = true,
             ValidAudience = audience,
             ValidateLifetime = true,
@@ -230,7 +234,7 @@ public static class ServiceCollectionExtensions
 
         var client = new ElasticsearchClient(settings);
 
-        services.AddSingleton<ElasticsearchClient>(client);
+        services.AddSingleton(client);
 
         return services;
     }

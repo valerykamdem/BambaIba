@@ -11,3 +11,15 @@ enabled = true
 [security]
 jwt.signing.key = "UNE_CLE_SECRETE_TRES_LONGUE"
 
+# --- AJOUT IMPORTANT POUR YOUTUBE-LIKE ---
+[aws_s3]
+enabled = true
+buckets = [
+  { name = "bambaiba-images", dir = "/bambaiba-images" },
+  { name = "bambaiba-videos", dir = "/bambaiba-videos" },
+  { name = "bambaiba-audios", dir = "/bambaiba-audios" }
+]
+
+# Optionnel : rendre les fichiers lisibles publiquement
+[s3]
+allowAnonymous = true

@@ -208,9 +208,9 @@ services:
   filer:
     container_name: seaweed_filer
     image: chrislusf/seaweedfs:latest
-    command: "filer -master=master:9333 -port=8888"
-    ports: []
-      # - "8888:8888"
+    command: "filer -master=master:9333 -ip=filer -port=8888"
+    ports:
+      - "8888:8888"
     volumes:
       - filer_data:/data
       - ./filer.toml:/etc/seaweedfs/filer.toml:ro
@@ -331,7 +331,7 @@ services:
 
 # ElasticSearch
   elasticsearch:
-      image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
+      image: docker.elastic.co/elasticsearch/elasticsearch:9.3.1
       container_name: bambaiba_elastic
       environment:
         - discovery.type=single-node
@@ -343,7 +343,7 @@ services:
         - elastic_data:/usr/share/elasticsearch/data
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:8.12.0
+    image: docker.elastic.co/kibana/kibana:9.3.1
     container_name: bambaiba_kibana
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200

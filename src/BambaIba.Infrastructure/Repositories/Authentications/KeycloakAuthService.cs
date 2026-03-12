@@ -3,11 +3,9 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using BambaIba.Application.Abstractions.Data;
 using BambaIba.Application.Abstractions.Dtos;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Application.Features.Auth.Register;
-using BambaIba.Domain.Entities;
 using BambaIba.Domain.Entities.Roles;
 using BambaIba.Domain.Entities.Users;
 using BambaIba.Infrastructure.Persistence;
@@ -48,7 +46,7 @@ public class KeycloakAuthService : IKeycloakAuthService
             {"password", password},
             {"client_id", _settings.AuthClientId},
             {"client_secret", _settings.AuthClientSecret},
-            {"scope", "openid"}
+            {"scope", "openid offline_access"}
         };
 
         var content = new FormUrlEncodedContent(payload);
@@ -109,6 +107,7 @@ public class KeycloakAuthService : IKeycloakAuthService
             {"refresh_token", refreshToken},
             {"client_id", _settings.AuthClientId},
             {"client_secret", _settings.AuthClientSecret},
+            {"scope", "openid offline_access"}
         };
 
         var content = new FormUrlEncodedContent(payload);
