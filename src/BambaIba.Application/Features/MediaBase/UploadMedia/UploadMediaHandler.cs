@@ -5,6 +5,7 @@ using BambaIba.Application.Features.MediaBase.ProcessMedia;
 using BambaIba.Domain.Entities.Audios;
 using BambaIba.Domain.Entities.MediaAssets;
 using BambaIba.Domain.Entities.MediaChannels;
+using BambaIba.Domain.Entities.MediaStats;
 using BambaIba.Domain.Entities.Roles;
 using BambaIba.Domain.Entities.Videos;
 using BambaIba.Domain.Enums;
@@ -53,7 +54,6 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
         IMessageBus bus,
         ILogger<UploadMediaHandler> logger,
         IUserContextService userContextService,
-        //IHttpContextAccessor httpContextAccessor,
         IMediaStorageService storageService)
 {
 
@@ -130,7 +130,8 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
                     Name = $"{userContext.Username}'s Channel",
                     Handle = userContext.Username,
                     Description = "Default channel",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = userContext.LocalUserId.ToString(),
                 };
 
                 dbContext.MediaChannels.Add(channel);
@@ -159,6 +160,7 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
                     Speaker = command.Speaker ?? string.Empty,
                     Category = command.Category ?? string.Empty,
                     Topic = command.Topic ?? string.Empty,
+                    CreatedBy = userContext.LocalUserId.ToString(),
                 }
                 : new Audio
                 {
@@ -177,16 +179,30 @@ public sealed class UploadMediaHandler(IBIDbContext dbContext,
                     Speaker = command.Speaker ?? string.Empty,
                     Category = command.Category ?? string.Empty,
                     Topic = command.Topic ?? string.Empty,
+                    CreatedBy = userContext.LocalUserId.ToString(),
                 };
 
             dbContext.MediaAssets.Add(media);
+
+            // creer la statistique associée
+            dbContext.MediaStats.Add(new MediaStat
+            {
+                MediaId = media.Id,
+                LikeCount = 0,
+                DislikeCount = 0,
+                PlayCount = 0,
+                CommentCount = 0,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = userContext.LocalUserId.ToString(),
+            });
+
             await dbContext.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation("Media {MediaId} uploaded successfully. Triggering processing...", mediaId);
 
             //// 4. Déclenchement du traitement asynchrone via Wolverine
             //// Cela remplace le Task.Run. Wolverine gère la réexécution en cas d'erreur et les scopes.
-            await bus.PublishAsync(new ProcessMediaCommand(mediaId));
+            await bus.PublishAsync(new ProcessMediaCommand(mediaId, userContext.LocalUserId));
 
             return Result.Success(new UploadMediaResult()
             {

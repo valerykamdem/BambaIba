@@ -31,13 +31,21 @@ public class MediaStatisticsService : IMediaStatisticsService
 
     public async Task DecrementCommentCountAsync(Guid mediaId, CancellationToken ct)
     {
+        // 1) Décrément atomique dans MediaStats
+        await _db.MediaStats
+            .Where(s => s.MediaId == mediaId && s.CommentCount > 0)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(s => s.CommentCount, s => s.CommentCount - 1),
+                ct);
+
+        // 2) Mise à jour du timestamp dans MediaAssets
         await _db.MediaAssets
-        .Where(m => m.Id == mediaId && m.Stat.CommentCount > 0)
-        .ExecuteUpdateAsync(setters => setters
-            .SetProperty(m => m.Stat.CommentCount, m => m.Stat.CommentCount - 1)
-            .SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
-        ct);
+            .Where(m => m.Id == mediaId)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
+                ct);
     }
+
 
     public async Task IncrementPlayCountAsync(Guid mediaId, CancellationToken ct)
     {
@@ -72,21 +80,36 @@ public class MediaStatisticsService : IMediaStatisticsService
 
     public async Task IncrementDislikeCountAsync(Guid mediaId, CancellationToken ct)
     {
+
+        await _db.MediaStats
+            .Where(s => s.MediaId == mediaId)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(s => s.DislikeCount, s => s.DislikeCount + 1),
+                ct);
+
         await _db.MediaAssets
             .Where(m => m.Id == mediaId)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(m => m.Stat.DislikeCount, m => m.Stat.DislikeCount + 1)
-                .SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
-            ct);
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
+                ct);
+
     }
 
     public async Task DecrementDislikeCountAsync(Guid mediaId, CancellationToken ct)
     {
+        // 1) Décrément atomique dans MediaStats
+        await _db.MediaStats
+            .Where(s => s.MediaId == mediaId && s.DislikeCount > 0)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(s => s.DislikeCount, s => s.DislikeCount - 1),
+                ct);
+
+        // 2) Mise à jour du timestamp dans MediaAssets
         await _db.MediaAssets
-            .Where(m => m.Id == mediaId && m.Stat.DislikeCount > 0)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(m => m.Stat.DislikeCount, m => m.Stat.DislikeCount - 1)
-                .SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
-            ct);
+            .Where(m => m.Id == mediaId)
+            .ExecuteUpdateAsync(setters =>
+                setters.SetProperty(m => m.UpdatedAt, DateTime.UtcNow),
+                ct);
     }
+
 }

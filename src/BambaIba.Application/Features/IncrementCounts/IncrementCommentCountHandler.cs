@@ -16,7 +16,7 @@ public sealed class IncrementCommentCountHandler
         CancellationToken cancellationToken)
     {
         MediaStat stat = await dbContext.MediaStats
-            .FindAsync(new object?[] { command.MediaId }, cancellationToken: cancellationToken);
+            .FindAsync([command.MediaId], cancellationToken: cancellationToken);
 
         if (stat == null)
             return;

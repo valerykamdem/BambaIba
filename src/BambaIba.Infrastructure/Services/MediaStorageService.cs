@@ -1,6 +1,7 @@
 ﻿// BambaIba.Infrastructure/Services/MinIOMediaStorageService.cs
 using Amazon.S3;
 using Amazon.S3.Model;
+using Amazon.S3.Transfer;
 using BambaIba.Application.Abstractions.Interfaces;
 using BambaIba.Domain.Enums;
 using BambaIba.Infrastructure.Settings;
@@ -35,6 +36,30 @@ public class MediaStorageService : IMediaStorageService
 
     // ---------------------- UPLOADS ----------------------
     // Vidéos
+
+    public async Task<string> UploadVideoStreamAsync(
+        Guid mediaId,
+        Stream stream,
+        string key,
+        string contentType,
+        CancellationToken ct)
+    {
+        var transfer = new TransferUtility(_s3Client);
+
+        var request = new TransferUtilityUploadRequest
+        {
+            BucketName = Buckets.VideoBucket,
+            Key = key,
+            InputStream = stream,
+            ContentType = contentType,
+            AutoCloseStream = false
+        };
+
+        await transfer.UploadAsync(request, ct);
+
+        return key;
+    }
+
 
     /// <summary>
     /// 
@@ -133,114 +158,107 @@ public class MediaStorageService : IMediaStorageService
     string contentType,
     CancellationToken ct)
     {
+        if (stream == null)
+            throw new ArgumentNullException(nameof(stream));
+
+        // Si seekable → multipart possible
         if (stream.CanSeek)
+        {
             stream.Position = 0;
 
-        if (stream.Length >= MultipartThreshold)
-        {
-            await UploadMultipartAsync(
-                bucket, key, stream, contentType, ct);
+            if (stream.Length >= MultipartThreshold)
+            {
+                await UploadMultipartAsync(bucket, key, stream, contentType, ct);
+                return;
+            }
+
+            await UploadSimpleAsync(bucket, key, stream, contentType, ct);
+            return;
         }
-        else
-        {
-            await UploadSimpleAsync(
-                bucket, key, stream, contentType, ct);
-        }
+
+        // Sinon : stream non seekable → TransferUtility obligatoire
+        await UploadSimpleAsync(bucket, key, stream, contentType, ct);
     }
+
 
     private async Task UploadSimpleAsync(
-     string bucket,
-     string key,
-     Stream stream,
-     string contentType,
-     CancellationToken ct)
-    {
-        _logger.LogInformation("Simple upload {Bucket}/{Key}", bucket, key);
-
-        await _s3Client.PutObjectAsync(new PutObjectRequest
-        {
-            BucketName = bucket,
-            Key = key,
-            InputStream = stream,
-            ContentType = contentType ?? "application/octet-stream"
-        }, ct);
-    }
-
-    private async Task UploadMultipartAsync(
     string bucket,
     string key,
     Stream stream,
     string contentType,
     CancellationToken ct)
     {
-        _logger.LogInformation("Multipart upload {Bucket}/{Key}", bucket, key);
+        var transfer = new TransferUtility(_s3Client);
 
-        InitiateMultipartUploadResponse init = await _s3Client.InitiateMultipartUploadAsync(
+        var request = new TransferUtilityUploadRequest
+        {
+            BucketName = bucket,
+            Key = key,
+            InputStream = stream,
+            ContentType = contentType,
+            AutoCloseStream = false
+        };
+
+        await transfer.UploadAsync(request, ct);
+    }
+
+
+    private async Task UploadMultipartAsync(
+     string bucket,
+     string key,
+     Stream stream,
+     string contentType,
+     CancellationToken ct)
+    {
+        InitiateMultipartUploadResponse initiate = await _s3Client.InitiateMultipartUploadAsync(
             new InitiateMultipartUploadRequest
             {
                 BucketName = bucket,
                 Key = key,
                 ContentType = contentType
-            }, ct);
+            },
+            ct);
 
-        string uploadId = init.UploadId;
+        string uploadId = initiate.UploadId;
+        var partETags = new List<PartETag>();
 
-        var parts = new List<PartETag>();
+        long partSize = 5 * 1024 * 1024; // 5MB
+        long fileSize = stream.Length;
+        long position = 0;
+        int partNumber = 1;
 
-        try
+        while (position < fileSize)
         {
-            long position = 0;
-            int partNumber = 1;
+            long size = Math.Min(partSize, fileSize - position);
 
-            while (position < stream.Length)
-            {
-                var request = new UploadPartRequest
-                {
-                    BucketName = bucket,
-                    Key = key,
-                    UploadId = uploadId,
-                    PartNumber = partNumber,
-                    PartSize = PartSize,
-                    InputStream = stream,
-                    FilePosition = position
-                };
-
-                UploadPartResponse response =
-                    await _s3Client.UploadPartAsync(request, ct);
-
-                parts.Add(new PartETag(
-                    partNumber,
-                    response.ETag));
-
-                position += PartSize;
-                partNumber++;
-            }
-
-            var complete = new CompleteMultipartUploadRequest
+            var request = new UploadPartRequest
             {
                 BucketName = bucket,
                 Key = key,
-                UploadId = uploadId
+                UploadId = uploadId,
+                PartNumber = partNumber,
+                InputStream = stream,
+                PartSize = size
             };
 
-            complete.AddPartETags(parts);
+            UploadPartResponse response = await _s3Client.UploadPartAsync(request, ct);
+            partETags.Add(new PartETag(partNumber, response.ETag));
 
-            await _s3Client.CompleteMultipartUploadAsync(
-                complete, ct);
+            position += size;
+            partNumber++;
         }
-        catch
-        {
-            await _s3Client.AbortMultipartUploadAsync(
-                new AbortMultipartUploadRequest
-                {
-                    BucketName = bucket,
-                    Key = key,
-                    UploadId = uploadId
-                }, ct);
 
-            throw;
-        }
+        await _s3Client.CompleteMultipartUploadAsync(
+            new CompleteMultipartUploadRequest
+            {
+                BucketName = bucket,
+                Key = key,
+                UploadId = uploadId,
+                PartETags = partETags
+            },
+            ct);
     }
+
 
 
     // ---------------------- DOWNLOAD ----------------------
@@ -307,7 +325,7 @@ public class MediaStorageService : IMediaStorageService
     }
 
     // ---------------------- DELETE ----------------------
-    public async Task DeleteAsync(string bucket,string key)
+    public async Task DeleteAsync(string bucket, string key)
     {
         await _s3Client.DeleteObjectAsync(bucket, key);
 
@@ -317,20 +335,9 @@ public class MediaStorageService : IMediaStorageService
 
 
     // ---------------------- SIZE ----------------------
-    //public async Task<long> GetFileSizeAsync(string bucket, string key, CancellationToken ct)
-    //{
-    //    GetObjectMetadataResponse meta =
-    //        await _s3Client.GetObjectMetadataAsync(
-    //            bucket, key, ct);
-
-    //    return meta.ContentLength;
-    //}
 
     public async Task<long> GetFileSizeAsync(string key, CancellationToken ct)
     {
-        // LOG CRITIQUE pour comprendre l'erreur
-        Console.WriteLine($"[DEBUG S3] Checking size -> Bucket: '', Key: '{key}'");
-
         try
         {
             GetObjectMetadataResponse meta = await _s3Client.GetObjectMetadataAsync(Buckets.VideoBucket, key, ct);

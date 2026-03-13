@@ -10,6 +10,13 @@ public interface IMediaStorageService
     //Task UploadMultipartAsync(string bucket, string key, Stream stream, string contentType, CancellationToken ct);
     Task<string> DownloadVideoAsync(string path, CancellationToken ct = default);
 
+    Task<string> UploadVideoStreamAsync(
+        Guid mediaId,
+        Stream stream,
+        string key,
+        string contentType,
+        CancellationToken ct);
+
     // Audios
     Task<string> UploadAudioAsync(Guid id, Stream stream, string fileName, string contentType, CancellationToken ct = default);
     Task<string> DownloadAudioAsync(string path, CancellationToken ct = default);

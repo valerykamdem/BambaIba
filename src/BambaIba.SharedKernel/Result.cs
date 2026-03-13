@@ -48,8 +48,8 @@ public class Result<TValue> : Result
 
     [NotNull]
     public TValue Value => IsSuccess
-        ? _value! //:_value;
-        : throw new InvalidOperationException("The value of a failure result can't be accessed.");
+        ? _value! :_value;
+        //: throw new InvalidOperationException("The value of a failure result can't be accessed.");
 
     public static implicit operator Result<TValue>(TValue? value) =>
         value is not null ? Success(value) : Failure<TValue>(Error.NullValue);

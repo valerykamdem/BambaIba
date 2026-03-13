@@ -77,11 +77,12 @@ public static class ServiceCollectionExtensions
             options => options
                 .UseNpgsql(connectionString, npgsqlOptions =>
                     npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default)
-                    .EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorCodesToAdd: null
-        )).UseSnakeCaseNamingConvention());
+        //            .EnableRetryOnFailure(
+        //    maxRetryCount: 5,
+        //    maxRetryDelay: TimeSpan.FromSeconds(10),
+        //    errorCodesToAdd: null
+        //)
+                    ).UseSnakeCaseNamingConvention());
 
         services.AddScoped<IBIDbContext>(
             sp => sp.GetRequiredService<BIDbContext>());

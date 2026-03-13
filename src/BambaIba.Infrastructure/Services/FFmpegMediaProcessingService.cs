@@ -118,75 +118,84 @@ public class FFmpegMediaProcessingService : IMediaProcessingService
 
     //// Vidéo : Transcode
     /// <summary>
-    ///
+    /// 
     /// </summary>
-    /// <param name="localPath"></param>
+    /// <param name="videoId"></param>
+    /// <param name="localInputPath"></param>
+    /// <param name="quality"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<string> TranscodeVideoAsync(Guid videoId, 
-        string localInputPath, string quality, CancellationToken cancellationToken)
+    /// <exception cref="FileNotFoundException"></exception>
+    /// <exception cref="Exception"></exception>
+    public async Task<string> TranscodeVideoAsync(
+    Guid videoId,
+    string localInputPath,
+    string quality,
+    CancellationToken cancellationToken)
     {
-        //string localInputPath = await _storageService.DownloadVideoAsync(inputPath, cancellationToken);
-        string outputFileName = $"{videoId}_{quality}.mp4";
-        string localOutputPath = Path.Combine(_tempPath, outputFileName);
+        if (string.IsNullOrWhiteSpace(localInputPath) || !File.Exists(localInputPath))
+            throw new FileNotFoundException("Input video not found", localInputPath);
 
-        //(int width, int height, string bitrate) = VideoQualitySetting.Get(quality);
         VideoQualityConfig vquality = VideoQualitySetting.Get(quality);
 
-        string arguments = $"-i \"{localInputPath}\" " +
-                       $"-vf scale={vquality.Width}:{vquality.Height} " +
-                       $"-c:v libx264 " +
-                       $"-b:v {vquality.Bitrate} " +
-                       $"-c:a aac " +
-                       $"-b:a 128k " +
-                       $"-movflags +faststart " +
-                       $"\"{localOutputPath}\"";
+        // Configuration pour streaming direct (Pipe vers S3)
+        // On ne PEUT PAS utiliser +faststart avec un pipe.
+        // On utilise fragmented MP4 (fMP4) qui est compatible streaming.
+        string arguments =
+            $"-i \"{localInputPath}\" " +
+            $"-vf scale={vquality.Width}:{vquality.Height} " +
+            $"-c:v libx264 -preset veryfast " +
+            $"-b:v {vquality.Bitrate} " +
+            $"-c:a aac -b:a 128k " +
+            $"-movflags frag_keyframe+empty_moov+default_base_moof " + // Important pour le streaming
+            $"-f mp4 -"; // Le tiret "-" signifie "écrire vers la sortie standard (stdout)"
 
-        var process = new Process
+        using var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = _settings.ExecutablePath,
                 Arguments = arguments,
-                RedirectStandardOutput = true,
+                RedirectStandardOutput = true, // On capture la sortie
                 RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             }
         };
 
-        //process.Start();
-        //await process.WaitForExitAsync();
+        _logger.LogInformation("Starting FFmpeg Pipe for {VideoId} {Quality}", videoId, quality);
 
         process.Start();
 
-        Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        // Capture stderr pour le logs (sans bloquer)
+        Task<string> stderrTask = process.StandardError.ReadToEndAsync();
 
+        // Le flux vidéo sort directement de FFmpeg
+        await using Stream ffmpegOutput = process.StandardOutput.BaseStream;
+
+        string outputFileName = $"{videoId}_{quality}.mp4";
+        string storageKey = $"{videoId}/{quality}/{outputFileName}";
+
+        // Upload direct vers SeaweedFS pendant que FFmpeg tourne
+        string storagePath = await _storageService.UploadVideoStreamAsync(
+            videoId,
+            ffmpegOutput,
+            storageKey,
+            "video/mp4",
+            cancellationToken);
+
+        // Attendre la fin de FFmpeg
         await process.WaitForExitAsync(cancellationToken);
 
-        string output = await outputTask;
-        string error = await errorTask;
+        string stderr = await stderrTask;
 
-        if (!string.IsNullOrWhiteSpace(error))
+        if (process.ExitCode != 0)
         {
-            _logger.LogWarning("FFmpeg Transcode error: {Error}", error);
+            _logger.LogError("FFmpeg failed: {Error}", stderr);
+            throw new Exception($"FFmpeg failed ({quality}): {stderr}");
         }
 
-        if (File.Exists(localOutputPath))
-        {
-            using FileStream stream = File.OpenRead(localOutputPath);
-            //string toStoragePath = $"{quality}/{outputFileName}";
-            string storageKey = $"{videoId}/{quality}/{outputFileName}";
-            string storagePath = await _storageService.UploadVideoAsync(videoId, stream, storageKey, "video/mp4", cancellationToken);
-
-            //CleanupFile(localInputPath);
-            CleanupFile(localOutputPath);
-
-            return storagePath;
-        }
-
-        //CleanupFile(localInputPath);
-        throw new Exception($"Failed to transcode video to {quality}");
+        return storageKey;
     }
 
     // Audio : Métadonnées

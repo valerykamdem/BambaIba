@@ -8,6 +8,7 @@ using BambaIba.Application.Features.MediaBase.DeleteMedia;
 using BambaIba.Application.Features.MediaBase.GetMedia;
 using BambaIba.Application.Features.MediaBase.GetMediaById;
 using BambaIba.Application.Features.MediaBase.GetMediaProgress;
+using BambaIba.Application.Features.MediaBase.RetryProcessing;
 using BambaIba.Application.Features.MediaBase.UpdateMediaProgresses;
 using BambaIba.Application.Features.MediaBase.UploadMedia;
 using BambaIba.SharedKernel;
@@ -67,6 +68,10 @@ public class MediaEndpoints : ICarterModule
         group.MapGet("/{mediaId}/progress", GetProgress)
             .RequireAuthorization()
             .WithName("GetProgress");
+
+        group.MapPost("/{mediaId}/retry", RetryProcessing)
+            .RequireAuthorization()
+            .WithName("RetryMediaProcessing");
     }
 
     // Handler pour Upload (avec Request object)
@@ -142,7 +147,8 @@ public class MediaEndpoints : ICarterModule
             await bus.InvokeAsync<Result<MediaDetailsDto>>(query, cancellationToken);
 
         if (!result.IsSuccess || result.Value == null)
-            return Results.NotFound();
+            //return Results.NotFound();
+            return result.Match(Results.Ok, CustomResults.Problem);
 
         //await bus.InvokeAsync(new IncrementPlayCountCommand(id), cancellationToken);
         await bus.PublishAsync(new IncrementPlayCountCommand(id));
@@ -212,10 +218,31 @@ public class MediaEndpoints : ICarterModule
         CancellationToken CancellationToken)
     {
         Result<MediaProgressDto> result = 
-            await bus.InvokeAsync<Result<MediaProgressDto>>(new GetMediaProgressQuery(mediaId), CancellationToken);
+            await bus.InvokeAsync<Result<MediaProgressDto>>(
+                new GetMediaProgressQuery(mediaId), CancellationToken);
 
         return result.IsSuccess 
             ? Results.Ok(result.Value) 
             : Results.NotFound();
+    }
+
+    private static async Task<IResult> RetryProcessing(
+        Guid mediaId,
+        IMessageBus bus,
+        ClaimsPrincipal user,
+        CancellationToken cancellationToken)
+    {
+        string userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
+                  ?? user.FindFirstValue("sub");
+
+        if (string.IsNullOrEmpty(userId))
+            return Results.Unauthorized();
+
+        var command = new RetryProcessingCommand(mediaId);
+
+        Result<Result> result =
+            await bus.InvokeAsync<Result>(command, cancellationToken);
+
+        return result.Match(Results.Ok, CustomResults.Problem);
     }
 }

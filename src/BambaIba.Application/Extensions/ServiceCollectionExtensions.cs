@@ -3,6 +3,7 @@ using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Wolverine;
 using Wolverine.ErrorHandling;
 using Wolverine.Postgresql;
@@ -44,10 +45,22 @@ public static class ServiceCollectionExtensions
             opts.Durability.NodeReassignmentPollingTime = TimeSpan.FromSeconds(5);
             opts.Durability.ScheduledJobPollingTime = TimeSpan.FromSeconds(5);
 
-            opts.Policies.OnException<TimeoutException>().RetryWithCooldown(TimeSpan.FromSeconds(5));
+            //opts.Policies.OnException<TimeoutException>().RetryWithCooldown(TimeSpan.FromSeconds(5));
             opts.Policies.OnException<DbException>().RetryTimes(5);
             opts.Policies.OnException<OperationCanceledException>().RetryTimes(3);
             opts.Policies.OnException<Exception>().MoveToErrorQueue();
+
+            // Dans ta config Wolverine
+            opts.Policies.OnException<NpgsqlException>()
+                .RetryWithCooldown(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(30));
+
+            opts.Policies.OnException<TimeoutException>()
+                .RetryWithCooldown(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(30));
+
+            // Capture aussi l'exception spécifique EF Core qui wrap le timeout
+            opts.Policies.OnException<Microsoft.EntityFrameworkCore.DbUpdateException>()
+                .RetryWithCooldown(TimeSpan.FromSeconds(5));
+
         });
 
         return services;

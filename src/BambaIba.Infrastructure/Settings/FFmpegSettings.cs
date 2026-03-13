@@ -9,6 +9,7 @@ public sealed class FFmpegSettings
     public string TempDirectory { get; set; } = GetDefaultTempDir();// "/tmp/bambaiba";
     public int MaxConcurrentJobs { get; set; } = 3;
     public int TimeoutSeconds { get; set; } = 3600;
+    public bool UseNvenc { get; set; } = false;
 
     //public Dictionary<string, VideoQualityConfig> Qualities { get; set; } = new()
     //{
