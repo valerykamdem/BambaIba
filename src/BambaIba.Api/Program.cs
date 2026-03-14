@@ -124,8 +124,6 @@ builder.Services.AddOpenApi();
 
 builder.Services.AddCarter();
 
-//builder.Services.AddCors();
-
 if (builder.Environment.IsDevelopment())
 {
     builder.WebHost.ConfigureKestrel(options =>
@@ -166,14 +164,6 @@ if (!isWorker)
     app.UseExceptionHandler();
 
 
-    ////app.UseCors("AllowAngularOrigins");
-    //app.UseCors(options =>
-    //{
-    //    options.AllowAnyHeader();
-    //    options.AllowAnyMethod();
-    //    options.AllowAnyOrigin();
-    //});
-
     app.UseAuthentication();
     app.UseAuthorization();
 
@@ -184,23 +174,23 @@ if (!isWorker)
     app.MapHub<NotificationHub>("/Hubs/NotificationHub");
 
 
-    app.Use(async (context, next) =>
-    {
-        using IServiceScope scope = context.RequestServices.CreateScope();
-        IServiceProvider services = scope.ServiceProvider;
-        IWebHostEnvironment env = services.GetRequiredService<IWebHostEnvironment>();
+    //app.Use(async (context, next) =>
+    //{
+    //    using IServiceScope scope = context.RequestServices.CreateScope();
+    //    IServiceProvider services = scope.ServiceProvider;
+    //    IWebHostEnvironment env = services.GetRequiredService<IWebHostEnvironment>();
 
-        if (env.IsDevelopment())
-        {
-            BIDbContext db = services.GetRequiredService<BIDbContext>();
-            // Force la création des tables si elles n’existent pas encore
-            await db.Database.EnsureCreatedAsync();
-            db.Database.Migrate();
-            SeedData.Initialize(services);
-        }
+    //    if (env.IsDevelopment())
+    //    {
+    //        BIDbContext db = services.GetRequiredService<BIDbContext>();
+    //        // Force la création des tables si elles n’existent pas encore
+    //        await db.Database.EnsureCreatedAsync();
+    //        db.Database.Migrate();
+    //        SeedData.Initialize(services);
+    //    }
 
-        await next();
-    });
+    //    await next();
+    //});
 
     await app.RunAsync();
 }

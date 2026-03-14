@@ -147,30 +147,6 @@ services:
     networks:
       - bambaiba_network
 
-# # MINIO Service
-#   bambaiba_minio:
-#     image: minio/minio:latest
-#     container_name: bambaiba_minio
-#     command: server /data --console-address ":9001"
-#     environment:
-#       MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-#       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-#     ports:
-#       - "9000:9000"
-#       - "9001:9001"
-#     volumes:
-#       - minio_data:/data
-#     restart: unless-stopped
-#     networks:
-#       bambaiba_network:
-#         aliases:
-#           - minio
-#     healthcheck:
-#       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-#       interval: 10s
-#       timeout: 5s
-#       retries: 5
-
   master:
     container_name: seaweed_master
     image: chrislusf/seaweedfs:latest
@@ -292,7 +268,7 @@ services:
 
 # Mongo DB
   bambaiba_mongo: 
-    image: mongo:6
+    image: mongo:7.0
     container_name: bambaiba_mongo
     environment: 
       MONGO_INITDB_ROOT_USERNAME: ${MONGO__USERNAME}
