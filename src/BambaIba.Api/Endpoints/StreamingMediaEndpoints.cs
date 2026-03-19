@@ -21,24 +21,18 @@ using Wolverine;
 namespace BambaIba.Api.Endpoints;
 
 // BambaIba.Api/Endpoints/MediaEndpoints.cs
-public class MediaEndpoints : ICarterModule
+public class StreamingMediaEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
         RouteGroupBuilder group = app.MapGroup("/api/media")
-            .WithTags("Media");
-
-        // Upload vidéo (multipart/form-data)
-        group.MapPost("/upload", UploadMedia)
-            .RequireAuthorization()
-            .DisableAntiforgery()  // Pour multipart
-            .Accepts<UploadMediaCommand>("multipart/form-data")
-            .WithName("UploadMedia");
+            .WithTags("Streaming - Media");
 
         // Liste des Media (query parameters)
         group.MapGet("/", GetMedia)
             .Produces<CursorPagedResult<MediaDto>>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .AllowAnonymous()
             .WithName("Getmedia")
             .WithDescription("Get paginated list of media");
 
@@ -46,14 +40,9 @@ public class MediaEndpoints : ICarterModule
         group.MapGet("/{id:guid}", GetMediaById)
             .Produces<CursorPagedResult<MediaDto>>(StatusCodes.Status200OK)
             .Produces<ProblemDetails>(StatusCodes.Status400BadRequest)
+            .AllowAnonymous()
             .WithName("GetMediaById");
 
-        // Supprimer une vidéo
-        group.MapDelete("/{id:guid}", DeleteMedia)
-            .RequireAuthorization()
-            .Produces(204)
-            .Produces(404)
-            .WithName("DeleteMedia");
 
         group.MapPost("/{mediaId}/reaction", AddReaction)
             .RequireAuthorization()
@@ -68,57 +57,6 @@ public class MediaEndpoints : ICarterModule
         group.MapGet("/{mediaId}/progress", GetProgress)
             .RequireAuthorization()
             .WithName("GetProgress");
-
-        group.MapPost("/{mediaId}/retry", RetryProcessing)
-            .RequireAuthorization()
-            .WithName("RetryMediaProcessing");
-    }
-
-    // Handler pour Upload (avec Request object)
-    private static async Task<IResult> UploadMedia(
-        //HttpRequest httpRequest,
-        [FromForm] UploadMediaRequest request,
-        IMessageBus bus, ClaimsPrincipal user,
-        CancellationToken cancellationToken)
-    {
-
-        string userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
-                  ?? user.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(userId))
-            return Results.Unauthorized();
-
-        if (request.MediaFile == null || request.MediaFile.Length == 0)
-            return Results.BadRequest("Media file is required");
-
-        string title = request.Title;
-        if (string.IsNullOrEmpty(title) || title is "string")
-            title = request.MediaFile.FileName.ToString();
-
-        var command = new UploadMediaCommand(
-            title,
-            request.Description,
-
-            request.Speaker,
-            request.Category,
-            request.Topic,
-            request.Tags,
-
-            request.MediaFile.OpenReadStream(),
-            request.MediaFile.FileName,
-            request.MediaFile.ContentType,
-
-            request.ThumbnailFile?.OpenReadStream(),
-            request.ThumbnailFile?.FileName,
-            request.ThumbnailFile?.ContentType
-        );
-
-
-        Result<UploadMediaResult> result =
-            await bus.InvokeAsync<Result<UploadMediaResult>>(command, cancellationToken);
-
-        return result.Match(Results.Ok, CustomResults.Problem);
-        //return Results.Ok(result.Value);
     }
 
     // Handler pour Getmedia (avec Request object pour query params)
@@ -152,26 +90,6 @@ public class MediaEndpoints : ICarterModule
 
         //await bus.InvokeAsync(new IncrementPlayCountCommand(id), cancellationToken);
         await bus.PublishAsync(new IncrementPlayCountCommand(id));
-
-        return result.Match(Results.Ok, CustomResults.Problem);
-    }
-
-    // Handler pour Delete
-    private static async Task<IResult> DeleteMedia(
-        Guid id, IMessageBus bus,
-        ClaimsPrincipal user,
-        CancellationToken cancellationToken)
-    {
-        string identityId = user.FindFirstValue(ClaimTypes.NameIdentifier)
-                  ?? user.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(identityId))
-            return Results.Unauthorized();
-
-        var command = new DeleteMediaCommand(id);
-
-        Result<DeleteMediaResult> result =
-            await bus.InvokeAsync<Result<DeleteMediaResult>>(command, cancellationToken);
 
         return result.Match(Results.Ok, CustomResults.Problem);
     }
@@ -224,25 +142,5 @@ public class MediaEndpoints : ICarterModule
         return result.IsSuccess 
             ? Results.Ok(result.Value) 
             : Results.NotFound();
-    }
-
-    private static async Task<IResult> RetryProcessing(
-        Guid mediaId,
-        IMessageBus bus,
-        ClaimsPrincipal user,
-        CancellationToken cancellationToken)
-    {
-        string userId = user.FindFirstValue(ClaimTypes.NameIdentifier)
-                  ?? user.FindFirstValue("sub");
-
-        if (string.IsNullOrEmpty(userId))
-            return Results.Unauthorized();
-
-        var command = new RetryProcessingCommand(mediaId);
-
-        Result<Result> result =
-            await bus.InvokeAsync<Result>(command, cancellationToken);
-
-        return result.Match(Results.Ok, CustomResults.Problem);
     }
 }

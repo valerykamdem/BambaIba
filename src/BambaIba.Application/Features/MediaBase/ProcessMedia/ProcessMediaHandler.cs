@@ -1,5 +1,5 @@
 ﻿using BambaIba.Application.Abstractions.Interfaces;
-using BambaIba.Application.Features.Search;
+using BambaIba.Application.Features.Searchs;
 using BambaIba.Application.Settings;
 using BambaIba.Domain.Entities.Audios;
 using BambaIba.Domain.Entities.MediaAssets;

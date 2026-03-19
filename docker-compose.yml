@@ -34,9 +34,9 @@ x-api-volumes: &api-volumes
 services:
 
 # Api Service
-  bambaiba_api:
+  bambaiba_streaming:
     image: ${DOCKER_REGISTRY-}bambaibaapi
-    container_name: bambaiba_api
+    container_name: bambaiba_streaming
     build:
       context: .
       dockerfile: src/BambaIba.Api/Dockerfile
@@ -54,7 +54,7 @@ services:
       - ./src/BambaIba.Api/appsettings.Development.json:/app/appsettings.Development.json:ro
       - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
       - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-      - ./data-protection:/app/data-protection-keys
+      - ./data-protection:/app/data-protection-keys:rw
     depends_on:
       bambaiba_db:
         condition: service_healthy
@@ -65,6 +65,39 @@ services:
     restart: unless-stopped
     networks:
       - bambaiba_network
+    command: ["dotnet", "BambaIba.Api.dll", "--streaming-mode"]
+
+# Api Service
+  bambaiba_studio:
+    image: ${DOCKER_REGISTRY-}bambaibaapi
+    container_name: bambaiba_studio
+    build:
+      context: .
+      dockerfile: src/BambaIba.Api/Dockerfile
+      # target: dev
+    environment:
+      <<: *common-env
+      ASPNETCORE_HTTP_PORTS: 7002
+    ports:
+      - "7002:7002"
+      # - "7001:7001"
+    volumes: 
+      # - *api-volumes
+      - bambaiba_api_data:/app/data
+      - ./src/BambaIba.Api/appsettings.json:/app/appsettings.json:ro
+      - ./src/BambaIba.Api/appsettings.Development.json:/app/appsettings.Development.json:ro
+      - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+      - ./data-protection:/app/data-protection-keys:rw
+    depends_on:
+      bambaiba_db:
+        condition: service_healthy
+      bambaiba_redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - bambaiba_network
+    command: ["dotnet", "BambaIba.Api.dll", "--studio-mode"] 
 
 # Media Processing Worker
   bambaiba_worker: 
@@ -84,8 +117,6 @@ services:
         condition: service_healthy
       bambaiba_redis:
         condition: service_healthy
-      # bambaiba_minio:
-      #   condition: service_healthy
     restart: unless-stopped
     stop_grace_period: 30s
     networks:
@@ -252,7 +283,7 @@ services:
       retries: 5
 
 # SEQ Service
-  seq:
+  bambaiba_seq:
     image: datalust/seq:latest
     container_name: bambaiba_seq
     environment:
@@ -287,7 +318,7 @@ services:
       retries: 5
 
 # NGINX Service
-  nginx:
+  bambaiba_nginx:
     image: nginx:latest
     container_name: bambaiba_proxy
     ports:
@@ -340,7 +371,6 @@ volumes:
   keycloak_pg_data:
   pg_data:
   redis_data:  
-  # minio_data:
   bambaiba_api_data:
   mongodata:
   master_data:

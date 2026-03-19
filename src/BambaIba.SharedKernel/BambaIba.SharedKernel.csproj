@@ -7,8 +7,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Folder Include="Likes\" />
-	  <Folder Include="Subscriptions\" />
+	  <Compile Remove="Likes\**" />
+	  <Compile Remove="Subscriptions\**" />
+	  <EmbeddedResource Remove="Likes\**" />
+	  <EmbeddedResource Remove="Subscriptions\**" />
+	  <None Remove="Likes\**" />
+	  <None Remove="Subscriptions\**" />
 	</ItemGroup>
 
 	<ItemGroup>

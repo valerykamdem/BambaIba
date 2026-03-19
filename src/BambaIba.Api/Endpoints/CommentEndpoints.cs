@@ -2,7 +2,6 @@
 using BambaIba.Api.Extensions;
 using BambaIba.Api.Infrastructure;
 using BambaIba.Application.Abstractions.Dtos;
-using BambaIba.Application.Extensions;
 using BambaIba.Application.Features.Comments.AddComment;
 using BambaIba.Application.Features.Comments.AddReactionToComment;
 using BambaIba.Application.Features.Comments.DeleteComment;

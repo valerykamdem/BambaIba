@@ -6,7 +6,7 @@ using Elastic.Clients.Elasticsearch;
 using Microsoft.EntityFrameworkCore;
 using BambaIba.Domain.Entities.MediaAssets;
 
-namespace BambaIba.Application.Features.Search;
+namespace BambaIba.Application.Features.Searchs;
 
 public record IndexMediaCommand(Guid MediaId);
 

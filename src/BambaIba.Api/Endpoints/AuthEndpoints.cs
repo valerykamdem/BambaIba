@@ -12,16 +12,19 @@ using Wolverine;
 
 namespace BambaIba.Api.Endpoints;
 
-public class AuthEndpoint : ICarterModule
+public class AuthEndpoints : ICarterModule
 {
     public void AddRoutes(IEndpointRouteBuilder app)
     {
+        RouteGroupBuilder group = app.MapGroup("/api/auth")
+            .WithTags("Authentication");
+
         // Enregistrement des endpoints d'authentification
-        app.MapPost("/api/auth/login", LoginEndpoint)
+        group.MapPost("/login", LoginEndpoint)
             .WithValidation<LoginCommand>();
-        app.MapPost("/api/auth/register", RegisterEndpoint)
+        group.MapPost("/register", RegisterEndpoint)
             .WithValidation<RegisterCommand>();
-        app.MapPost("/api/auth/refresh-token", RefreshTokenEndpoint)
+        group.MapPost("/refresh-token", RefreshTokenEndpoint)
             .WithValidation<RefreshTokenCommand>();
     }
 
